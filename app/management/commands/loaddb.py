@@ -240,7 +240,7 @@ class Command(BaseCommand):
         self.__execute__('gprof -q -b -l -c -z ffmpeg_g > %s' % out, path)
 
     def cflow(self, out, path):
-        self.__execute__('cflow -b `find -name "*.c" -or -name "*.h"` > %s' % out, path)
+        self.__execute__('cflow -b -r `find -name "*.c" -or -name "*.h"` > %s' % out, path)
 
     def get_vulnerable_functions(self, revision):
         repo = gitapi.Repo(self.repository_path)
