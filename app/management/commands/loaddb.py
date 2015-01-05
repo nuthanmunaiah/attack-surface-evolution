@@ -1,4 +1,4 @@
-import os, statistics, subprocess
+import os, statistics, subprocess, datetime
 from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -169,10 +169,10 @@ class Command(BaseCommand):
         self.write('Checking out ' + revision.ref)
 
         exec_time.checkout.begin = datetime.datetime.now()
-        debug('Begun At \t' + exec_time.checkout.begin.strftime('%m/%d/%Y %X'), 2)
+        self.write('Begun At \t' + exec_time.checkout.begin.strftime('%m/%d/%Y %X'), 2)
         repo.git_checkout(revision.ref)
         exec_time.checkout.end = datetime.datetime.now()
-        debug('Ended At \t' + exec_time.checkout.end.strftime('%m/%d/%Y %X'), 2)
+        self.write('Ended At \t' + exec_time.checkout.end.strftime('%m/%d/%Y %X'), 2)
 
         self.write('Done checking out ' + revision.ref + '.')
 
@@ -180,10 +180,10 @@ class Command(BaseCommand):
         self.write('Configuring ffmpeg.')
 
         exec_time.configure.begin = datetime.datetime.now()
-        debug('Begun At \t' + exec_time.configure.begin.strftime('%m/%d/%Y %X'), 2)
+        self.write('Begun At \t' + exec_time.configure.begin.strftime('%m/%d/%Y %X'), 2)
         self.configure(self.repository_path)
         exec_time.configure.end = datetime.datetime.now()
-        debug('Ended At \t' + exec_time.configure.end.strftime('%m/%d/%Y %X'), 2)
+        self.write('Ended At \t' + exec_time.configure.end.strftime('%m/%d/%Y %X'), 2)
 
         self.write('Done configuring ffmpeg.')
 
@@ -191,10 +191,10 @@ class Command(BaseCommand):
         self.write('Making ffmpeg.')
 
         exec_time.make.begin = datetime.datetime.now()
-        debug('Begun At \t' + exec_time.make.begin.strftime('%m/%d/%Y %X'), 2)
+        self.write('Begun At \t' + exec_time.make.begin.strftime('%m/%d/%Y %X'), 2)
         self.make(self.repository_path)
         exec_time.make.end = datetime.datetime.now()
-        debug('Ended At \t' + exec_time.make.end.strftime('%m/%d/%Y %X'), 2)
+        self.write('Ended At \t' + exec_time.make.end.strftime('%m/%d/%Y %X'), 2)
 
         self.write('Done making ffmpeg.')
 
@@ -202,10 +202,13 @@ class Command(BaseCommand):
         self.write('Generating runtime profile information using gprof.')
 
         exec_time.gprof.begin = datetime.datetime.now()
-        debug('Begun At \t' + exec_time.gprof.begin.strftime('%m/%d/%Y %X'), 2)
-        self.gprof(gprof_file, self.repository_path)
+        self.write('Begun At \t' + exec_time.gprof.begin.strftime('%m/%d/%Y %X'), 2)
+        if not os.path.exists(gprof_file):
+            self.gprof(gprof_file, self.repository_path)
+        else:
+            self.write('%s already exists' % gprof_file)
         exec_time.gprof.end = datetime.datetime.now()
-        debug('Ended At \t' + exec_time.gprof.end.strftime('%m/%d/%Y %X'), 2)
+        self.write('Ended At \t' + exec_time.gprof.end.strftime('%m/%d/%Y %X'), 2)
 
         self.write('Done generating runtime profile information using gprof.')
 
@@ -213,27 +216,30 @@ class Command(BaseCommand):
         self.write('Generating static profile information using cflow.')
 
         exec_time.cflow.begin = datetime.datetime.now()
-        debug('Begun At \t' + exec_time.cflow.begin.strftime('%m/%d/%Y %X'), 2)
-        cflow(cflow_file, self.repository_path)
+        self.write('Begun At \t' + exec_time.cflow.begin.strftime('%m/%d/%Y %X'), 2)
+        if not os.path.exists(cflow_file):
+            self.cflow(cflow_file, self.repository_path)
+        else:
+            self.write('%s already exists.' % cflow_file)
         exec_time.cflow.end = datetime.datetime.now()
-        debug('Ended At \t' + exec_time.cflow.end.strftime('%m/%d/%Y %X'), 2)
+        self.write('Ended At \t' + exec_time.cflow.end.strftime('%m/%d/%Y %X'), 2)
 
         self.write('Done generating static profile information using cflow.')
 
         self.write('Execution completed in %.2f minutes.' % exec_time.elapsed, 0)
 
-    def configure(path):
+    def configure(self, path):
         self.__execute__('./configure --extra-cflags=\'-pg\' --extra-ldflags=\'-pg\'', path)
 
-    def make(path):
+    def make(self, path):
         self.__execute__('make clean', path)
         self.__execute__('make fate-rsync SAMPLES=fate-suite/', path)
         self.__execute__('make fate SAMPLES=fate-suite/', path)
 
-    def gprof(out, path):
+    def gprof(self, out, path):
         self.__execute__('gprof -q -b -l -c -z ffmpeg_g > %s' % out, path)
 
-    def cflow(out, path):
+    def cflow(self, out, path):
         self.__execute__('cflow -b `find -name "*.c" -or -name "*.h"` > %s' % out, path)
 
     def get_vulnerable_functions(self, revision):
@@ -253,7 +259,7 @@ class Command(BaseCommand):
         if verbosity >= self.verbosity:
             self.stdout.write(str(message))
 
-    def __execute__(command, path):
+    def __execute__(self, command, path):
         if path:
             os.chdir(path)
 
