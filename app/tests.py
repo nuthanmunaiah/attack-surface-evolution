@@ -11,7 +11,7 @@ class InitDbTestCase(TestCase):
     def setUp(self):
         self.initdb_command = initdb.Command()
 
-        revisions_file = get_absolute_path('assets\\data\\revisions.txt')
+        revisions_file = get_absolute_path('assets/data/revisions.txt')
 
         self.revisions = dict()
         with open(revisions_file, 'r') as _revisions_file:
@@ -19,8 +19,8 @@ class InitDbTestCase(TestCase):
             for row in reader:
                 self.revisions[row[0]] = row[1]
 
-        cve_files = [get_absolute_path('assets\\data\\cves_reported.txt'),
-                     get_absolute_path('assets\\data\\cves_non_ffmpeg.txt')]
+        cve_files = [get_absolute_path('assets/data/cves_reported.txt'),
+                     get_absolute_path('assets/data/cves_non_ffmpeg.txt')]
 
         self.cves = dict()
         for cve_file in cve_files:
@@ -29,7 +29,7 @@ class InitDbTestCase(TestCase):
                 for row in reader:
                     self.cves[row[0]] = row[1]
 
-        cves_fixed_file = get_absolute_path('assets\\data\\cves_fixed.txt')
+        cves_fixed_file = get_absolute_path('assets/data/cves_fixed.txt')
 
         self.fixed_cves = dict()
         with open(cves_fixed_file, 'r') as _cves_fixed_file:
