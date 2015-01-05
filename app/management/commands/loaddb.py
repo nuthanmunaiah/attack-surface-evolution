@@ -28,32 +28,40 @@ class Command(BaseCommand):
                     dest='rev_num',
                     default=None,
                     help='rev-num HELP.'),
+        make_option('-t', '--rev-type',
+                    dest='rev_type',
+                    default='t',
+                    help='rev-type HELP.'),
     )
     help = 'loaddb HELP.'
 
     def handle(self, *args, **options):
-        self.validate_arguments()
+        self.validate_arguments(**options)
 
         revisions = None
         if self.rev_num:
-            revisions = Revision.objects.get(number=self.rev_num)
+            revisions = Revision.objects.filter(number=self.rev_num, type=self.rev_type)
         else:
             revisions = Revision.objects.all()
 
         for revision in revisions:
             self.mine(revision)
 
-    def validate_arguments(self):
+    def validate_arguments(self, **options):
         self.verbosity = int(options.get('verbosity'))
         self.repository_path = options.get('repository_path')
         self.callgraph_path = options.get('callgraph_path')
         self.rev_num = options.get('rev_num')
+        self.rev_type = options.get('rev_type')
 
         if not os.path.exists(os.path.join(self.repository_path, '.git')):
             raise CommandError('%s is not a git repository.' % self.repository_path)
 
         if not constants.RE_REV_NUM.match(self.rev_num):
             raise CommandError('%s is not a valid revision number.' % self.rev_num)
+
+        if self.rev_type not in ['t','b']:
+            raise CommandError('%s is not a valid revision type.' % self.rev_type)
 
     def mine(self, revision):
         vuln_funcs = self.get_vulnerable_functions(revision)
@@ -130,7 +138,7 @@ class Command(BaseCommand):
         gprof_file = os.path.join(self.callgraph_path,
                                   constants.CALLGRAPH_FILE_PATTERN % (revision.type, revision.number, 'gprof'))
 
-        if not os.path.exists(_c_file) or not os.path.exists(_g_file):
+        if not os.path.exists(cflow_file) or not os.path.exists(gprof_file):
             self.generate_profile_info(revision, cflow_file, gprof_file)
 
         cfl = CflowLoader(cflow_file, True)
@@ -141,25 +149,24 @@ class Command(BaseCommand):
     def generate_profile_info(self, revision, cflow_file, gprof_file):
         repo = gitapi.Repo(self.repository_path)
 
-        write('Resetting repository.')
+        self.write('Resetting repository.')
         repo.git_clean(del_untracked=True)
         repo.git_fetch('origin')
         repo.git_reset('origin/master')
-        write('Done resetting repository to master.')
+        self.write('Done resetting repository to master.')
 
         if not os.path.exists(self.callgraph_path):
             os.makedirs(self.callgraph_path)
-            write('Created directory %s' % self.callgraph_path, 2)
+            self.write('Created directory %s' % self.callgraph_path, 2)
 
-        write('\nMining revisions\n', 0)
-        time_keeper = TimeKeeper()
+        self.write('\nMining revisions\n', 0)
 
-        write('Revision\t' + revision.ref)
-        write('Date\t\t' + revision.date.strftime('%m/%d/%Y'))
+        self.write('Revision\t' + revision.ref)
+        self.write('Date\t\t' + revision.date.strftime('%m/%d/%Y'))
         exec_time = ExecutionTime()
 
         # Step 2 : Checkout revision
-        write('Checking out ' + revision.ref)
+        self.write('Checking out ' + revision.ref)
 
         exec_time.checkout.begin = datetime.datetime.now()
         debug('Begun At \t' + exec_time.checkout.begin.strftime('%m/%d/%Y %X'), 2)
@@ -167,10 +174,10 @@ class Command(BaseCommand):
         exec_time.checkout.end = datetime.datetime.now()
         debug('Ended At \t' + exec_time.checkout.end.strftime('%m/%d/%Y %X'), 2)
 
-        write('Done checking out ' + revision.ref + '.')
+        self.write('Done checking out ' + revision.ref + '.')
 
         # Step 3 : Configure
-        write('Configuring ffmpeg.')
+        self.write('Configuring ffmpeg.')
 
         exec_time.configure.begin = datetime.datetime.now()
         debug('Begun At \t' + exec_time.configure.begin.strftime('%m/%d/%Y %X'), 2)
@@ -178,10 +185,10 @@ class Command(BaseCommand):
         exec_time.configure.end = datetime.datetime.now()
         debug('Ended At \t' + exec_time.configure.end.strftime('%m/%d/%Y %X'), 2)
 
-        write('Done configuring ffmpeg.')
+        self.write('Done configuring ffmpeg.')
 
         # Step 4 : Make
-        write('Making ffmpeg.')
+        self.write('Making ffmpeg.')
 
         exec_time.make.begin = datetime.datetime.now()
         debug('Begun At \t' + exec_time.make.begin.strftime('%m/%d/%Y %X'), 2)
@@ -189,10 +196,10 @@ class Command(BaseCommand):
         exec_time.make.end = datetime.datetime.now()
         debug('Ended At \t' + exec_time.make.end.strftime('%m/%d/%Y %X'), 2)
 
-        write('Done making ffmpeg.')
+        self.write('Done making ffmpeg.')
 
         # Step 6 : gprof
-        write('Generating runtime profile information using gprof.')
+        self.write('Generating runtime profile information using gprof.')
 
         exec_time.gprof.begin = datetime.datetime.now()
         debug('Begun At \t' + exec_time.gprof.begin.strftime('%m/%d/%Y %X'), 2)
@@ -200,10 +207,10 @@ class Command(BaseCommand):
         exec_time.gprof.end = datetime.datetime.now()
         debug('Ended At \t' + exec_time.gprof.end.strftime('%m/%d/%Y %X'), 2)
 
-        write('Done generating runtime profile information using gprof.')
+        self.write('Done generating runtime profile information using gprof.')
 
         # Step 7 : cflow
-        write('Generating static profile information using cflow.')
+        self.write('Generating static profile information using cflow.')
 
         exec_time.cflow.begin = datetime.datetime.now()
         debug('Begun At \t' + exec_time.cflow.begin.strftime('%m/%d/%Y %X'), 2)
@@ -211,9 +218,9 @@ class Command(BaseCommand):
         exec_time.cflow.end = datetime.datetime.now()
         debug('Ended At \t' + exec_time.cflow.end.strftime('%m/%d/%Y %X'), 2)
 
-        write('Done generating static profile information using cflow.')
+        self.write('Done generating static profile information using cflow.')
 
-        write('Execution completed in %.2f minutes.' % exec_time.elapsed, 0)
+        self.write('Execution completed in %.2f minutes.' % exec_time.elapsed, 0)
 
     def configure(path):
         self.__execute__('./configure --extra-cflags=\'-pg\' --extra-ldflags=\'-pg\'', path)
@@ -235,7 +242,7 @@ class Command(BaseCommand):
         vuln_funcs = set()
         for vuln_fix in CveRevision.objects.filter(revision=revision):
             if vuln_fix.commit_hash != 'NA':
-                for line in repo.git_path_log(vuln_fix.commit_hash).split('\n'):
+                for line in repo.git_patch_log(vuln_fix.commit_hash).split('\n'):
                     match = constants.RE_FUNC_AFFECTED.match(line)
                     if match:
                         vuln_funcs.add(match.group(3))
