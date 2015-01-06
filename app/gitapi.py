@@ -2,21 +2,24 @@ import gitapi
 
 
 class Repo(gitapi.Repo):
-    def git_patch_log(self, identifier, **kwargs):
-        cmds = ['log', '-p', identifier, '-n', '1']
+    def git_patch(self, identifier, file, **kwargs):
+        cmds = ['log', '-n', '1', '-p', identifier, '--', file]
         if kwargs:
             for key in kwargs:
                 cmds += [key, kwargs[key]]
         return self.git_command(*cmds)
 
 
-    def git_clean(self, del_untracked=False):
-        cmds = ['clean', '-f']
-        if del_untracked:
-            cmds += ['-d']
+    def git_clean(self):
+        cmds = ['clean', '-f', '-d']
         return self.git_command(*cmds)
 
 
     def git_reset(self, source):
         cmds = ['reset', source, '--hard']
+        return self.git_command(*cmds)
+
+
+    def git_diff_tree(self, source):
+        cmds = ['diff-tree', '--name-only', '-r', source, '--no-commit-id']
         return self.git_command(*cmds)
