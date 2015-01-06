@@ -115,7 +115,7 @@ class Command(BaseCommand):
                 function.save()
 
             for ep in call_graph.entry_points:
-                function = Function.objects.get(name=ep.function_name, file=ep.function_signature)
+                function = Function.objects.get(revision=revision, name=ep.function_name, file=ep.function_signature)
 
                 epr = Reachability()
                 epr.type = constants.RT_EPR
@@ -132,7 +132,8 @@ class Command(BaseCommand):
             for exp in call_graph.exit_points:
                 expr = Reachability()
                 expr.type = constants.RT_EXPR
-                expr.function = Function.objects.get(name=ep.function_name, file=ep.function_signature)
+                expr.function = Function.objects.get(revision=revision, name=ep.function_name,
+                                                     file=ep.function_signature)
                 expr.value = call_graph.get_exit_point_reachability(exp)
                 expr.save()
 
@@ -247,10 +248,11 @@ class Command(BaseCommand):
         self.__execute__('cflow -b -r `find -name "*.c" -or -name "*.h"` > %s' % out, path)
 
     def get_vulnerable_functions(self, revision):
-        repo = gitapi.Repo(self.repository_path)
+        vuln_fixes = CveRevision.objects.filter(revision=revision)
 
+        repo = gitapi.Repo(self.repository_path)
         vuln_funcs = dict()
-        for vuln_fix in CveRevision.objects.filter(revision=revision):
+        for vuln_fix in vuln_fixes:
             if vuln_fix.commit_hash != 'NA':
                 files_affected = repo.git_diff_tree(vuln_fix.commit_hash).split('\n')
                 files_affected = [fa for fa in files_affected if len(fa.strip('\n')) > 0]
