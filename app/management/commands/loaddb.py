@@ -60,7 +60,7 @@ class Command(BaseCommand):
         if not constants.RE_REV_NUM.match(self.rev_num):
             raise CommandError('%s is not a valid revision number.' % self.rev_num)
 
-        if self.rev_type not in ['t','b']:
+        if self.rev_type not in ['t', 'b']:
             raise CommandError('%s is not a valid revision type.' % self.rev_type)
 
     def mine(self, revision):
@@ -76,7 +76,11 @@ class Command(BaseCommand):
                 function.file = node.function_signature
                 function.is_entry = node in call_graph.entry_points
                 function.is_exit = node in call_graph.exit_points
-                function.vulnerable = node.function_name in vuln_funcs
+                function.vulnerable = \
+                    (
+                        node.function_signature in vuln_funcs and
+                        node.function_name in vuln_funcs[node.function_signature]
+                    )
 
                 entry_path_lengths = []
                 for ep in [ep for ep in call_graph.entry_points if ep != node]:
@@ -150,7 +154,7 @@ class Command(BaseCommand):
         repo = gitapi.Repo(self.repository_path)
 
         self.write('Resetting repository.')
-        repo.git_clean(del_untracked=True)
+        repo.git_clean()
         repo.git_fetch('origin')
         repo.git_reset('origin/master')
         self.write('Done resetting repository to master.')
@@ -245,13 +249,19 @@ class Command(BaseCommand):
     def get_vulnerable_functions(self, revision):
         repo = gitapi.Repo(self.repository_path)
 
-        vuln_funcs = set()
+        vuln_funcs = dict()
         for vuln_fix in CveRevision.objects.filter(revision=revision):
             if vuln_fix.commit_hash != 'NA':
-                for line in repo.git_patch_log(vuln_fix.commit_hash).split('\n'):
-                    match = constants.RE_FUNC_AFFECTED.match(line)
-                    if match:
-                        vuln_funcs.add(match.group(3))
+                files_affected = repo.git_diff_tree(vuln_fix.commit_hash).split('\n')
+                files_affected = [fa for fa in files_affected if len(fa.strip('\n')) > 0]
+                for file_affected in files_affected:
+                    file_name = os.path.basename(os.path.join(self.repository_path, file_affected))
+                    if file_name not in vuln_funcs:
+                        vuln_funcs[file_name] = set()
+                    for line in repo.git_patch(vuln_fix.commit_hash, file_affected).split('\n'):
+                        match = constants.RE_FUNC_AFFECTED.match(line)
+                        if match:
+                            vuln_funcs[file_name].add(match.group(3))
 
         return vuln_funcs
 
