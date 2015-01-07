@@ -9,6 +9,7 @@ class Revision(models.Model):
     type = models.CharField(max_length=4, choices=constants.REVISION_TYPE, blank=False)
     ref = models.CharField(max_length=50, blank=False)
     date = models.DateField(blank=False)
+    is_loaded = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('number', 'type')
