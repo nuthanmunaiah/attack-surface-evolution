@@ -42,7 +42,7 @@ class Command(BaseCommand):
         if self.rev_num:
             revisions = Revision.objects.filter(number=self.rev_num, type=self.rev_type)
         else:
-            revisions = Revision.objects.all()
+            revisions = Revision.objects.filter(is_loaded=False)
 
         for revision in revisions:
             self.mine(revision)
@@ -136,6 +136,9 @@ class Command(BaseCommand):
                                                      file=ep.function_signature)
                 expr.value = call_graph.get_exit_point_reachability(exp)
                 expr.save()
+
+            revision.is_loaded = True
+            revision.save()
 
     def get_call_graph(self, revision):
         cflow_file = os.path.join(self.callgraph_path,
@@ -248,22 +251,26 @@ class Command(BaseCommand):
         self.__execute__('cflow -b -r `find -name "*.c" -or -name "*.h"` > %s' % out, path)
 
     def get_vulnerable_functions(self, revision):
-        vuln_fixes = CveRevision.objects.filter(revision=revision)
+        vuln_fixes = None
+        if revision.type == constants.RT_TAG:
+            vuln_fixes = CveRevision.objects.filter(revision=revision)
+        elif revision.type == constants.RT_BRANCH:
+            vuln_fixes = CveRevision.objects.filter(
+                revision__number__startswith=revision.number[:revision.number.rfind('.')])
 
         repo = gitapi.Repo(self.repository_path)
         vuln_funcs = dict()
-        for vuln_fix in vuln_fixes:
-            if vuln_fix.commit_hash != 'NA':
-                files_affected = repo.git_diff_tree(vuln_fix.commit_hash).split('\n')
-                files_affected = [fa for fa in files_affected if len(fa.strip('\n')) > 0]
-                for file_affected in files_affected:
-                    file_name = os.path.basename(os.path.join(self.repository_path, file_affected))
-                    if file_name not in vuln_funcs:
-                        vuln_funcs[file_name] = set()
-                    for line in repo.git_patch(vuln_fix.commit_hash, file_affected).split('\n'):
-                        match = constants.RE_FUNC_AFFECTED.match(line)
-                        if match:
-                            vuln_funcs[file_name].add(match.group(3))
+        for vuln_fix in vuln_fixes.exclude(commit_hash='NA'):
+            files_affected = repo.git_diff_tree(vuln_fix.commit_hash).split('\n')
+            files_affected = [fa for fa in files_affected if len(fa.strip('\n')) > 0]
+            for file_affected in files_affected:
+                file_name = os.path.basename(os.path.join(self.repository_path, file_affected))
+                if file_name not in vuln_funcs:
+                    vuln_funcs[file_name] = set()
+                for line in repo.git_patch(vuln_fix.commit_hash, file_affected).split('\n'):
+                    match = constants.RE_FUNC_AFFECTED.match(line)
+                    if match:
+                        vuln_funcs[file_name].add(match.group(3))
 
         return vuln_funcs
 
