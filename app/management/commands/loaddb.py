@@ -114,6 +114,7 @@ class Command(BaseCommand):
 
                 function.save()
 
+            revision.num_entry_points = len(call_graph.entry_points)
             for ep in call_graph.entry_points:
                 function = Function.objects.get(revision=revision, name=ep.function_name, file=ep.function_signature)
 
@@ -129,11 +130,12 @@ class Command(BaseCommand):
                 sr.value = call_graph.get_shallow_risk(ep)
                 sr.save()
 
+            revision.num_exit_points = len(call_graph.exit_points)
             for exp in call_graph.exit_points:
                 expr = Reachability()
                 expr.type = constants.RT_EXPR
-                expr.function = Function.objects.get(revision=revision, name=ep.function_name,
-                                                     file=ep.function_signature)
+                expr.function = Function.objects.get(revision=revision, name=exp.function_name,
+                                                     file=exp.function_signature)
                 expr.value = call_graph.get_exit_point_reachability(exp)
                 expr.save()
 
