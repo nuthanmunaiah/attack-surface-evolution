@@ -11,6 +11,9 @@ class Revision(models.Model):
     date = models.DateField(blank=False)
     is_loaded = models.BooleanField(default=False)
 
+    num_entry_points = models.PositiveIntegerField(default=0, blank=False)
+    num_exit_points = models.PositiveIntegerField(default=0, blank=False)
+
     class Meta:
         unique_together = ('number', 'type')
 
