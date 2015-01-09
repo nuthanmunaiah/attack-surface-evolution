@@ -74,9 +74,10 @@ class Command(BaseCommand):
 
         for cve in Cve.objects.all():
             if cve.cve_id in fixed_cves:
-                cve.is_fixed = True
-
                 with transaction.atomic():
+                    cve.is_fixed = True
+                    cve.save()
+
                     for cve_fix in fixed_cves[cve.cve_id]:
                         rev_num = get_version_number(cve_fix['revision'])
 
