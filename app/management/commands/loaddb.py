@@ -161,8 +161,8 @@ class Command(BaseCommand):
 
         self.write('Resetting repository.')
         repo.git_clean()
-        repo.git_fetch('origin')
-        repo.git_reset('origin/master')
+        repo.git_checkout('master')
+        repo.git_pull()
         self.write('Done resetting repository to master.')
 
         if not os.path.exists(self.callgraph_path):
