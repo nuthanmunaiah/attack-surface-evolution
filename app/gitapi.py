@@ -2,13 +2,13 @@ import gitapi
 
 
 class Repo(gitapi.Repo):
-    def git_patch(self, identifier, file, **kwargs):
-        cmds = ['log', '-n', '1', '-p', identifier, '--', file]
+    def git_patch(self, identifier, file=None, **kwargs):
+        cmds = ['log', '-n', '1', '-p', identifier]
+        if file: cmds += ['--', file]
         if kwargs:
             for key in kwargs:
                 cmds += [key, kwargs[key]]
         return self.git_command(*cmds)
-
 
     def git_clean(self):
         cmds = ['clean', '-f', '-d']
