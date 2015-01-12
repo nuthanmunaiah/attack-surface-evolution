@@ -76,7 +76,7 @@ class Command(BaseCommand):
                 function.file = node.function_signature
                 function.is_entry = node in call_graph.entry_points
                 function.is_exit = node in call_graph.exit_points
-                function.vulnerable = \
+                function.is_vulnerable = \
                     (
                         node.function_signature in vuln_funcs and
                         node.function_name in vuln_funcs[node.function_signature]
@@ -114,31 +114,37 @@ class Command(BaseCommand):
 
                 function.save()
 
+                if function.is_entry:
+                    des = Reachability()
+                    des.type = constants.RT_DES
+                    des.function = function
+                    des.value = len(call_graph.get_descendants(node))
+                    des.save()
+
+                    des_one = Reachability()
+                    des_one.type = constants.RT_DES_ONE
+                    des_one.function = function
+                    des_one.value = len(call_graph.get_descendants_at(node, depth=1))
+                    des_one.save()
+
+                    des_two = Reachability()
+                    des_two.type = constants.RT_DES_TWO
+                    des_two.function = function
+                    des_two.value = len(call_graph.get_descendants_at(node, depth=2))
+                    des_two.save()
+
+                if function.is_exit:
+                    anc = Reachability()
+                    anc.type = constants.RT_ANC
+                    anc.function = function
+                    anc.value = len(call_graph.get_ancestors(node))
+                    anc.save()
+
             revision.num_entry_points = len(call_graph.entry_points)
-            for ep in call_graph.entry_points:
-                function = Function.objects.get(revision=revision, name=ep.function_name, file=ep.function_signature)
-
-                epr = Reachability()
-                epr.type = constants.RT_EPR
-                epr.function = function
-                epr.value = call_graph.get_entry_point_reachability(ep)
-                epr.save()
-
-                sr = Reachability()
-                sr.type = constants.RT_SEPR
-                sr.function = function
-                sr.value = call_graph.get_shallow_risk(ep)
-                sr.save()
-
             revision.num_exit_points = len(call_graph.exit_points)
-            for exp in call_graph.exit_points:
-                expr = Reachability()
-                expr.type = constants.RT_EXPR
-                expr.function = Function.objects.get(revision=revision, name=exp.function_name,
-                                                     file=exp.function_signature)
-                expr.value = call_graph.get_exit_point_reachability(exp)
-                expr.save()
-
+            revision.num_functions = revision.function_set.count()
+            revision.num_reachable_functions = revision.function_set.exclude(num_entry_points=0,
+                                                                             num_exit_points=0).count()
             revision.is_loaded = True
             revision.save()
 
@@ -270,9 +276,9 @@ class Command(BaseCommand):
                 if file_name not in vuln_funcs:
                     vuln_funcs[file_name] = set()
                 for line in repo.git_patch(vuln_fix.commit_hash, file_affected).split('\n'):
-                    match = constants.RE_FUNC_AFFECTED.match(line)
+                    match = constants.RE_FUNC_AFFECTED.search(line)
                     if match:
-                        vuln_funcs[file_name].add(match.group(3))
+                        vuln_funcs[file_name].add(match.group(1))
 
         return vuln_funcs
 
