@@ -13,6 +13,8 @@ class Revision(models.Model):
 
     num_entry_points = models.PositiveIntegerField(default=0, blank=False)
     num_exit_points = models.PositiveIntegerField(default=0, blank=False)
+    num_functions =  models.PositiveIntegerField(default=0, blank=False)
+    num_reachable_functions = models.PositiveIntegerField(default=0, blank=False)
 
     class Meta:
         unique_together = ('number', 'type')
@@ -24,7 +26,7 @@ class Function(models.Model):
     file = models.CharField(max_length=50, blank=False)
     is_entry = models.BooleanField(default=False)
     is_exit = models.BooleanField(default=False)
-    vulnerable = models.BooleanField(default=False)
+    is_vulnerable = models.BooleanField(default=False)
     min_dist_to_entry = models.PositiveIntegerField(default=0)
     max_dist_to_entry = models.PositiveIntegerField(default=0)
     avg_dist_to_entry = models.PositiveIntegerField(default=0)
