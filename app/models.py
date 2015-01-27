@@ -27,14 +27,15 @@ class Function(models.Model):
     is_entry = models.BooleanField(default=False)
     is_exit = models.BooleanField(default=False)
     is_vulnerable = models.BooleanField(default=False)
-    min_dist_to_entry = models.PositiveIntegerField(default=0)
-    max_dist_to_entry = models.PositiveIntegerField(default=0)
-    avg_dist_to_entry = models.PositiveIntegerField(default=0)
-    num_entry_points = models.PositiveIntegerField(default=0)
-    min_dist_to_exit = models.PositiveIntegerField(default=0)
-    max_dist_to_exit = models.PositiveIntegerField(default=0)
-    avg_dist_to_exit = models.PositiveIntegerField(default=0)
-    num_exit_points = models.PositiveIntegerField(default=0)
+    min_dist_to_entry = models.PositiveIntegerField(default=None, null=True)
+    max_dist_to_entry = models.PositiveIntegerField(default=None, null=True)
+    avg_dist_to_entry = models.PositiveIntegerField(default=None, null=True)
+    num_entry_points = models.PositiveIntegerField(default=None, null=True)
+    min_dist_to_exit = models.PositiveIntegerField(default=None, null=True)
+    max_dist_to_exit = models.PositiveIntegerField(default=None, null=True)
+    avg_dist_to_exit = models.PositiveIntegerField(default=None, null=True)
+    num_exit_points = models.PositiveIntegerField(default=None, null=True)
+    attack_surface_betweenness = models.FloatField(default=None, null=True)
 
 
 class Reachability(models.Model):
