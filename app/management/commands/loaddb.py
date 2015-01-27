@@ -67,6 +67,19 @@ class Command(BaseCommand):
         vuln_funcs = self.get_vulnerable_functions(revision)
         call_graph = self.get_call_graph(revision)
 
+        attack_surface_nodes = set()
+
+        for ep in call_graph.entry_points:
+            for des in call_graph.get_descendants(ep):
+                attack_surface_nodes.add(des)
+
+        for exp in call_graph.exit_points:
+            for anc in call_graph.get_ancestors(exp):
+                attack_surface_nodes.add(anc)
+
+        sub_call_graph = nx.subgraph(call_graph.call_graph, attack_surface_nodes)
+        attack_surface_betweenness = nx.betweenness_centrality(sub_call_graph)
+
         with transaction.atomic():
             for node in call_graph.nodes:
                 function = Function()
@@ -111,6 +124,9 @@ class Command(BaseCommand):
                     function.max_dist_to_exit = max(exit_path_lengths)
                     function.avg_dist_to_exit = statistics.mean(exit_path_lengths)
                     function.num_exit_points = len(exit_path_lengths)
+
+                if node in attack_surface_betweenness:
+                    function.attack_surface_betweenness = attack_surface_betweenness[node]
 
                 function.save()
 
