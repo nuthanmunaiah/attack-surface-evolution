@@ -36,6 +36,7 @@ class Function(models.Model):
     avg_dist_to_exit = models.PositiveIntegerField(default=None, null=True)
     num_exit_points = models.PositiveIntegerField(default=None, null=True)
     attack_surface_betweenness = models.FloatField(default=None, null=True)
+    sloc = models.PositiveIntegerField(default=None, null=True)
 
 
 class Reachability(models.Model):
