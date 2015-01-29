@@ -1,4 +1,4 @@
-import os, statistics, subprocess, datetime
+import os, statistics, subprocess, datetime, csv
 from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -20,10 +20,10 @@ class Command(BaseCommand):
         make_option('-r', '--repository-path',
                     dest='repository_path',
                     help='repository-path HELP.'),
-        make_option('-c', '--callgraph-path',
-                    dest='callgraph_path',
+        make_option('-w', '--workspace-path',
+                    dest='workspace_path',
                     default=os.path.dirname(__file__),
-                    help='callgraph-path HELP.'),
+                    help='workspace-path HELP.'),
         make_option('-n', '--rev-num',
                     dest='rev_num',
                     default=None,
@@ -50,7 +50,7 @@ class Command(BaseCommand):
     def validate_arguments(self, **options):
         self.verbosity = int(options.get('verbosity'))
         self.repository_path = options.get('repository_path')
-        self.callgraph_path = options.get('callgraph_path')
+        self.workspace_path = options.get('workspace_path')
         self.rev_num = options.get('rev_num')
         self.rev_type = options.get('rev_type')
 
@@ -66,6 +66,7 @@ class Command(BaseCommand):
     def mine(self, revision):
         vuln_funcs = self.get_vulnerable_functions(revision)
         call_graph = self.get_call_graph(revision)
+        func_sloc = self.get_function_sloc(revision)
 
         attack_surface_nodes = set()
 
@@ -128,6 +129,11 @@ class Command(BaseCommand):
                 if node in attack_surface_betweenness:
                     function.attack_surface_betweenness = attack_surface_betweenness[node]
 
+                # Fully qualified name of the node in the form function_name@file_name
+                fq_name = '%s@%s' % (node.function_name, node.function_signature)
+                if fq_name in func_sloc:
+                    function.sloc = func_sloc[fq_name]
+
                 function.save()
 
                 if function.is_entry:
@@ -165,9 +171,9 @@ class Command(BaseCommand):
             revision.save()
 
     def get_call_graph(self, revision):
-        cflow_file = os.path.join(self.callgraph_path,
+        cflow_file = os.path.join(self.workspace_path,
                                   constants.CALLGRAPH_FILE_PATTERN % (revision.type, revision.number, 'cflow'))
-        gprof_file = os.path.join(self.callgraph_path,
+        gprof_file = os.path.join(self.workspace_path,
                                   constants.CALLGRAPH_FILE_PATTERN % (revision.type, revision.number, 'gprof'))
 
         if not os.path.exists(cflow_file) or not os.path.exists(gprof_file):
@@ -187,9 +193,9 @@ class Command(BaseCommand):
         repo.git_pull()
         self.write('Done resetting repository to master.')
 
-        if not os.path.exists(self.callgraph_path):
-            os.makedirs(self.callgraph_path)
-            self.write('Created directory %s' % self.callgraph_path, 2)
+        if not os.path.exists(self.workspace_path):
+            os.makedirs(self.workspace_path)
+            self.write('Created directory %s' % self.workspace_path, 2)
 
         self.write('\nMining revisions\n', 0)
 
@@ -297,6 +303,17 @@ class Command(BaseCommand):
                         vuln_funcs[file_name].add(match.group(1))
 
         return vuln_funcs
+
+    def get_function_sloc(self, revision):
+        sloc_file = os.path.join(self.workspace_path, constants.FUNC_SLOC_FILE_PATTERN % revision.number)
+        function_sloc = dict()
+        with open(sloc_file, 'r') as _sloc_file:
+            reader = csv.reader(_sloc_file)
+            for row in reader:
+                if 'Function' in row[0]:
+                    function_sloc['%s@%s' % (row[1], row[2])] = row[3]
+
+        return function_sloc
 
     def write(self, message, verbosity=1):
         if verbosity >= self.verbosity:
