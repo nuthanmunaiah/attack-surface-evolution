@@ -21,6 +21,7 @@ REVISION_TYPE = (
 )
 
 CALLGRAPH_FILE_PATTERN = '%s_%s_%s.txt'
+FUNC_SLOC_FILE_PATTERN = '%s.ffmpeg.csv'
 
 RE_REV_NUM = re.compile('(\d+)(?:\.(\d+))?(?:\.(\d+))?')
 RE_FUNC_AFFECTED = re.compile('(\w*)(?:\s?\()')
