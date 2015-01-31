@@ -1,4 +1,4 @@
-import os, statistics, subprocess, datetime, csv
+import os, statistics, subprocess, datetime, csv, sys
 from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -64,25 +64,28 @@ class Command(BaseCommand):
             raise CommandError('%s is not a valid revision type.' % self.rev_type)
 
     def mine(self, revision):
+        print('Mining %s', revision.number)
+
+        # TODO : REMOVE
+        start = datetime.datetime.now()
+
         vuln_funcs = self.get_vulnerable_functions(revision)
-        call_graph = self.get_call_graph(revision)
         func_sloc = self.get_function_sloc(revision)
 
-        attack_surface_nodes = set()
+        call_graph = self.get_call_graph(revision)
 
-        for ep in call_graph.entry_points:
-            for des in call_graph.get_descendants(ep):
-                attack_surface_nodes.add(des)
+        attack_surface_betweenness = nx.betweenness_centrality(call_graph.attack_surface_graph, endpoints=True)
 
-        for exp in call_graph.exit_points:
-            for anc in call_graph.get_ancestors(exp):
-                attack_surface_nodes.add(anc)
-
-        sub_call_graph = nx.subgraph(call_graph.call_graph, attack_surface_nodes)
-        attack_surface_betweenness = nx.betweenness_centrality(sub_call_graph)
-
+        # TODO : REMOVE
+        index = 1
+        total = len(call_graph.nodes)
         with transaction.atomic():
             for node in call_graph.nodes:
+                # TODO : REMOVE
+                percent = index / total
+                self.indicate_progress(percent)
+                index += 1
+
                 function = Function()
 
                 function.revision = revision
@@ -96,79 +99,62 @@ class Command(BaseCommand):
                         node.function_name in vuln_funcs[node.function_signature]
                     )
 
-                entry_path_lengths = []
-                for ep in [ep for ep in call_graph.entry_points if ep != node]:
-                    try:
-                        if nx.has_path(call_graph.call_graph, source=ep, target=node):
-                            entry_path_lengths.append(
-                                nx.shortest_path_length(call_graph.call_graph, source=ep, target=node))
-                    except KeyError as key_error:
-                        print(key_error.args[0].function_name)
-
-                if entry_path_lengths:
-                    function.min_dist_to_entry = min(entry_path_lengths)
-                    function.max_dist_to_entry = max(entry_path_lengths)
-                    function.avg_dist_to_entry = statistics.mean(entry_path_lengths)
-                    function.num_entry_points = len(entry_path_lengths)
-
-                exit_path_lengths = []
-                for exp in [exp for exp in call_graph.exit_points if exp != node]:
-                    try:
-                        if nx.has_path(call_graph.call_graph, source=node, target=exp):
-                            exit_path_lengths.append(
-                                nx.shortest_path_length(call_graph.call_graph, source=node, target=exp))
-                    except KeyError as key_error:
-                        print(key_error.args[0].function_name)
-
-                if exit_path_lengths:
-                    function.min_dist_to_exit = min(exit_path_lengths)
-                    function.max_dist_to_exit = max(exit_path_lengths)
-                    function.avg_dist_to_exit = statistics.mean(exit_path_lengths)
-                    function.num_exit_points = len(exit_path_lengths)
-
-                if node in attack_surface_betweenness:
-                    function.attack_surface_betweenness = attack_surface_betweenness[node]
-
                 # Fully qualified name of the node in the form function_name@file_name
                 fq_name = '%s@%s' % (node.function_name, node.function_signature)
                 if fq_name in func_sloc:
                     function.sloc = func_sloc[fq_name]
 
+                if node in call_graph.attack_surface_graph_nodes:
+                    metrics = call_graph.get_entry_surface_metrics(node)
+                    function.proximity_to_entry = metrics['proximity']
+                    function.surface_coupling_with_entry = metrics['surface_coupling']
+
+                    metrics = call_graph.get_exit_surface_metrics(node)
+                    function.proximity_to_exit = metrics['proximity']
+                    function.surface_coupling_with_exit = metrics['surface_coupling']
+
+                if node in attack_surface_betweenness:
+                    function.attack_surface_betweenness = attack_surface_betweenness[node]
+
                 function.save()
 
                 if function.is_entry:
-                    des = Reachability()
-                    des.type = constants.RT_DES
-                    des.function = function
-                    des.value = len(call_graph.get_descendants(node))
-                    des.save()
+                    enpr = Reachability()
+                    enpr.type = constants.RT_EN
+                    enpr.function = function
+                    enpr.value = call_graph.get_entry_point_reachability(node)
+                    enpr.save()
 
-                    des_one = Reachability()
-                    des_one.type = constants.RT_DES_ONE
-                    des_one.function = function
-                    des_one.value = len(call_graph.get_descendants_at(node, depth=1))
-                    des_one.save()
+                    senpr_within_depth_one = Reachability()
+                    senpr_within_depth_one.type = constants.RT_SHEN_ONE
+                    senpr_within_depth_one.function = function
+                    senpr_within_depth_one.value = call_graph.get_entry_point_reachability(node)
+                    senpr_within_depth_one.save()
 
-                    des_two = Reachability()
-                    des_two.type = constants.RT_DES_TWO
-                    des_two.function = function
-                    des_two.value = len(call_graph.get_descendants_at(node, depth=2))
-                    des_two.save()
+                    senpr_within_depth_two = Reachability()
+                    senpr_within_depth_two.type = constants.RT_SHEN_TWO
+                    senpr_within_depth_two.function = function
+                    senpr_within_depth_two.value = call_graph.get_entry_point_reachability(node)
+                    senpr_within_depth_two.save()
 
                 if function.is_exit:
-                    anc = Reachability()
-                    anc.type = constants.RT_ANC
-                    anc.function = function
-                    anc.value = len(call_graph.get_ancestors(node))
-                    anc.save()
+                    expr = Reachability()
+                    expr.type = constants.RT_EX
+                    expr.function = function
+                    expr.value = call_graph.get_exit_point_reachability(node)
+                    expr.save()
 
             revision.num_entry_points = len(call_graph.entry_points)
             revision.num_exit_points = len(call_graph.exit_points)
-            revision.num_functions = revision.function_set.count()
-            revision.num_reachable_functions = revision.function_set.exclude(num_entry_points=0,
-                                                                             num_exit_points=0).count()
+            revision.num_functions = len(call_graph.nodes)
+            revision.num_attack_surface_functions = len(call_graph.attack_surface_graph_nodes)
             revision.is_loaded = True
             revision.save()
+
+        # TODO : REMOVE
+        print()
+        print('Start\t', start)
+        print('Stop\t', datetime.datetime.now())
 
     def get_call_graph(self, revision):
         cflow_file = os.path.join(self.workspace_path,
@@ -278,7 +264,7 @@ class Command(BaseCommand):
         self.__execute__('gprof -q -b -l -c -z ffmpeg_g > %s' % out, path)
 
     def cflow(self, out, path):
-        self.__execute__('cflow -b -r `find -name "*.c" -or -name "*.h"` > %s' % out, path)
+        self.__execute__('cflow -b -r `find -name "*.c" -or -name "*.h" | grep -vwE "(tests|doc)"` > %s' % out, path)
 
     def get_vulnerable_functions(self, revision):
         vuln_fixes = None
@@ -318,6 +304,17 @@ class Command(BaseCommand):
     def write(self, message, verbosity=1):
         if verbosity >= self.verbosity:
             self.stdout.write(str(message))
+
+    def indicate_progress(self, percent, bar_length=50):
+        sys.stdout.write("\r")
+        progress = ""
+        for i in range(bar_length):
+            if i < int(bar_length * percent):
+                progress += "="
+            else:
+                progress += " "
+        sys.stdout.write("[ %s ] %.2f%%" % (progress, percent * 100))
+        sys.stdout.flush()
 
     def __execute__(self, command, path):
         if path:
