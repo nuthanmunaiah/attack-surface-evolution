@@ -1,15 +1,15 @@
 import re
 
-RT_DES = 'des'
-RT_DES_ONE = 'des_one'
-RT_DES_TWO = 'des_two'
-RT_ANC = 'anc'
+RT_EN = 'en'
+RT_SHEN_ONE = 'shen_one'
+RT_SHEN_TWO = 'shen_two'
+RT_EX = 'ex'
 
 REACHABILITY_TYPE = (
-    (RT_DES, 'Descendants'),
-    (RT_ANC, 'Ancestors'),
-    (RT_DES_ONE, 'Descendants at alpha = 1'),
-    (RT_DES_TWO, 'Descendants at alpha = 2'),
+    (RT_EN, 'Entry Point Reachability'),
+    (RT_EX, 'Exit Point Reachability'),
+    (RT_SHEN_ONE, 'Shallow Entry Point Reachability (Alpha = 1)'),
+    (RT_SHEN_TWO, 'Shallow Entry Point Reachability (Alpha = 2)'),
 )
 
 RT_BRANCH = 'b'
