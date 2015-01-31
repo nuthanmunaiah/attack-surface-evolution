@@ -64,7 +64,7 @@ class Command(BaseCommand):
             raise CommandError('%s is not a valid revision type.' % self.rev_type)
 
     def mine(self, revision):
-        print('Mining %s', revision.number)
+        print('Mining', revision.number)
 
         # TODO : REMOVE
         start = datetime.datetime.now()
