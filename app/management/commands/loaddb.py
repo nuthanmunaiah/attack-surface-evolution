@@ -44,8 +44,11 @@ class Command(BaseCommand):
         else:
             revisions = Revision.objects.filter(is_loaded=False)
 
-        for revision in revisions:
-            self.mine(revision)
+        if revisions.count() == 0:
+            raise CommandError('No revisions to mine. Aborting.')
+        else:
+            for revision in revisions:
+                self.mine(revision)
 
     def validate_arguments(self, **options):
         self.verbosity = int(options.get('verbosity'))
@@ -163,108 +166,12 @@ class Command(BaseCommand):
                                   constants.CALLGRAPH_FILE_PATTERN % (revision.type, revision.number, 'gprof'))
 
         if not os.path.exists(cflow_file) or not os.path.exists(gprof_file):
-            self.generate_profile_info(revision, cflow_file, gprof_file)
+            raise CommandError('Call graphs file(s) not found at %s.' % self.workspace_path)
 
         cfl = CflowLoader(cflow_file, True)
         gpl = GprofLoader(gprof_file, False)
 
         return CallGraph.from_merge(CallGraph.from_loader(cfl), CallGraph.from_loader(gpl))
-
-    def generate_profile_info(self, revision, cflow_file, gprof_file):
-        repo = gitapi.Repo(self.repository_path)
-
-        self.write('Resetting repository.')
-        repo.git_clean()
-        repo.git_checkout('master')
-        repo.git_pull()
-        self.write('Done resetting repository to master.')
-
-        if not os.path.exists(self.workspace_path):
-            os.makedirs(self.workspace_path)
-            self.write('Created directory %s' % self.workspace_path, 2)
-
-        self.write('\nMining revisions\n', 0)
-
-        self.write('Revision\t' + revision.ref)
-        self.write('Date\t\t' + revision.date.strftime('%m/%d/%Y'))
-        exec_time = ExecutionTime()
-
-        # Step 2 : Checkout revision
-        self.write('Checking out ' + revision.ref)
-
-        exec_time.checkout.begin = datetime.datetime.now()
-        self.write('Begun At \t' + exec_time.checkout.begin.strftime('%m/%d/%Y %X'), 2)
-        repo.git_checkout(revision.ref)
-        exec_time.checkout.end = datetime.datetime.now()
-        self.write('Ended At \t' + exec_time.checkout.end.strftime('%m/%d/%Y %X'), 2)
-
-        self.write('Done checking out ' + revision.ref + '.')
-
-        # Step 3 : Configure
-        self.write('Configuring ffmpeg.')
-
-        exec_time.configure.begin = datetime.datetime.now()
-        self.write('Begun At \t' + exec_time.configure.begin.strftime('%m/%d/%Y %X'), 2)
-        self.configure(self.repository_path)
-        exec_time.configure.end = datetime.datetime.now()
-        self.write('Ended At \t' + exec_time.configure.end.strftime('%m/%d/%Y %X'), 2)
-
-        self.write('Done configuring ffmpeg.')
-
-        # Step 4 : Make
-        self.write('Making ffmpeg.')
-
-        exec_time.make.begin = datetime.datetime.now()
-        self.write('Begun At \t' + exec_time.make.begin.strftime('%m/%d/%Y %X'), 2)
-        self.make(self.repository_path)
-        exec_time.make.end = datetime.datetime.now()
-        self.write('Ended At \t' + exec_time.make.end.strftime('%m/%d/%Y %X'), 2)
-
-        self.write('Done making ffmpeg.')
-
-        # Step 6 : gprof
-        self.write('Generating runtime profile information using gprof.')
-
-        exec_time.gprof.begin = datetime.datetime.now()
-        self.write('Begun At \t' + exec_time.gprof.begin.strftime('%m/%d/%Y %X'), 2)
-        if not os.path.exists(gprof_file):
-            self.gprof(gprof_file, self.repository_path)
-        else:
-            self.write('%s already exists' % gprof_file)
-        exec_time.gprof.end = datetime.datetime.now()
-        self.write('Ended At \t' + exec_time.gprof.end.strftime('%m/%d/%Y %X'), 2)
-
-        self.write('Done generating runtime profile information using gprof.')
-
-        # Step 7 : cflow
-        self.write('Generating static profile information using cflow.')
-
-        exec_time.cflow.begin = datetime.datetime.now()
-        self.write('Begun At \t' + exec_time.cflow.begin.strftime('%m/%d/%Y %X'), 2)
-        if not os.path.exists(cflow_file):
-            self.cflow(cflow_file, self.repository_path)
-        else:
-            self.write('%s already exists.' % cflow_file)
-        exec_time.cflow.end = datetime.datetime.now()
-        self.write('Ended At \t' + exec_time.cflow.end.strftime('%m/%d/%Y %X'), 2)
-
-        self.write('Done generating static profile information using cflow.')
-
-        self.write('Execution completed in %.2f minutes.' % exec_time.elapsed, 0)
-
-    def configure(self, path):
-        self.__execute__('./configure --extra-cflags=\'-pg\' --extra-ldflags=\'-pg\'', path)
-
-    def make(self, path):
-        self.__execute__('make clean', path)
-        self.__execute__('make fate-rsync SAMPLES=fate-suite/', path)
-        self.__execute__('make fate SAMPLES=fate-suite/', path)
-
-    def gprof(self, out, path):
-        self.__execute__('gprof -q -b -l -c -z ffmpeg_g > %s' % out, path)
-
-    def cflow(self, out, path):
-        self.__execute__('cflow -b -r `find -name "*.c" -or -name "*.h" | grep -vwE "(tests|doc)"` > %s' % out, path)
 
     def get_vulnerable_functions(self, revision):
         vuln_fixes = None
@@ -315,12 +222,6 @@ class Command(BaseCommand):
                 progress += " "
         sys.stdout.write("[ %s ] %.2f%%" % (progress, percent * 100))
         sys.stdout.flush()
-
-    def __execute__(self, command, path):
-        if path:
-            os.chdir(path)
-
-        subprocess.call(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 
 
 class Time:
