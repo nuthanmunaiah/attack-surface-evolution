@@ -222,30 +222,3 @@ class Command(BaseCommand):
                 progress += " "
         sys.stdout.write("[ %s ] %.2f%%" % (progress, percent * 100))
         sys.stdout.flush()
-
-
-class Time:
-    def __init__(self):
-        self.begin = \
-            self.end = None
-
-    @property
-    def elapsed(self):
-        if self.end and self.begin:
-            return (self.end - self.begin).total_seconds() / 60
-        return 0
-
-
-class ExecutionTime:
-    def __init__(self):
-        self.checkout = Time()
-        self.configure = Time()
-        self.make = Time()
-        self.cflow = Time()
-        self.gprof = Time()
-        self.attacksurfacemeter = Time()
-
-    @property
-    def elapsed(self):
-        return self.checkout.elapsed + self.configure.elapsed + self.make.elapsed + self.cflow.elapsed + \
-               self.gprof.elapsed + self.attacksurfacemeter.elapsed
