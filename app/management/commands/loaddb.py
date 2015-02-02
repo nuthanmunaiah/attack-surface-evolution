@@ -1,4 +1,4 @@
-import os, statistics, subprocess, datetime, csv, sys, threading, multiprocessing
+import os, statistics, subprocess, datetime, csv, sys, threading
 from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -9,9 +9,7 @@ from attacksurfacemeter.call_graph import CallGraph
 from loaders.cflow_loader import CflowLoader
 from loaders.gprof_loader import GprofLoader
 
-from app import models
-from app import constants
-from app import gitapi
+from app import models, constants, gitapi
 
 
 class Command(BaseCommand):
