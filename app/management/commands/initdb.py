@@ -68,9 +68,9 @@ class Command(BaseCommand):
             reader = csv.reader(_cves_fixed_file)
             for row in reader:
                 if row[1] in fixed_cves:
-                    fixed_cves[row[1]].append({'revision': row[0], 'commit_hash': row[2], 'publish_dt': row[3]})
+                    fixed_cves[row[1]].append({'revision': row[0], 'commit_hash': row[2]})
                 else:
-                    fixed_cves[row[1]] = [{'revision': row[0], 'commit_hash': row[2], 'publish_dt': row[3]}]
+                    fixed_cves[row[1]] = [{'revision': row[0], 'commit_hash': row[2]}]
 
         for cve in Cve.objects.all():
             if cve.cve_id in fixed_cves:
