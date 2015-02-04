@@ -133,6 +133,7 @@ t,refs/tags/n0.8.9,2012-01-02
 t,refs/tags/n0.8.8,2011-12-25
 t,refs/tags/n0.7.9,2011-12-25
 t,refs/tags/n0.6.4,2011-12-25
+t,not/a/tag/n0.6.2,0001-01-01
 t,refs/tags/n0.5.7,2011-12-25
 t,refs/tags/n0.9,2011-12-11
 t,refs/tags/n0.5.6,2011-11-21
@@ -152,11 +153,13 @@ t,refs/tags/n0.8.2,2011-08-10
 t,refs/tags/n0.8.1,2011-07-28
 t,refs/tags/n0.7.2,2011-07-28
 t,refs/tags/n0.7.1,2011-06-23
+t,not/a/tag/n0.7.0,0001-01-01
 t,refs/tags/n0.8,2011-06-21
 t,refs/tags/ffmpeg-0.6.3,2011-04-27
 t,refs/tags/v0.5.3,2010-10-18
 t,refs/tags/v0.6.1,2010-10-18
 t,refs/tags/v0.6,2010-06-15
+t,not/a/tag/v0.5.4,0001-01-01
 t,refs/tags/v0.5.2,2010-05-25
 t,refs/tags/v0.5.1,2010-03-02
 t,refs/tags/v0.5,2009-03-09
