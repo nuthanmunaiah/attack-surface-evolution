@@ -1,4 +1,4 @@
-import os, statistics, subprocess, datetime, csv, sys
+import os, statistics, subprocess, datetime, csv, sys, re
 from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -30,7 +30,7 @@ class Command(BaseCommand):
                     help='rev-num HELP.'),
         make_option('-t', '--rev-type',
                     dest='rev_type',
-                    default='t',
+                    default='b',
                     help='rev-type HELP.'),
     )
     help = 'loaddb HELP.'
@@ -198,13 +198,16 @@ class Command(BaseCommand):
         return vuln_funcs
 
     def get_function_sloc(self, revision):
+        re_function = re.compile('^([^\(]*)')
         sloc_file = os.path.join(self.workspace_path, constants.FUNC_SLOC_FILE_PATTERN % revision.number)
         function_sloc = dict()
         with open(sloc_file, 'r') as _sloc_file:
             reader = csv.reader(_sloc_file)
+            next(reader)    # Skipping the header
             for row in reader:
-                if 'Function' in row[0]:
-                    function_sloc['%s@%s' % (row[1], row[2])] = row[3]
+                function = re_function.match(row[1]).group(1)
+                file = row[0][row[0].rfind('\\') + 1:]
+                function_sloc['%s@%s' % (function, file)] = row[3]
 
         return function_sloc
 
