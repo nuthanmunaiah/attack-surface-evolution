@@ -171,7 +171,10 @@ class Command(BaseCommand):
         cfl = CflowLoader(cflow_file, True)
         gpl = GprofLoader(gprof_file, False)
 
-        return CallGraph.from_merge(CallGraph.from_loader(cfl), CallGraph.from_loader(gpl))
+        call_graph = CallGraph.from_merge(CallGraph.from_loader(cfl), CallGraph.from_loader(gpl))
+        call_graph.remove_standard_library_calls()
+
+        return call_graph
 
     def get_vulnerable_functions(self, revision):
         vuln_fixes = None
