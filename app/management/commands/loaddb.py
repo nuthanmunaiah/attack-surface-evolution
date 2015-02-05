@@ -131,13 +131,13 @@ class Command(BaseCommand):
                     senpr_within_depth_one = Reachability()
                     senpr_within_depth_one.type = constants.RT_SHEN_ONE
                     senpr_within_depth_one.function = function
-                    senpr_within_depth_one.value = call_graph.get_entry_point_reachability(node)
+                    senpr_within_depth_one.value = call_graph.get_shallow_entry_point_reachability(node)
                     senpr_within_depth_one.save()
 
                     senpr_within_depth_two = Reachability()
                     senpr_within_depth_two.type = constants.RT_SHEN_TWO
                     senpr_within_depth_two.function = function
-                    senpr_within_depth_two.value = call_graph.get_entry_point_reachability(node)
+                    senpr_within_depth_two.value = call_graph.get_shallow_entry_point_reachability(node, depth=2)
                     senpr_within_depth_two.save()
 
                 if function.is_exit:
@@ -206,7 +206,7 @@ class Command(BaseCommand):
         function_sloc = dict()
         with open(sloc_file, 'r') as _sloc_file:
             reader = csv.reader(_sloc_file)
-            next(reader)    # Skipping the header
+            next(reader)  # Skipping the header
             for row in reader:
                 function = re_function.match(row[1]).group(1)
                 file = row[0][row[0].rfind('\\') + 1:]
