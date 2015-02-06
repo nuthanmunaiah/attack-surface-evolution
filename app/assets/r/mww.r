@@ -1,11 +1,22 @@
-library('DBI');
-conn <- dbConnect(RSQLite::SQLite(), 'D:\\Attack Surface Meter\\ffmpeg Mining\\FFMpegEvolution\\FFMpegEvolution\\db.sqlite3');
-s_metric <- "attack_surface_betweenness"          # Use the name of the column here
-revisions <- c(166:169,163:164,170:178)
+library("RPostgreSQL");
+driver <- dbDriver("PostgreSQL");
+conn <- dbConnect(driver, host="127.0.0.1", dbname="ffmpeg", user="ffmpeg", password="ffmpeg");
+s_metric <- "surface_coupling_with_exit"          # Use the name of the column here
+normalize <- T                                     # Normalize by SLOC?
+revisions <- c(169:172,166:167,173:181)
 
-q_metric <- "SELECT is_vulnerable, %s as metric
+
+if(normalize){
+  # Normalize by SLOC
+  q_metric <- "SELECT is_vulnerable, CAST(%s AS REAL)/COALESCE(sloc, 1) as metric
               FROM app_function 
               WHERE revision_id = %d AND %s IS NOT NULL";
+} else {
+  # DO NOT Normalize by SLOC
+  q_metric <- "SELECT is_vulnerable, %s as metric
+              FROM app_function 
+              WHERE revision_id = %d AND %s IS NOT NULL";
+}
 q_metric <- sub("%s", s_metric, q_metric)
 q_metric <- sub("%s", s_metric, q_metric)
 q_revision <- "SELECT number FROM app_revision WHERE id = %d";
