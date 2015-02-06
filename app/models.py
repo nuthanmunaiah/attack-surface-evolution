@@ -36,7 +36,7 @@ class Function(models.Model):
 
 
 class Reachability(models.Model):
-    type = models.CharField(max_length=4, choices=constants.REACHABILITY_TYPE, blank=False)
+    type = models.CharField(max_length=8, choices=constants.REACHABILITY_TYPE, blank=False)
     function = models.ForeignKey(Function, blank=False)
     value = models.DecimalField(decimal_places=6, max_digits=10, blank=False)
 
