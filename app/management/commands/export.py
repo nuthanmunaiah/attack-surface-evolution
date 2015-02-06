@@ -78,11 +78,11 @@ class Command(BaseCommand):
                             if Reachability.objects.filter(function=function).exists():
                                 epr = str(
                                     Reachability.objects.get(function=function,
-                                                             type=constants.RT_DES).value / n_functions)
+                                                             type=constants.RT_EN).value)
                                 sepr_one = str(Reachability.objects.get(function=function,
-                                                                        type=constants.RT_DES_ONE).value / n_functions)
+                                                                        type=constants.RT_SHEN_ONE).value)
                                 sepr_two = str(Reachability.objects.get(function=function,
-                                                                        type=constants.RT_DES_TWO).value / n_functions)
+                                                                        type=constants.RT_SHEN_TWO).value)
 
                         eprs.append(epr)
                         seprs_one.append(sepr_one)
@@ -117,7 +117,7 @@ class Command(BaseCommand):
                             if Reachability.objects.filter(function=function).exists():
                                 expr = str(
                                     Reachability.objects.get(function=function,
-                                                             type=constants.RT_ANC).value / n_functions)
+                                                             type=constants.RT_EX).value)
                         exprs.append(expr)
 
                     expr_writer.writerow([name] + exprs)
