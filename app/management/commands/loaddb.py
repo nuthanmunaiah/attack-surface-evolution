@@ -82,6 +82,9 @@ class Command(BaseCommand):
         # TODO : REMOVE
         index = 1
         total = len(call_graph.nodes)
+
+        vulnerability_source = set()
+        vulnerability_sink = set()
         with transaction.atomic():
             for node in call_graph.nodes:
                 # TODO : REMOVE
@@ -108,13 +111,23 @@ class Command(BaseCommand):
                     function.sloc = func_sloc[fq_name]
 
                 if node in call_graph.attack_surface_graph_nodes:
+                    function.is_connected_to_attack_surface = True
+
                     metrics = call_graph.get_entry_surface_metrics(node)
                     function.proximity_to_entry = metrics['proximity']
                     function.surface_coupling_with_entry = metrics['surface_coupling']
 
+                    if function.is_vulnerable and metrics['points']:
+                        for point in metrics['points']:
+                            vulnerability_source.add(point)
+
                     metrics = call_graph.get_exit_surface_metrics(node)
                     function.proximity_to_exit = metrics['proximity']
                     function.surface_coupling_with_exit = metrics['surface_coupling']
+
+                    if function.is_vulnerable and metrics['points']:
+                        for point in metrics['points']:
+                            vulnerability_sink.add(point)
 
                 if node in attack_surface_betweenness:
                     function.attack_surface_betweenness = attack_surface_betweenness[node]
@@ -153,6 +166,16 @@ class Command(BaseCommand):
             revision.num_attack_surface_functions = len(call_graph.attack_surface_graph_nodes)
             revision.is_loaded = True
             revision.save()
+
+            for item in vulnerability_source:
+                function = Function.objects.get(name=item.function_name, file=item.function_signature)
+                function.is_vulnerability_source = True
+                function.save()
+
+            for item in vulnerability_sink:
+                function = Function.objects.get(name=item.function_name, file=item.function_signature)
+                function.is_vulnerability_sink = True
+                function.save()
 
         # TODO : REMOVE
         print()
