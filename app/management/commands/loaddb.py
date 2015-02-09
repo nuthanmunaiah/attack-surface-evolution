@@ -168,12 +168,12 @@ class Command(BaseCommand):
             revision.save()
 
             for item in vulnerability_source:
-                function = Function.objects.get(name=item.function_name, file=item.function_signature)
+                function = Function.objects.get(revision=revision, name=item.function_name, file=item.function_signature)
                 function.is_vulnerability_source = True
                 function.save()
 
             for item in vulnerability_sink:
-                function = Function.objects.get(name=item.function_name, file=item.function_signature)
+                function = Function.objects.get(revision=revision, name=item.function_name, file=item.function_signature)
                 function.is_vulnerability_sink = True
                 function.save()
 
