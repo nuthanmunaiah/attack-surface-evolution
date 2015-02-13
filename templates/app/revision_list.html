@@ -1,0 +1,41 @@
+{% extends "app/base.html" %}
+{% block title %}Revisions{% endblock %}
+{% block body-content %}
+    <h2>Revisions</h2>
+    {% if object_list %}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>
+                    Revision Number
+                </th>
+                <th>
+                    Num. of Functions
+                </th>
+                <th>
+                    Num. of Attack Surface Functions
+                </th>
+                <th>
+                    Num. of Entry Points
+                </th>
+                <th>
+                    Num. of Exit Points
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for revision in object_list %}
+                <tr>
+                    <td><a href="{% url "revision-detail" revision.pk %}">{{ revision.number }}</a></td>
+                    <td>{{ revision.num_functions }}</td>
+                    <td>{{ revision.num_attack_surface_functions }}</td>
+                    <td>{{ revision.num_entry_points }}</td>
+                    <td>{{ revision.num_exit_points }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <span>No revisions to show.</span>
+    {% endif %}
+{% endblock %}

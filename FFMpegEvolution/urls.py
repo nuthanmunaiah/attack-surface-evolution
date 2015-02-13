@@ -1,12 +1,9 @@
 from django.conf.urls import patterns, include, url
 
-from django.contrib import admin
-admin.autodiscover()
+from app.views import *
 
 urlpatterns = patterns('',
-    # Examples:
-    # url(r'^$', 'FFMpegEvolution.views.home', name='home'),
-    # url(r'^blog/', include('blog.urls')),
-
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^$', RevisionListView.as_view(), name='root'),
+    url(r'^revisions/$', RevisionListView.as_view(), name='revision-list'),
+    url(r'^revision/(?P<pk>\d+)/functions/$', FunctionListView.as_view(), name = 'revision-detail'),
 )

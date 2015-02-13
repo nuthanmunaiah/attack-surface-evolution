@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block meta_tags %}
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% endblock %}
+    <title>FFmpeg Evolution | {% block title %}Welcome{% endblock %}</title>
+
+    {% block stylesheets %}
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet"/>
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css" rel="stylesheet"/>
+    {% endblock %}
+    <style type="text/css">
+        @import url(http://fonts.googleapis.com/css?family=Open+Sans);
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        h2{
+            margin-bottom: 25px;
+        }
+    </style>
+    {% block javascript %}
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script type="text/javascript" src="//oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+        <script type="text/javascript" src="//oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <script type="text/javascript" src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.1.min.js"></script>
+        <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    {% endblock %}
+    {% block head %}{% endblock %}
+</head>
+<body>
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/">FFmpeg Evolution</a>
+        </div>
+        {% block navbar-top %}
+        {% endblock %}
+    </div>
+</nav>
+<div class="container" style="margin-top: 65px;">
+    {% block body-content %}
+    {% endblock %}
+</div>
+{% block tail-scripts %}
+{% endblock %}
+</body>
+</html>
