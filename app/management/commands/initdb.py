@@ -34,7 +34,7 @@ class Command(BaseCommand):
         self.map_cves_to_revisions()
 
     def load_revisions(self):
-        revisions_file = get_absolute_path('assets/data/revisions.txt')
+        revisions_file = get_absolute_path('assets/data/revisions.csv')
 
         with transaction.atomic():
             with open(revisions_file, 'r') as _revisions_file:
@@ -49,8 +49,8 @@ class Command(BaseCommand):
                         revision.save()
 
     def load_cves(self):
-        cve_files = [get_absolute_path('assets/data/cves_reported.txt'),
-                     get_absolute_path('assets/data/cves_non_ffmpeg.txt')]
+        cve_files = [get_absolute_path('assets/data/cves_reported.csv'),
+                     get_absolute_path('assets/data/cves_non_ffmpeg.csv')]
 
         with transaction.atomic():
             for cve_file in cve_files:
@@ -63,7 +63,7 @@ class Command(BaseCommand):
                         cve.save()
 
     def map_cves_to_revisions(self):
-        cves_fixed_file = get_absolute_path('assets/data/cves_fixed.txt')
+        cves_fixed_file = get_absolute_path('assets/data/cves_fixed.csv')
 
         fixed_cves = dict()
         with open(cves_fixed_file, 'r') as _cves_fixed_file:
