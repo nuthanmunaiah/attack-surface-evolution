@@ -1,9 +1,7 @@
 import os, app
 
-
 def get_absolute_path(dir_name):
     return os.path.join(app.__path__[0], dir_name)
-
 
 def get_version_number(string):
     major = 0
@@ -11,7 +9,7 @@ def get_version_number(string):
     build = 0
     match = constants.RE_REV_NUM.search(string)
     if not match:
-        raise InvalidVersion(version)
+        raise InvalidVersion(string)
     else:
         groups = match.groups()
         major = int(groups[0])

@@ -1,25 +1,35 @@
 import gitapi
 
+from app import constants
+
 
 class Repo(gitapi.Repo):
-    def git_patch(self, identifier, file=None, **kwargs):
-        cmds = ['log', '-n', '1', '-p', identifier]
+    @classmethod
+    def git_clone(cls, url, path, *args):
+        gitapi.Repo.command(None, 'clone', url, path, *args)
+        return Repo(path)
+
+    def git_patch(self, identifier, file=None):
+        cmds = ['log', '-1', '-p', identifier]
         if file: cmds += ['--', file]
-        if kwargs:
-            for key in kwargs:
-                cmds += [key, kwargs[key]]
         return self.git_command(*cmds)
 
-    def git_clean(self):
-        cmds = ['clean', '-f', '-d']
+    def git_diff_tree(self, identifier):
+        cmds = ['diff-tree', '--name-only', '-r', identifier, '--no-commit-id']
         return self.git_command(*cmds)
 
+    def get_files_changed(self, identifier):
+        return [line for line in self.git_diff_tree(identifier).split('\n') if line.strip('\n')]
 
-    def git_reset(self, source):
-        cmds = ['reset', source, '--hard']
-        return self.git_command(*cmds)
+    def get_functions_changed(self, identifier, file):
+        funcs = set()
 
+        patch = self.git_patch(identifier, file)
+        if 'commit %s' % identifier in patch:
+            for line in patch.split('\n'):
+                if line.startswith('@@'):
+                    match = constants.RE_FUNC_AFFECTED.search(line)
+                    if match:
+                        funcs.add(match.group(1))
 
-    def git_diff_tree(self, source):
-        cmds = ['diff-tree', '--name-only', '-r', source, '--no-commit-id']
-        return self.git_command(*cmds)
+        return list(funcs)

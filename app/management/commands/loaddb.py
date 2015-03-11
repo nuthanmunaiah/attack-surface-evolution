@@ -14,7 +14,7 @@ from app import constants
 from app import gitapi
 
 
-class Command(BaseCommand):
+class LoadDBCommand(BaseCommand):
     # TODO: Add help text to the options.
     option_list = BaseCommand.option_list + (
         make_option('-r', '--repository-path',
@@ -210,22 +210,23 @@ class Command(BaseCommand):
         repo = gitapi.Repo(self.repository_path)
         vuln_funcs = dict()
         for vuln_fix in vuln_fixes.exclude(commit_hash='NA'):
-            files_affected = repo.git_diff_tree(vuln_fix.commit_hash).split('\n')
-            files_affected = [fa for fa in files_affected if len(fa.strip('\n')) > 0]
-            for file_affected in files_affected:
-                file_name = os.path.basename(os.path.join(self.repository_path, file_affected))
+            files_changed = repo.get_files_changed(vuln_fix.commit_hash)
+            for file_changed in files_changed:
+                file_name = os.path.basename(os.path.join(self.repository_path, file_changed))
                 if file_name not in vuln_funcs:
                     vuln_funcs[file_name] = set()
-                for line in repo.git_patch(vuln_fix.commit_hash, file_affected).split('\n'):
-                    match = constants.RE_FUNC_AFFECTED.search(line)
-                    if match:
-                        vuln_funcs[file_name].add(match.group(1))
+                for function_changed in repo.get_functions_changed(vuln_fix.commit_hash, file=file_changed):
+                    vuln_funcs[file_name].add(function_changed)
 
         return vuln_funcs
 
     def get_function_sloc(self, revision):
         re_function = re.compile('^([^\(]*)')
         sloc_file = os.path.join(self.workspace_path, constants.FUNC_SLOC_FILE_PATTERN % revision.number)
+
+        if not os.path.exists(sloc_file):
+            raise CommandError('Function SLOC file not found at %s.' % self.workspace_path)
+
         function_sloc = dict()
         with open(sloc_file, 'r') as _sloc_file:
             reader = csv.reader(_sloc_file)
@@ -233,13 +234,9 @@ class Command(BaseCommand):
             for row in reader:
                 function = re_function.match(row[1]).group(1)
                 file = row[0][row[0].rfind('\\') + 1:]
-                function_sloc['%s@%s' % (function, file)] = row[3]
+                function_sloc['%s@%s' % (function, file)] = int(row[3])
 
         return function_sloc
-
-    def write(self, message, verbosity=1):
-        if verbosity >= self.verbosity:
-            self.stdout.write(str(message))
 
     def indicate_progress(self, percent, bar_length=50):
         sys.stdout.write("\r")

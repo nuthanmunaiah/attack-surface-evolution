@@ -6,10 +6,8 @@ from django.core.management.base import BaseCommand, CommandError
 from app import get_absolute_path, get_version_number
 from app.models import *
 
-REV_NUM_RE = re.compile('^(\d{1,2}).(\d{1,2}).(\d{1,2})$')
 
-
-class Command(BaseCommand):
+class InitDBCommand(BaseCommand):
     # TODO: Add help text to the options.
     option_list = BaseCommand.option_list + (
         make_option('-r', '--reset',
@@ -25,7 +23,6 @@ class Command(BaseCommand):
         self.reset = bool(options.get('reset'))
 
         if self.reset:
-            self.write('Reseting database')
             Revision.objects.all().delete()
             Cve.objects.all().delete()
 
@@ -45,7 +42,6 @@ class Command(BaseCommand):
                         revision.number = get_version_number(row[1])
                         revision.type = row[0]
                         revision.ref = row[1]
-                        revision.date = datetime.datetime.strptime(row[2], '%Y-%m-%d').date()
                         revision.save()
 
     def load_cves(self):
@@ -59,7 +55,8 @@ class Command(BaseCommand):
                     for row in reader:
                         cve = Cve()
                         cve.cve_id = row[0]
-                        cve.publish_dt = datetime.datetime.strptime(row[1], '%m/%d/%Y')
+                        cve.publish_dt = datetime.datetime.strptime(row[1],
+                            '%m/%d/%Y')
                         cve.save()
 
     def map_cves_to_revisions(self):
@@ -70,9 +67,13 @@ class Command(BaseCommand):
             reader = csv.reader(_cves_fixed_file)
             for row in reader:
                 if row[1] in fixed_cves:
-                    fixed_cves[row[1]].append({'revision': row[0], 'commit_hash': row[2]})
+                    fixed_cves[row[1]].append({
+                        'revision': row[0], 'commit_hash': row[2]
+                    })
                 else:
-                    fixed_cves[row[1]] = [{'revision': row[0], 'commit_hash': row[2]}]
+                    fixed_cves[row[1]] = [{
+                        'revision': row[0], 'commit_hash': row[2]
+                    }]
 
         with transaction.atomic():
             for cve in Cve.objects.all():
@@ -85,10 +86,8 @@ class Command(BaseCommand):
                             rev_num = get_version_number(cve_fix['revision'])
                             cve_revision = CveRevision()
                             cve_revision.cve = cve
-                            cve_revision.revision = Revision.objects.get(number=rev_num, type=constants.RT_TAG)
+                            cve_revision.revision = Revision.objects.get(
+                                number=rev_num, type=constants.RT_TAG
+                            )
                             cve_revision.commit_hash = cve_fix['commit_hash']
                             cve_revision.save()
-
-    def write(self, message, verbosity=1):
-        if verbosity >= self.verbosity:
-            self.stdout.write(str(message))
