@@ -1,0 +1,8 @@
+[run]
+source =
+	app.management
+omit =
+	app/management/commands/sandbox.py
+
+[report]
+	show_missing = True
