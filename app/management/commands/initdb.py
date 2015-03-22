@@ -7,7 +7,7 @@ from app import get_absolute_path, get_version_number
 from app.models import *
 
 
-class InitDBCommand(BaseCommand):
+class Command(BaseCommand):
     # TODO: Add help text to the options.
     option_list = BaseCommand.option_list + (
         make_option('-r', '--reset',

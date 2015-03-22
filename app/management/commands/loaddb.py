@@ -14,7 +14,7 @@ from app import constants
 from app import gitapi
 
 
-class LoadDBCommand(BaseCommand):
+class Command(BaseCommand):
     # TODO: Add help text to the options.
     option_list = BaseCommand.option_list + (
         make_option('-r', '--repository-path',

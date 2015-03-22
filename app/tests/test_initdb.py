@@ -3,13 +3,13 @@ import datetime
 from optparse import make_option
 from django.test import TestCase
 
-from ..models import *
-from ..management.commands import initdb
+from app.models import Revision, CveRevision, Cve
+from app.management.commands import initdb
 
 
-class InitDBCommandTestCase(TestCase):
+class CommandTestCase(TestCase):
     def setUp(self):
-        self.initdb_command = initdb.InitDBCommand()
+        self.command = initdb.Command()
 
         self.cves_count = {
             '2.5.0': 13, '2.4.4': 4, '2.4.2': 9, '2.3.5': 8,
@@ -95,7 +95,7 @@ class InitDBCommandTestCase(TestCase):
 
     def test_load_revisions(self):
         # Load
-        self.initdb_command.load_revisions()
+        self.command.load_revisions()
 
         # Test
         self.assertEqual(Revision.objects.filter(type='t').count(), 165)
@@ -104,16 +104,16 @@ class InitDBCommandTestCase(TestCase):
 
     def test_load_cves(self):
         # Load
-        self.initdb_command.load_cves()
+        self.command.load_cves()
 
         # Test
         self.assertEqual(Cve.objects.all().count(), 202)
 
     def test_map_cves_to_revisions(self):
         # Load
-        self.initdb_command.load_revisions()
-        self.initdb_command.load_cves()
-        self.initdb_command.map_cves_to_revisions()
+        self.command.load_revisions()
+        self.command.load_cves()
+        self.command.map_cves_to_revisions()
 
         # Test
         self.assertEqual(Cve.objects.filter(is_fixed=True).count(), 170)
