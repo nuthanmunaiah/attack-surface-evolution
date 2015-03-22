@@ -9,7 +9,7 @@ def get_version_number(string):
     build = 0
     match = constants.RE_REV_NUM.search(string)
     if not match:
-        raise InvalidVersion(string)
+        raise InvalidVersionError(string)
     else:
         groups = match.groups()
         major = int(groups[0])
@@ -19,7 +19,7 @@ def get_version_number(string):
     return '%d.%d.%d' % (major, minor, build)
 
 
-class InvalidVersion(Exception):
+class InvalidVersionError(Exception):
     def __init__(self, value):
         self.value = value
 

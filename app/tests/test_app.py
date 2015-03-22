@@ -1,6 +1,7 @@
 from django.test import TestCase
 
-from app import *
+from app import get_version_number
+from app import InvalidVersionError
 
 
 class AppTestCase(TestCase):
@@ -11,4 +12,4 @@ class AppTestCase(TestCase):
         self.assertEqual(get_version_number('1.00.1'), '1.0.1')
         self.assertEqual(get_version_number('00.01.00'), '0.1.0')
         self.assertEqual(get_version_number('0.1.00'), '0.1.0')
-        self.assertRaises(InvalidVersion, get_version_number, 'a.b.c')
+        self.assertRaises(InvalidVersionError, get_version_number, 'a.b.c')
