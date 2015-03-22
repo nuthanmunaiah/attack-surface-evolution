@@ -1,6 +1,8 @@
+import re
+
 import gitapi
 
-from app import constants
+RE_FUNC_CHANGED = re.compile('(\w*)(?:\s?\()')
 
 
 class Repo(gitapi.Repo):
@@ -28,7 +30,7 @@ class Repo(gitapi.Repo):
         if 'commit %s' % identifier in patch:
             for line in patch.split('\n'):
                 if line.startswith('@@'):
-                    match = constants.RE_FUNC_AFFECTED.search(line)
+                    match = RE_FUNC_CHANGED.search(line)
                     if match:
                         funcs.add(match.group(1))
 
