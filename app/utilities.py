@@ -31,7 +31,7 @@ def process(revision, call_graph, vuln_funcs, func_sloc):
 
 	with transaction.atomic():
 		# Process entry points
-		for node in call_graph.entry_points
+                for node in call_graph.entry_points:
 			function = process_node(node)
 
 			r = Reachability()
@@ -57,7 +57,7 @@ def process(revision, call_graph, vuln_funcs, func_sloc):
 			function.save()
 
 		# Process exit points
-		for node in call_graph.entry_points
+		for node in call_graph.entry_points:
 			function = process_node(node)
 
 			expr = Reachability()
