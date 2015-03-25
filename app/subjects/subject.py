@@ -35,7 +35,7 @@ class Subject(object):
 		if self.git_reference:
 			self.repo.git_checkout(self.git_reference)
 
-	def build(self):
+	def configure(self):
 		raise NotImplementedError
 
 	def test(self):
@@ -51,7 +51,7 @@ class Subject(object):
 		if not (self.__cflow_file_exists__ and self.__gprof_file_exists__):
 			self.clone()
 			self.checkout()
-			self.build()
+			self.configure()
 			self.test()
 
 			# cflow and gprof are independent of one another, so run them in 
@@ -113,14 +113,19 @@ class Subject(object):
 	def __clone_exists__(self):
 		return os.path.exists(self.__source_dir__)
 
-	def __execute__(self, command, cwd=None, stdout=None, stderr=None):
+	def __execute__(self, command, cwd=None, stdout=None, 
+		stderr=subprocess.DEVNULL):
+		
+		# TODO: Remove
+		print(command)
+
 		if not cwd:
 			cwd = self.__source_dir__
 
-		# TODO: Change stderr to subprocess.DEVNULL or route it to a file
 		process = subprocess.Popen(command, stdout=stdout, stderr=stderr, 
 			cwd=cwd, shell=True)
-		return process.communicate()
+
+		return process.wait()
 
 	def __clean_up__(self):
 		raise NotImplementedError

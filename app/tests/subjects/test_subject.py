@@ -40,7 +40,7 @@ class SubjectTestCase(TestCase):
 		self.assertFalse(subject.__gprof_file_exists__)
 		self.assertFalse(subject.__clone_exists__)
 
-		self.assertRaises(NotImplementedError, subject.build)
+		self.assertRaises(NotImplementedError, subject.configure)
 		self.assertRaises(NotImplementedError, subject.test)
 		self.assertRaises(NotImplementedError, subject.cflow)
 		self.assertRaises(NotImplementedError, subject.gprof)
