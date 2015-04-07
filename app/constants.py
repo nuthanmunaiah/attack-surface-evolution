@@ -1,15 +1,11 @@
 import re
 
 RT_EN = 'en'
-RT_SHEN_ONE = 'shen_one'
-RT_SHEN_TWO = 'shen_two'
 RT_EX = 'ex'
 
 REACHABILITY_TYPE = (
     (RT_EN, 'Entry Point Reachability'),
     (RT_EX, 'Exit Point Reachability'),
-    (RT_SHEN_ONE, 'Shallow Entry Point Reachability (Alpha = 1)'),
-    (RT_SHEN_TWO, 'Shallow Entry Point Reachability (Alpha = 2)'),
 )
 
 RT_BRANCH = 'b'
