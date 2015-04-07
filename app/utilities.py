@@ -1,82 +1,158 @@
+import datetime
+import csv
+import os
 import threading
-from django.conf import settings
-from django.db import connection
+
 from queue import Queue
 
-from app import constants
-from app.models import Revision
-from app.subjects.ffmpeg import FFmpeg
+from django.conf import settings
+from django.db import connection, transaction
 
-def load(revision):
+from app import constants, helpers
+from app.models import Revision, Cve, CveRevision, Function
+
+def load_revisions():
+	revisions_file = helpers.get_absolute_path(
+		'app/assets/data/revisions.csv'
+	)
+
+	with transaction.atomic():
+		with open(revisions_file, 'r') as _revisions_file:
+			reader = csv.reader(_revisions_file)
+			for row in reader:
+				if not Revision.objects.filter(number=row[0]).exists():
+					revision = Revision()
+					revision.number = ('%d.%d.%d' % 
+						helpers.get_version_components(row[1]))
+					revision.type = row[0]
+					revision.ref = row[1]
+					revision.save()
+
+def load_cves():
+	cve_files = [
+		helpers.get_absolute_path('app/assets/data/cves_reported.csv'),
+		helpers.get_absolute_path('app/assets/data/cves_non_ffmpeg.csv')
+	]
+
+	with transaction.atomic():
+		for cve_file in cve_files:
+			with open(cve_file, 'r') as _cve_file:
+				reader = csv.reader(_cve_file)
+				for row in reader:
+					cve = Cve()
+					cve.cve_id = row[0]
+					cve.publish_dt = datetime.datetime.strptime(row[1],
+						'%m/%d/%Y')
+					cve.save()
+
+def map_cve_to_revision():
+	cves_fixed_file = helpers.get_absolute_path(
+		'app/assets/data/cves_fixed.csv'
+	)
+
+	fixed_cves = dict()
+	with open(cves_fixed_file, 'r') as _cves_fixed_file:
+		reader = csv.reader(_cves_fixed_file)
+		for row in reader:
+			if row[1] in fixed_cves:
+				fixed_cves[row[1]].append({
+					'revision': row[0], 'commit_hash': row[2]
+				})
+			else:
+				fixed_cves[row[1]] = [{
+					'revision': row[0], 'commit_hash': row[2]
+				}]
+
+	with transaction.atomic():
+		for cve in Cve.objects.all():
+			if cve.cve_id in fixed_cves:
+				with transaction.atomic():
+					cve.is_fixed = True
+					cve.save()
+
+					for cve_fix in fixed_cves[cve.cve_id]:
+						rev_num = cve_fix['revision']
+						cve_revision = CveRevision()
+						cve_revision.cve = cve
+						cve_revision.revision = Revision.objects.get(
+							number=rev_num, type=constants.RT_TAG
+						)
+						cve_revision.commit_hash = cve_fix['commit_hash']
+						cve_revision.save()
+
+def load(revision, subject_cls):
 	# TODO: Revisit call to connection.close()
 	connection.close()
 
-	ffmpeg = FFmpeg(settings.NUM_CORES, revision.ref)
-	ffmpeg.prepare()
+	subject = subject_cls(settings.PARALLEL['JOBS'], revision.ref)
+	subject.prepare()
 	
-	# TODO: Parallelize get_call_graph, get_vulnerable_functions, and
-	# 	get_function_sloc
-	call_graph = ffmpeg.get_call_graph()
-	vuln_funcs = get_vulnerable_functions(revision)
-	# TODO: Uncomment when a sustainable approach to managing function SLOC
-	# 	computation is devised
-	# func_sloc = get_function_sloc(revision)
-	func_sloc = None
-	
-	process(revision, call_graph, vuln_funcs, func_sloc)
+	# load_call_graph, load_vulnerable_functions, and load_function_sloc are 
+	# 	independent of one another, so run them in parallel
+	call_graph_thread = threading.Thread(
+		target=subject.load_call_graph, 
+		name='subject.load_call_graph'
+	)
+	vulnerable_functions_thread = threading.Thread(
+		target=subject.load_vulnerable_functions, 
+		name='subject.load_vulnerable_functions', 
+		args=(list(CveRevision.objects.filter(revision=revision)),)
+	)
+	function_sloc_thread = threading.Thread(
+		target=subject.load_function_sloc, 
+		name='subject.load_function_sloc'
+	)
 
-def process(revision, call_graph, vuln_funcs, func_sloc):
+	call_graph_thread.start()
+	vulnerable_functions_thread.start()
+	function_sloc_thread.start()
+
+	call_graph_thread.join()
+	vulnerable_functions_thread.join()
+	function_sloc_thread.join()
+
+	process_revision(revision, subject)
+
+def process_revision(revision, subject):
 	vulnerability_source = set()
 	vulnerability_sink = set()
 
 	with transaction.atomic():
 		# Process entry points
-                for node in call_graph.entry_points:
-			function = process_node(node)
+		for node in subject.call_graph.entry_points:
+			function = process_node(node, revision, subject)
 
 			r = Reachability()
 			r.type = constants.RT_EN
 			r.function = function
-			r.value = call_graph.get_entry_point_reachability(node)
-			r.save()
-
-			# TODO: Consider removing Shallow Reachability
-			r = Reachability()
-			r.type = constants.RT_SHEN_ONE
-			r.function = function
-			r.value = call_graph.get_shallow_entry_point_reachability(node)
-			r.save()
-			
-			# TODO: Consider removing Shallow Reachability
-			r = Reachability()
-			r.type = constants.RT_SHEN_TWO
-			r.function = function
-			r.value = call_graph.get_shallow_entry_point_reachability(node, depth=2)
+			r.value = subject.call_graph.get_entry_point_reachability(node)
 			r.save()
 
 			function.save()
 
 		# Process exit points
-		for node in call_graph.entry_points:
-			function = process_node(node)
+		for node in subject.call_graph.entry_points:
+			function = process_node(node, revision, subject)
 
 			expr = Reachability()
 			expr.type = constants.RT_EX
 			expr.function = function
-			expr.value = call_graph.get_exit_point_reachability(node)
+			expr.value = subject.call_graph.get_exit_point_reachability(node)
 			expr.save()
 
 			function.save()
 
-		for node in call_graph.nodes:
-			function = process(node, call_graph)
+		# Process all other nodes
+		for node in subject.call_graph.nodes:
+			function = process_node(node, revision, subject)
 			function.save()
 			
-		revision.num_entry_points = len(call_graph.entry_points)
-		revision.num_exit_points = len(call_graph.exit_points)
-		revision.num_functions = len(call_graph.nodes)
+		revision.num_entry_points = len(subject.call_graph.entry_points)
+		revision.num_exit_points = len(subject.call_graph.exit_points)
+		revision.num_functions = len(subject.call_graph.nodes)
 		revision.num_attack_surface_functions = len(
-			call_graph.attack_surface_graph_nodes)
+			subject.call_graph.attack_surface_graph_nodes
+		)
 		revision.is_loaded = True
 		revision.save()
 
@@ -92,29 +168,23 @@ def process(revision, call_graph, vuln_funcs, func_sloc):
 			function.is_vulnerability_sink = True
 			function.save()
 
-def process(node, call_graph):
+def process_node(node, revision, subject):
 	function = Function()
 
 	function.revision = revision
 	function.name = node.function_name
 	function.file = node.function_signature
-	function.is_entry = node in call_graph.entry_points
-	function.is_exit = node in call_graph.exit_points
-	function.is_vulnerable = \
-		(
-			node.function_signature in vuln_funcs and
-			node.function_name in vuln_funcs[node.function_signature]
-		)
+	function.is_entry = node in subject.call_graph.entry_points
+	function.is_exit = node in subject.call_graph.exit_points
+	function.is_vulnerable = subject.is_function_vulnerable(node.function_name,
+		node.function_signature)
+	function.sloc = subject.get_function_sloc(node.function_name, 
+		node.function_signature)
 
-	# # Fully qualified name of the node in the form function_name@file_name
-	# fq_name = '%s@%s' % (node.function_name, node.function_signature)
-	# if fq_name in func_sloc:
-	# 	function.sloc = func_sloc[fq_name]
-
-	if node in call_graph.attack_surface_graph_nodes:
+	if node in subject.call_graph.attack_surface_graph_nodes:
 		function.is_connected_to_attack_surface = True
 
-		metrics = call_graph.get_entry_surface_metrics(node)
+		metrics = subject.call_graph.get_entry_surface_metrics(node)
 		function.proximity_to_entry = metrics['proximity']
 		function.surface_coupling_with_entry = metrics['surface_coupling']
 
@@ -122,7 +192,7 @@ def process(node, call_graph):
 			for point in metrics['points']:
 				vulnerability_source.add(point)
 
-		metrics = call_graph.get_exit_surface_metrics(node)
+		metrics = subject.call_graph.get_exit_surface_metrics(node)
 		function.proximity_to_exit = metrics['proximity']
 		function.surface_coupling_with_exit = metrics['surface_coupling']
 
@@ -131,63 +201,3 @@ def process(node, call_graph):
 				vulnerability_sink.add(point)
 
 	return function
-
-def get_vulnerable_functions(revision, subject):
-	cve_revisions = None
-	if revision.type == constants.RT_TAG:
-		cve_revisions = CveRevision.objects.filter(revision=revision)
-	elif revision.type == constants.RT_BRANCH:
-		(major, minor, build) = get_version_components(revision.number)
-		
-		cve_revisions = CveRevision.objects.filter(
-			revision__number__startswith='%d.%d' % (major, minor)
-		)
-
-	vuln_funcs = dict()
-	for cve_revision in cve_revisions:
-		for file_ in subject.repo.get_files_changed(cve_revision.commit_hash):
-
-			# TODO: Update to work with file paths instead of file names
-			file_name = os.path.basename(subject.get_file_path(file_))
-			
-			if file_name not in vuln_funcs:
-				vuln_funcs[file_name] = set()
-			for function in subject.repo.get_functions_changed(
-				cve_revision.commit_hash, file=file_):
-
-				vuln_funcs[file_name].add(function)
-
-	return vuln_funcs
-
-def get_function_sloc(revision):
-	re_function = re.compile('^([^\(]*)')
-	sloc_file = os.path.join(self.workspace_path, constants.FUNC_SLOC_FILE_PATTERN % revision.number)
-
-	if not os.path.exists(sloc_file):
-		raise CommandError('Function SLOC file not found at %s.' % self.workspace_path)
-
-	function_sloc = dict()
-	with open(sloc_file, 'r') as _sloc_file:
-		reader = csv.reader(_sloc_file)
-		next(reader)  # Skipping the header
-		for row in reader:
-			function = re_function.match(row[1]).group(1)
-			file = row[0][row[0].rfind('\\') + 1:]
-			function_sloc['%s@%s' % (function, file)] = int(row[3])
-
-	return function_sloc
-
-def get_version_components(string):
-	major = 0
-	minor = 0
-	build = 0
-	match = constants.RE_REV_NUM.search(string)
-	if not match:
-		raise InvalidVersion(string)
-	else:
-		groups = match.groups()
-		major = int(groups[0])
-		if groups[1]: minor = int(groups[1])
-		if groups[2]: build = int(groups[2])
-
-	return (major, minor, build)
