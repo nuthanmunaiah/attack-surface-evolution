@@ -3,62 +3,60 @@ import subprocess
 from django.test import TestCase
 from hashlib import md5
 
-from app.subjects import SubjectNotPreparedError
 from app.subjects.subject import Subject
 from app.subjects.ffmpeg import FFmpeg
 from attacksurfacemeter.call_graph import CallGraph
 
 
-class SubjectTestCase(TestCase):
+class FFmpegTestCase(TestCase):
 	def setUp(self):
-		pass
+		self.ffmpeg = FFmpeg(num_jobs=2)
+
+		self.ffmpeg.initialize_source()
 
 	def test_ffmpeg(self):
-		ffmpeg = FFmpeg(num_cores=4)
+		self.assertEqual('FFmpeg', self.ffmpeg.name)
+		self.assertEqual('https://github.com/FFmpeg/FFmpeg.git', 
+			self.ffmpeg.clone_url)
+		self.assertEqual(2, self.ffmpeg.num_jobs)
+		self.assertIsInstance(self.ffmpeg, FFmpeg)
+		self.assertIsInstance(self.ffmpeg, Subject)
 
-		self.assertEqual(4, ffmpeg.num_cores)
-		self.assertIsInstance(ffmpeg, FFmpeg)
-		self.assertIsInstance(ffmpeg, Subject)
+	def test_prepare(self):
+		self.ffmpeg.prepare()
 
-		ffmpeg.prepare()
-		
-		# Test: Was clone successful?
+		# Test: Subject.configure()
+		self.assertTrue(os.path.exists(
+			os.path.join(self.ffmpeg.__source_dir__, 'config.log')
+		))
+
+		# Test: Subject.test()
 		self.assertTrue(
-			os.path.exists(os.path.join(ffmpeg.__source_dir__, '.git'))
+			os.path.exists(
+				os.path.join(self.ffmpeg.__source_dir__, 'ffmpeg_g')
+			)
+		)
+		self.assertTrue(
+			os.path.exists(
+				os.path.join(self.ffmpeg.__source_dir__, 'gmon.out')
+			)
 		)
 
-		# Test: Was checkout successful?
-		process = subprocess.Popen(
-			['git','branch'], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-			cwd=ffmpeg.__source_dir__)
-		(out, err) = process.communicate()
-
-		self.assertEqual('* master\n', out.decode())
-		
-		# Test: Was build successful?
+		# Test: Subject.cflow()
 		self.assertTrue(
-			os.path.exists(os.path.join(ffmpeg.__source_dir__, 'ffmpeg_g'))
+			os.path.exists(self.ffmpeg.cflow_file_path)
 		)
 
-		# Test: Was test successful?
+		# Test: Subject.gprof()
 		self.assertTrue(
-			os.path.exists(os.path.join(ffmpeg.__source_dir__, 'gmon.out'))
+			os.path.exists(self.ffmpeg.gprof_file_path)
 		)
 
-		# Test: Was cflow successful?
-		self.assertTrue(
-			os.path.exists(ffmpeg.cflow_file_path)
-		)
-		
-		# Test: Was gprof successful?
-		self.assertTrue(
-			os.path.exists(ffmpeg.gprof_file_path)
-		)
-
-		self.assertTrue(ffmpeg.prepared)
-
-		call_graph = ffmpeg.get_call_graph()
+		# Test: Subject.get_call_graph()
+		call_graph = self.ffmpeg.get_call_graph()
 		self.assertIsInstance(call_graph, CallGraph)
+
+		self.assertTrue(self.ffmpeg.prepared)
 
 	def tearDown(self):
 		pass

@@ -4,25 +4,34 @@ from app.subjects import subject
 
 
 class FFmpeg(subject.Subject):
-	def __init__(self, num_cores, git_reference=None, scratch_root='/tmp'):
+	def __init__(self, num_jobs=1, git_reference=None, scratch_root='/tmp'):
 		name = 'FFmpeg'
 		clone_url = 'https://github.com/FFmpeg/FFmpeg.git'
-		super().__init__(name, clone_url, git_reference, scratch_root)
+		sloc_folder_url = (
+			'https://5751f28e22fbde2d8ba3f9b75936e0767c761c6a.'
+			'googledrive.com/host/0B1eWsh8KZjRrfjg0Z1VkcU96U2h'
+			'Qal9scHM3NzVmYTk2WVhiQzQtdGFpNWc5c0VzbUJFTE0/FFmpeg/SLOC/'
+		)
 
-		# TODO: Consider removing
-		self.num_cores = num_cores
+		super().__init__(name, clone_url, git_reference, sloc_folder_url, 
+			scratch_root)
+
+		self.num_jobs = num_jobs
 
 	def configure(self):
-		cmd = ('./configure --samples=fate-suite/ --extra-cflags=\'-pg\''
-			' --extra-ldflags=\'-pg\'')
-		self.__execute__(cmd, stdout=subprocess.DEVNULL)
+		cmd = ('./configure --samples=fate-suite/ --extra-cflags=\'-g -pg\''
+			' --extra-ldflags=\'-g -pg\'')
+		return self.__execute__(cmd)
 
 	def test(self):
-		cmd = 'make -j %d fate-rsync' % self.num_cores
-		self.__execute__(cmd, stdout=subprocess.DEVNULL)
+		cmd = 'make -j %d fate-rsync' % self.num_jobs
+		returncode = self.__execute__(cmd)
 
-		cmd = 'make  -j %d fate' % self.num_cores
-		self.__execute__(cmd, stdout=subprocess.DEVNULL)
+		if returncode == 0:
+			cmd = 'make -j %d fate' % self.num_jobs
+			returncode = self.__execute__(cmd)
+
+		return returncode
 
 	def cflow(self):
 		cmd = ('cflow -b -r '
