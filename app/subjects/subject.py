@@ -8,8 +8,8 @@ from urllib import parse
 
 import requests
 from attacksurfacemeter.call_graph import CallGraph
-from loaders.cflow_loader import CflowLoader
-from loaders.gprof_loader import GprofLoader
+from attacksurfacemeter.loaders.cflow_loader import CflowLoader
+from attacksurfacemeter.loaders.gprof_loader import GprofLoader
 from app import errors, helpers
 from app.gitapi import Repo
 
@@ -141,8 +141,6 @@ class Subject(object):
 						commit_hash, file=file_):
 
 						self.vulnerable_functions[file_path].add(function)
-
-			return self.vulnerable_functions
 
 	def is_function_vulnerable(self, name, in_file):
 		if in_file in self.vulnerable_functions:
