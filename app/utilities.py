@@ -7,9 +7,10 @@ from queue import Queue
 
 from django.conf import settings
 from django.db import connection, transaction
+from joblib import Parallel, delayed
 
 from app import constants, helpers
-from app.models import Revision, Cve, CveRevision, Function
+from app.models import Revision, Cve, CveRevision, Function, Reachability
 
 def load_revisions():
 	revisions_file = helpers.get_absolute_path(
@@ -85,8 +86,9 @@ def load(revision, subject_cls):
 	connection.close()
 
 	subject = subject_cls(settings.PARALLEL['JOBS'], revision.ref)
+	subject.initialize()
 	subject.prepare()
-	
+
 	# load_call_graph, load_vulnerable_functions, and load_function_sloc are 
 	# 	independent of one another, so run them in parallel
 	call_graph_thread = threading.Thread(
@@ -96,7 +98,7 @@ def load(revision, subject_cls):
 	vulnerable_functions_thread = threading.Thread(
 		target=subject.load_vulnerable_functions, 
 		name='subject.load_vulnerable_functions', 
-		args=(list(CveRevision.objects.filter(revision=revision)),)
+		args=(get_commit_hashes(revision),)
 	)
 	function_sloc_thread = threading.Thread(
 		target=subject.load_function_sloc, 
@@ -118,35 +120,35 @@ def process_revision(revision, subject):
 	vulnerability_sink = set()
 
 	with transaction.atomic():
-		# Process entry points
-		for node in subject.call_graph.entry_points:
-			function = process_node(node, revision, subject)
+		# TODO: Evaluate the Global Interpreter Lock (GIL) phenemenon
+		results = Parallel(
+			n_jobs=settings.PARALLEL['THREADS'], 
+			backend='threading'
+		)(
+			delayed(process_node)(node, revision, subject)
+				for node in subject.call_graph.nodes
+		)
 
-			r = Reachability()
-			r.type = constants.RT_EN
-			r.function = function
-			r.value = subject.call_graph.get_entry_point_reachability(node)
-			r.save()
-
+		for (node, function, vsource, vsink) in results:
 			function.save()
 
-		# Process exit points
-		for node in subject.call_graph.entry_points:
-			function = process_node(node, revision, subject)
+			reachability = None
+			if function.is_entry:
+				reachability = get_reachability(node, function, 
+					constants.RT_EN, subject)
+			elif function.is_exit:
+				reachability = get_reachability(node, function, 
+					constants.RT_EX, subject)
 
-			expr = Reachability()
-			expr.type = constants.RT_EX
-			expr.function = function
-			expr.value = subject.call_graph.get_exit_point_reachability(node)
-			expr.save()
+			if reachability:
+				reachability.save()
 
-			function.save()
+			for item in vsource:
+				vulnerability_source.add(item)
 
-		# Process all other nodes
-		for node in subject.call_graph.nodes:
-			function = process_node(node, revision, subject)
-			function.save()
-			
+			for item in vsink:
+				vulnerability_sink.add(item)
+
 		revision.num_entry_points = len(subject.call_graph.entry_points)
 		revision.num_exit_points = len(subject.call_graph.exit_points)
 		revision.num_functions = len(subject.call_graph.nodes)
@@ -169,17 +171,24 @@ def process_revision(revision, subject):
 			function.save()
 
 def process_node(node, revision, subject):
+	vsource = set()
+	vsink = set()
+
 	function = Function()
 
-	function.revision = revision
 	function.name = node.function_name
 	function.file = node.function_signature
+	function.revision = revision
 	function.is_entry = node in subject.call_graph.entry_points
 	function.is_exit = node in subject.call_graph.exit_points
-	function.is_vulnerable = subject.is_function_vulnerable(node.function_name,
-		node.function_signature)
-	function.sloc = subject.get_function_sloc(node.function_name, 
-		node.function_signature)
+	function.is_vulnerable = subject.is_function_vulnerable(
+		node.function_name,
+		node.function_signature
+	)
+	function.sloc = subject.get_function_sloc(
+		node.function_name, 
+		node.function_signature
+	)
 
 	if node in subject.call_graph.attack_surface_graph_nodes:
 		function.is_connected_to_attack_surface = True
@@ -190,7 +199,7 @@ def process_node(node, revision, subject):
 
 		if function.is_vulnerable and metrics['points']:
 			for point in metrics['points']:
-				vulnerability_source.add(point)
+				vsource.add(point)
 
 		metrics = subject.call_graph.get_exit_surface_metrics(node)
 		function.proximity_to_exit = metrics['proximity']
@@ -198,6 +207,40 @@ def process_node(node, revision, subject):
 
 		if function.is_vulnerable and metrics['points']:
 			for point in metrics['points']:
-				vulnerability_sink.add(point)
+				vsink.add(point)
 
-	return function
+	# TODO: Review returning node
+	return (node, function, vsource, vsink)
+
+def get_reachability(node, function, type_, subject):
+	reachability = Reachability()
+	reachability.type = type_
+	reachability.function = function
+	if type_ == constants.RT_EN:
+		reachability.value = subject.call_graph.get_entry_point_reachability(
+			node
+		)
+	elif type_ == constants.RT_EX:
+		reachability.value = subject.call_graph.get_exit_point_reachability(
+			node
+		)
+	
+	return reachability
+
+def get_commit_hashes(revision):
+	commit_hashes = None
+	if revision.type == constants.RT_TAG:
+		queryset = CveRevision.objects.filter(revision=revision)
+	elif revision.type == constants.RT_BRANCH:
+		version_components = helpers.get_version_components(revision.number)
+		queryset = CveRevision.objects.filter(
+			revision__number__startswith='%d.%d' % (
+				version_components[0], version_components[1]
+			)
+		)
+
+	commit_hashes = [
+		item.commit_hash for item in queryset if item.commit_hash != 'NA'
+	]
+
+	return commit_hashes
