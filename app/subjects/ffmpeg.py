@@ -38,10 +38,10 @@ class FFmpeg(subject.Subject):
 			'`find -name "*.c" -or -name "*.h" | grep -vwE "(tests|doc)"`')
 
 		with open(self.cflow_file_path, 'w+') as _cflow_file:
-			self.__execute__(cmd, stdout=_cflow_file)
+			return self.__execute__(cmd, stdout=_cflow_file)
 
 	def gprof(self):
-		cmd = 'gprof -q -b -l -c -z ffmpeg_g'
+		cmd = 'gprof -q -b -l -c -z -L ffmpeg_g'
 
 		with open(self.gprof_file_path, 'w+') as _gprof_file:
-			self.__execute__(cmd, stdout=_gprof_file)
+			return self.__execute__(cmd, stdout=_gprof_file)
