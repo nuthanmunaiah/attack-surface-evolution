@@ -85,7 +85,7 @@ def load(revision, subject_cls):
 	# TODO: Revisit call to connection.close()
 	connection.close()
 
-	subject = subject_cls(settings.PARALLEL['JOBS'], revision.ref)
+	subject = subject_cls(settings.PARALLEL['PROCESSES'], revision.ref)
 	subject.initialize()
 	subject.prepare()
 
