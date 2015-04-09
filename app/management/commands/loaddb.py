@@ -8,10 +8,11 @@ from app.utilities import load
 
 
 class Command(BaseCommand):
-    def handle(self, *args, **options):
-        revisions = Revision.objects.filter(type='b')
+	def handle(self, *args, **options):
+		# Version 0.5.0 is being excluded because it does not support FATE
+		revisions = Revision.objects.filter(type='b').exclude(number='0.5.0')
 
-        num_processes = min(settings.PARALLEL['PROCESSES'], revisions.count())
-        
-        with Pool(num_processes) as pool:
-            pool.starmap(load, [(revision, FFmpeg) for revision in revisions])
+		num_processes = min(settings.PARALLEL['PROCESSES'], revisions.count())
+		
+		with Pool(num_processes) as pool:
+			pool.starmap(load, [(revision, FFmpeg) for revision in revisions])
