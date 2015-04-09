@@ -45,3 +45,22 @@ class FFmpeg(subject.Subject):
 
 		with open(self.gprof_file_path, 'w+') as _gprof_file:
 			return self.__execute__(cmd, stdout=_gprof_file)
+
+		# gprof's -L is printing absolute path instead of relative path. 
+		#	Fixing the paths used sed.
+		# Examples:
+		#	/home/rady/ffmpeg/libavcodec/utils.c     > ./libavcodec/utils.c
+		#	/home/rady/ffmpeg/./libavutil/internal.h > ./libavutil/internal.h
+
+		self.__execute__(
+			"sed -i 's;{0}/\.;.;g' {1}".format(
+				self.__source_dir__,
+				self.gprof_file_path
+			)
+		)
+		self.__execute__(
+			"sed -i 's;{0};.;g' {1}".format(
+				self.__source_dir__,
+				self.gprof_file_path
+			)
+		)
