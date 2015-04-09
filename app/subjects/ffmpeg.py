@@ -53,14 +53,14 @@ class FFmpeg(subject.Subject):
 		#	/home/rady/ffmpeg/./libavutil/internal.h > ./libavutil/internal.h
 
 		self.__execute__(
-			"sed -i 's;{0}/\.;.;g' {1}".format(
-				self.__source_dir__,
+			"sed -i 's;{0}\/\.;.;g' {1}".format(
+				self.__source_dir__.replace('/', '\/'),
 				self.gprof_file_path
 			)
 		)
 		self.__execute__(
 			"sed -i 's;{0};.;g' {1}".format(
-				self.__source_dir__,
+				self.__source_dir__.replace('/', '\/'),
 				self.gprof_file_path
 			)
 		)
