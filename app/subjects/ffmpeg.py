@@ -24,9 +24,10 @@ class FFmpeg(subject.Subject):
 		return self.__execute__(cmd)
 
 	def test(self):
-		cmd = 'make -j %d fate-rsync' % self.num_jobs
-		returncode = self.__execute__(cmd)
+		# cmd = 'make -j %d fate-rsync' % self.num_jobs
+		# returncode = self.__execute__(cmd)
 
+		returncode = 0
 		if returncode == 0:
 			cmd = 'make -j %d fate' % self.num_jobs
 			returncode = self.__execute__(cmd)
@@ -44,7 +45,7 @@ class FFmpeg(subject.Subject):
 		cmd = 'gprof -q -b -l -c -z -L ffmpeg_g'
 
 		with open(self.gprof_file_path, 'w+') as _gprof_file:
-			return self.__execute__(cmd, stdout=_gprof_file)
+			returncode = self.__execute__(cmd, stdout=_gprof_file)
 
 		# gprof's -L is printing absolute path instead of relative path. 
 		#	Fixing the paths used sed.
@@ -64,3 +65,5 @@ class FFmpeg(subject.Subject):
 				self.gprof_file_path
 			)
 		)
+
+		return returncode
