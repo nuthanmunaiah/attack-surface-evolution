@@ -118,7 +118,7 @@ class Subject(object):
 				next(reader)  # Skipping the header
 				for row in reader:
 					func = re_function.match(row[1]).group(1)
-					file_ = row[0][row[0].rfind('\\') + 1:]
+					file_ = row[0]
 					self.function_sloc['%s@%s' % (func, file_)] = int(row[3])
 
 	def get_function_sloc(self, name, in_file):
