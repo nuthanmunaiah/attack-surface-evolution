@@ -28,9 +28,6 @@
 # Explicitly state you are a free user
 #SBATCH --qos=free
 
-# Set working directory to present working directory
-#SBATCH --workdir=`pwd`
-
 #
 # Your job script goes below this line.
 #
