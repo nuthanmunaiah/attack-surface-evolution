@@ -24,8 +24,8 @@ class FFmpeg(subject.Subject):
 		return self.__execute__(cmd)
 
 	def test(self):
-		# cmd = 'make -j %d fate-rsync' % self.num_jobs
-		# returncode = self.__execute__(cmd)
+		cmd = 'make -j %d fate-rsync' % self.num_jobs
+		returncode = self.__execute__(cmd)
 
 		returncode = 0
 		if returncode == 0:
