@@ -35,7 +35,7 @@ class Function(models.Model):
     proximity_to_exit = models.FloatField(default=None, null=True)
     surface_coupling_with_entry = models.PositiveIntegerField(default=None, null=True)
     surface_coupling_with_exit = models.PositiveIntegerField(default=None, null=True)
-    attack_surface_betweenness = models.FloatField(default=None, null=True)
+    page_rank = models.FloatField(default=None, null=True)
 
     class Meta:
         app_label = 'app'
