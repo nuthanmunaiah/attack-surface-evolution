@@ -189,8 +189,9 @@ def process_node(node, revision, subject):
 		node.function_name, 
 		node.function_signature
 	)
-	function.page_rank = subject.call_graph.
-		call_graph.node[node]['page_rank']
+	function.page_rank = subject.call_graph.call_graph.node[node][
+		'page_rank'
+	]
 
 	if node in subject.call_graph.attack_surface_graph_nodes:
 		function.is_connected_to_attack_surface = True
