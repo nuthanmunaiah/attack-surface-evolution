@@ -10,15 +10,14 @@ from attacksurfacemeter.call_graph import CallGraph
 
 class FFmpegTestCase(TestCase):
 	def setUp(self):
-		self.ffmpeg = FFmpeg(num_jobs=2)
-
-		self.ffmpeg.initialize_source()
+		self.ffmpeg = FFmpeg(num_jobs=10)
+		self.ffmpeg.initialize()
 
 	def test_ffmpeg(self):
 		self.assertEqual('FFmpeg', self.ffmpeg.name)
 		self.assertEqual('https://github.com/FFmpeg/FFmpeg.git', 
 			self.ffmpeg.clone_url)
-		self.assertEqual(2, self.ffmpeg.num_jobs)
+		self.assertEqual(10, self.ffmpeg.num_jobs)
 		self.assertIsInstance(self.ffmpeg, FFmpeg)
 		self.assertIsInstance(self.ffmpeg, Subject)
 
@@ -52,9 +51,9 @@ class FFmpegTestCase(TestCase):
 			os.path.exists(self.ffmpeg.gprof_file_path)
 		)
 
-		# Test: Subject.get_call_graph()
-		call_graph = self.ffmpeg.get_call_graph()
-		self.assertIsInstance(call_graph, CallGraph)
+		# Test: Subject.load_call_graph()
+		self.ffmpeg.load_call_graph()
+		self.assertIsInstance(self.ffmpeg.call_graph, CallGraph)
 
 		self.assertTrue(self.ffmpeg.prepared)
 
