@@ -6,21 +6,21 @@
 #SBATCH -J attack-surface-evolution
 
 # Standard out and Standard Error output files
-#SBATCH -o ase.out
-#SBATCH -e ase.err
+#SBATCH -o ase.slurm.out
+#SBATCH -e ase.slurm.err
 
 #To send emails, set the adcdress below and remove one of the "#" signs.
-##SBATCH --mail-user nm6061@rit.edu
+#SBATCH --mail-user nm6061@rit.edu
 
 # notify on state change: BEGIN, END, FAIL or ALL
 #SBATCH --mail-type=ALL
 
 # Maximum run time h:m:s
-#SBATCH -t 0:1:0
+#SBATCH -t 1:30:0
 
 # Put the job in the "work" partition and request FOUR cores for one task
 # "work" is the default partition so it can be omitted without issue.
-#SBATCH -p debug -n 1 -c 15
+#SBATCH -p work -n 1 -c 14
 
 # Job memory requirements in MB
 #SBATCH --mem=1
@@ -35,5 +35,9 @@
 module load cflow/1.4
 ssh -i ~/.ssh/id_archeology -f nm6061@archeology.gccis.rit.edu -L 5432:localhost:5342 -N
 source venv/bin/activate
+
+# Hack to workaround the race-condition issue when multiple processes attempt
+# to clone to a location that does not exist
+mkdir /tmp/FFmpeg
 
 python3 manage.py loaddb
