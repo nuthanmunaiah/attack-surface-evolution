@@ -104,6 +104,7 @@ class Subject(object):
 				CallGraph.from_loader(gprof_loader)
 			)
 			self.call_graph.remove_standard_library_calls()
+			self.call_graph.assign_page_rank()
 
 	def get_absolute_path(self, name):
 		return os.path.join(self.__source_dir__, name)
