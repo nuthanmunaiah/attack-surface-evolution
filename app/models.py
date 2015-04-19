@@ -26,6 +26,7 @@ class Function(models.Model):
     file = models.CharField(max_length=50, blank=False)
     is_entry = models.BooleanField(default=False)
     is_exit = models.BooleanField(default=False)
+    is_tested = models.BooleanField(default=False)
     is_vulnerable = models.BooleanField(default=False)
     is_vulnerability_source = models.BooleanField(default=False)
     is_vulnerability_sink = models.BooleanField(default=False)
