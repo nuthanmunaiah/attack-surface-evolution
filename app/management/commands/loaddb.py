@@ -9,8 +9,11 @@ from app.utilities import load
 
 class Command(BaseCommand):
 	def handle(self, *args, **options):
-		# Version 0.5.0 is being excluded because it does not support FATE
-		revisions = Revision.objects.filter(type='b').exclude(number='0.5.0')
+		# Versions 0.5.0 and 0.6.0 are being excluded because these versions 
+		# do not support FATE
+		revisions = Revision.objects.filter(
+			type='b'
+		).exclude(number='0.5.0').exclude(number='0.6.0')
 
 		num_processes = min(settings.PARALLEL['PROCESSES'], revisions.count())
 		
