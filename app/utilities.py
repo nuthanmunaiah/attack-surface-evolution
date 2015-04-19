@@ -185,6 +185,9 @@ def process_node(node, revision, subject):
 		node.function_name,
 		node.function_signature
 	)
+	function.is_tested = subject.call_graph.call_graph.node[node][
+		'tested'
+	]
 	function.sloc = subject.get_function_sloc(
 		node.function_name, 
 		node.function_signature
