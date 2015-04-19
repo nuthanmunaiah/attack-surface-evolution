@@ -1,3 +1,21 @@
+t,refs/tags/n2.2.15
+t,refs/tags/n2.6.2
+t,refs/tags/n2.4.8
+t,refs/tags/n2.5.5
+t,refs/tags/n2.6.1
+t,refs/tags/n2.2.14
+t,refs/tags/n1.1.16
+t,refs/tags/n0.10.16
+t,refs/tags/n0.7.17
+t,refs/tags/n2.6
+t,refs/tags/n2.2.13
+t,refs/tags/n2.4.7
+t,refs/tags/n2.5.4
+t,refs/tags/n1.2.12
+t,refs/tags/n2.2.12
+t,refs/tags/n2.4.6
+t,refs/tags/n2.5.3
+t,refs/tags/n2.3.6
 t,refs/tags/n2.1.7
 t,refs/tags/n2.5.2
 t,refs/tags/n1.1.15
@@ -179,3 +197,4 @@ b,refs/remotes/origin/release/2.2
 b,refs/remotes/origin/release/2.3
 b,refs/remotes/origin/release/2.4
 b,refs/remotes/origin/release/2.5
+b,refs/remotes/origin/release/2.6
