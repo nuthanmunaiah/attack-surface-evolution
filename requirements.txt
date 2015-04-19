@@ -1,5 +1,5 @@
 Django==1.6
-attacksurfacemeter==0.7.0
+attacksurfacemeter==0.7.1
 coverage==3.7.1
 decorator==3.4.0
 gitapi==1.0.1
