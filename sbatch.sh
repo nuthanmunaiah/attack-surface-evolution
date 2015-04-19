@@ -6,8 +6,8 @@
 #SBATCH -J attack-surface-evolution
 
 # Standard out and Standard Error output files
-#SBATCH -o ase.slurm.out
-#SBATCH -e ase.slurm.err
+#SBATCH -o ase.slurm.%a.out
+#SBATCH -e ase.slurm.%a.err
 
 #To send emails, set the adcdress below and remove one of the "#" signs.
 #SBATCH --mail-user nm6061@rit.edu
@@ -16,14 +16,14 @@
 #SBATCH --mail-type=ALL
 
 # Maximum run time h:m:s
-#SBATCH -t 1:30:0
+#SBATCH -t 3:0:0
 
 # Put the job in the "work" partition and request FOUR cores for one task
 # "work" is the default partition so it can be omitted without issue.
-#SBATCH -p work -n 1 -c 14
+#SBATCH -p work -n 1 -c 1
 
 # Job memory requirements in MB
-#SBATCH --mem=14336
+#SBATCH --mem=1024
 
 # Explicitly state you are a free user
 #SBATCH --qos=free
@@ -32,18 +32,15 @@
 # Your job script goes below this line.
 #
 
+declare -a revisions=("0.7.0" "0.8.0" "0.9.0" "0.10.0" "0.11.0" "1.0.0" "1.1.0" "1.2.0" "2.0.0" "2.1.0" "2.2.0" "2.3.0" "2.4.0" "2.5.0" "2.6.0")
+
 module load cflow/1.4
-
 source venv/bin/activate
-
-# Hack to workaround the race-condition issue when multiple processes attempt
-# to clone to a location that does not exist
-mkdir /tmp/FFmpeg
 
 # SSH tunnel to our database server
 ssh -i ~/.ssh/id_archeology -f nm6061@archeology.gccis.rit.edu -L 5432:localhost:5432 -N
 
-python3 manage.py loaddb
+python3 manage.py loaddb -r ${revisions[${SLURM_ARRAY_TASK_ID}]}
 
 # Closing the SSH tunnel
 kill $(ps -U nm6061 -f | grep 'ssh -i' | head -n 1 | awk '{ print $2 }')
