@@ -192,8 +192,17 @@ def process_node(node, revision, subject):
 		node.function_name, 
 		node.function_signature
 	)
-	function.page_rank = subject.call_graph.call_graph.node[node][
-		'page_rank'
+	function.page_rank_10000_1_hl = subject.call_graph.call_graph.node[node][
+		'page_rank_10000_1_hl'
+	]
+	function.page_rank_100_1_hl = subject.call_graph.call_graph.node[node][
+		'page_rank_100_1_hl'
+	]
+	function.page_rank_10000_1_lh = subject.call_graph.call_graph.node[node][
+		'page_rank_10000_1_lh'
+	]
+	function.page_rank_100_1_lh = subject.call_graph.call_graph.node[node][
+		'page_rank_100_1_lh'
 	]
 
 	if node in subject.call_graph.attack_surface_graph_nodes:

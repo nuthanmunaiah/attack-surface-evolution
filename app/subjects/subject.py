@@ -104,7 +104,22 @@ class Subject(object):
 				CallGraph.from_loader(gprof_loader)
 			)
 			self.call_graph.remove_standard_library_calls()
-			self.call_graph.assign_page_rank()
+
+			# Assign page ranks computed for different values of edge weights 
+			# and personalization vectors
+			self.call_graph.assign_page_rank(cflow_edge_weight=1.0, 
+				gprof_edge_weight=0.5, primary=10000, secondary=1, 
+				name='page_rank_10000_1_hl')
+			self.call_graph.assign_page_rank(cflow_edge_weight=1.0, 
+				gprof_edge_weight=0.5, primary=100, secondary=1, 
+				name='page_rank_100_1_hl')
+
+			self.call_graph.assign_page_rank(cflow_edge_weight=0.5, 
+				gprof_edge_weight=1.0, primary=10000, secondary=1, 
+				name='page_rank_10000_1_lh')
+			self.call_graph.assign_page_rank(cflow_edge_weight=0.5, 
+				gprof_edge_weight=1.0, primary=100, secondary=1, 
+				name='page_rank_100_1_lh')
 
 	def get_absolute_path(self, name):
 		return os.path.join(self.__source_dir__, name)
