@@ -144,8 +144,9 @@ class Subject(object):
 						self.vulnerable_functions[file_path].add(function)
 
 	def is_function_vulnerable(self, name, in_file):
-		if in_file in self.vulnerable_functions:
-			return name in self.vulnerable_functions[in_file]
+		if self.vulnerable_functions:
+			if in_file in self.vulnerable_functions:
+				return name in self.vulnerable_functions[in_file]
 		return False
 
 	@property
