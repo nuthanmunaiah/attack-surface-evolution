@@ -15,13 +15,12 @@ from app.models import Revision
 class Command(BaseCommand):
     help = 'runanalysis HELP.'
 
-    def handle(self, *args, **options):
-        self.init()
-        status = r.run()
-        # self.slackpost(status)
-
-    def init(self):
+    def setup(self):
         self.slack_token = None
+        self.output_file = os.path.join(
+            os.path.expanduser('~'),
+            'runanalysis.out.txt'
+        )
 
         # Read Slack API token from the local store
         api_token_file = os.path.join(
@@ -31,12 +30,18 @@ class Command(BaseCommand):
 
         if os.path.exists(api_token_file):
             with open(api_token_file, 'r') as _file:
-                slack_token = _file.read().strip('\n')
+                self.slack_token = _file.read().strip('\n')
         else:
             print(
                 '[WARNING] {0} does not exists. No message will be posted to '
                 'Slack'.format(api_token_file)
             )
+
+    def handle(self, *args, **options):
+        self.setup()
+        status = r.run(self.output_file)
+        self.slackpost(status)
+        self.teardown()
 
     def is_cve_updated(self):
         response = requests.get(settings.FFMPEG_SECURITY_SRC_URL)
@@ -45,10 +50,8 @@ class Command(BaseCommand):
         return False
 
     def slackpost(self, status):
-        global slack_token
-
-        if slack_token:
-            slack = slacker.Slacker(slack_token)
+        if self.slack_token:
+            slack = slacker.Slacker(self.slack_token)
 
             message = {
                 'channel': settings.SLACK_CHANNEL['name'],
@@ -57,7 +60,7 @@ class Command(BaseCommand):
             }
 
             cve_sync_status = 'In-sync'
-            if is_cve_updated():
+            if self.is_cve_updated():
                 cve_sync_status = 'Out-of-sync'
                 status = 1
 
@@ -65,7 +68,7 @@ class Command(BaseCommand):
             if status == 0 or status == 1:
                 # Success or Warning
                 response = slack.files.upload(
-                    settings.OUTPUT_FILE,
+                    self.output_file,
                     title='Association Results',
                     filename='results.txt',
                     channels=[settings.SLACK_CHANNEL['id']]
@@ -98,6 +101,10 @@ class Command(BaseCommand):
                 slack.chat.post_message(**message)
             elif status == 2:
                 # Error
+                print('[SLACK] Error')
                 pass
         else:
             print('Slack API token was not appropirately initialized')
+
+    def teardown(self):
+        os.remove(self.output_file)
