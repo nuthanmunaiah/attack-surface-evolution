@@ -35,7 +35,11 @@ class FunctionListView(TemplateView):
 
         print(len(functions))
 
-        context = {'object_list': functions, 'num_neutral_functions': num_neutral_functions,
-                   'num_vulnerable_functions': num_vulnerable_functions, 'object': revision}
+        context = {
+            'object_list': functions,
+            'num_neutral_functions': num_neutral_functions,
+            'num_vulnerable_functions': num_vulnerable_functions,
+            'object': revision
+        }
 
         return render(request, self.template_name, context)

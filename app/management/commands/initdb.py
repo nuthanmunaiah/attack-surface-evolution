@@ -4,9 +4,9 @@ from app import utilities
 
 
 class Command(BaseCommand):
-	help = 'initdb HELP.'
+    help = 'initdb HELP.'
 
-	def handle(self, *args, **options):
-		utilities.load_revisions()
-		utilities.load_cves()
-		utilities.map_cve_to_revision()
+    def handle(self, *args, **options):
+        utilities.load_revisions()
+        utilities.load_cves()
+        utilities.map_cve_to_revision()

@@ -4,16 +4,21 @@ from app import constants
 
 # TODO: Figure out a model to tie-up CVE fix to functions affected.
 
+
 class Revision(models.Model):
     number = models.CharField(max_length=10, blank=False)
-    type = models.CharField(max_length=4, choices=constants.REVISION_TYPE, blank=False)
+    type = models.CharField(
+        max_length=4, choices=constants.REVISION_TYPE, blank=False
+    )
     ref = models.CharField(max_length=50, blank=False)
     is_loaded = models.BooleanField(default=False)
 
     num_entry_points = models.PositiveIntegerField(default=0, blank=False)
     num_exit_points = models.PositiveIntegerField(default=0, blank=False)
     num_functions = models.PositiveIntegerField(default=0, blank=False)
-    num_attack_surface_functions = models.PositiveIntegerField(default=0, blank=False)
+    num_attack_surface_functions = models.PositiveIntegerField(
+        default=0, blank=False
+    )
 
     class Meta:
         unique_together = ('number', 'type')
@@ -34,8 +39,12 @@ class Function(models.Model):
     sloc = models.PositiveIntegerField(default=None, null=True)
     proximity_to_entry = models.FloatField(default=None, null=True)
     proximity_to_exit = models.FloatField(default=None, null=True)
-    surface_coupling_with_entry = models.PositiveIntegerField(default=None, null=True)
-    surface_coupling_with_exit = models.PositiveIntegerField(default=None, null=True)
+    surface_coupling_with_entry = models.PositiveIntegerField(
+        default=None, null=True
+    )
+    surface_coupling_with_exit = models.PositiveIntegerField(
+        default=None, null=True
+    )
     page_rank_10000_1_hl = models.FloatField(default=None, null=True)
     page_rank_100_1_hl = models.FloatField(default=None, null=True)
     page_rank_10000_1_lh = models.FloatField(default=None, null=True)
@@ -46,7 +55,9 @@ class Function(models.Model):
 
 
 class Reachability(models.Model):
-    type = models.CharField(max_length=8, choices=constants.REACHABILITY_TYPE, blank=False)
+    type = models.CharField(
+        max_length=8, choices=constants.REACHABILITY_TYPE, blank=False
+    )
     function = models.ForeignKey(Function, blank=False)
     value = models.DecimalField(decimal_places=6, max_digits=10, blank=False)
 

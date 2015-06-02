@@ -13,7 +13,8 @@ class Repo(gitapi.Repo):
 
     def git_patch(self, identifier, file=None):
         cmds = ['log', '-1', '-p', identifier]
-        if file: cmds += ['--', file]
+        if file:
+            cmds += ['--', file]
         return self.git_command(*cmds)
 
     def git_diff_tree(self, identifier):
@@ -21,7 +22,10 @@ class Repo(gitapi.Repo):
         return self.git_command(*cmds)
 
     def get_files_changed(self, identifier):
-        return [line for line in self.git_diff_tree(identifier).split('\n') if line.strip('\n')]
+        return [
+            line for line in self.git_diff_tree(identifier).split('\n')
+            if line.strip('\n')
+        ]
 
     def get_functions_changed(self, identifier, file):
         funcs = set()
