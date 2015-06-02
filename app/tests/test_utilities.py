@@ -17,16 +17,16 @@ class UtilitiesTestCase(TestCase):
         utilities.load_revisions()
 
         # Test
-        self.assertEqual(165, Revision.objects.filter(type='t').count())
-        self.assertEqual(16, Revision.objects.filter(type='b').count())
-        self.assertEqual(181, Revision.objects.all().count())
+        self.assertEqual(183, Revision.objects.filter(type='t').count())
+        self.assertEqual(17, Revision.objects.filter(type='b').count())
+        self.assertEqual(200, Revision.objects.all().count())
 
     def test_load_cves(self):
         # Load
         utilities.load_cves()
 
         # Test
-        self.assertEqual(202, Cve.objects.all().count())
+        self.assertEqual(206, Cve.objects.all().count())
 
     def test_map_cve_to_revision(self):
         # Setup
@@ -118,7 +118,7 @@ class UtilitiesTestCase(TestCase):
         utilities.map_cve_to_revision()
 
         # Test
-        self.assertEqual(170, Cve.objects.filter(is_fixed=True).count())
+        self.assertEqual(174, Cve.objects.filter(is_fixed=True).count())
 
         for revision in cves_count:
             self.assertEqual(
