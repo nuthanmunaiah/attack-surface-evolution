@@ -181,12 +181,12 @@ class SubjectTestCase(TestCase):
 
         self.assertEqual(
             45,
-            subject.get_function_sloc('start_children', 'ffserver.c')
+            subject.get_function_sloc('start_children', './ffserver.c')
         )
 
         self.assertEqual(
             53,
-            subject.get_function_sloc('av_exit', 'ffmpeg.c')
+            subject.get_function_sloc('av_exit', './ffmpeg.c')
         )
         # TODO: Uncomment after /attack-surface-metrics/issues/39 is
         #   resolved
