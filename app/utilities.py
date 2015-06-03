@@ -93,7 +93,9 @@ def load(revision, subject_cls):
     # TODO: Revisit call to connection.close()
     connection.close()
 
-    subject = subject_cls(git_reference=revision.ref)
+    subject = subject_cls(
+        num_jobs=settings.PARALLEL['THREADS'], git_reference=revision.ref
+    )
     subject.initialize()
     subject.prepare()
 
@@ -280,5 +282,7 @@ def get_commit_hashes(revision):
 
 
 def profile(revision, subject_cls, index):
-    subject = subject_cls(git_reference=revision.ref)
+    subject = subject_cls(
+        num_jobs=settings.PARALLEL['THREADS'], git_reference=revision.ref
+    )
     subject.gprof(index)
