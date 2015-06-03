@@ -55,7 +55,7 @@ then
 fi
 
 # Release 0.6.0: Special handling
-f [ "$release" -eq "0.5.0" ]
+if [ "$release" -eq "0.6.0" ]
 then
     cp -r ../../7d85e078b2d2ce24a50c620ed1236cd1/src/fate-suite/ .
 fi
