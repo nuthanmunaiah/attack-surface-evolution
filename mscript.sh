@@ -48,14 +48,14 @@ cd $scratch_root/$subject/$directory/src
 mkdir gmon
 
 # Release 0.5.0: Special handling
-if [ "$release" -eq "0.5.0" ]
+if [ "$release" == "0.5.0" ]
 then
     ./configure --extra-cflags='-g -pg' --extra-ldflags='-g -pg'
     make
 fi
 
 # Release 0.6.0: Special handling
-if [ "$release" -eq "0.6.0" ]
+if [ "$release" == "0.6.0" ]
 then
     cp -r ../../7d85e078b2d2ce24a50c620ed1236cd1/src/fate-suite/ .
 fi
