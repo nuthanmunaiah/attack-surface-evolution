@@ -50,7 +50,7 @@ mkdir gmon
 # Release 0.5.0: Special handling
 if [ "$release" == "0.5.0" ]
 then
-    ./configure --extra-cflags='-g -pg' --extra-ldflags='-g -pg'
+    ./configure --extra-cflags='-g -pg' --extra-ldflags='-g -pg' --enable-swscale
     make
 fi
 
