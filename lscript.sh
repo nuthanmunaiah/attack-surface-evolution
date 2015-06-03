@@ -20,7 +20,7 @@
 
 # Put the job in the "work" partition and request FOUR cores for one task
 # "work" is the default partition so it can be omitted without issue.
-#SBATCH -p work -n 1 -c 1
+#SBATCH -p work -n 1 -c 4
 
 # Job memory requirements in MB
 #SBATCH --mem=1024
