@@ -35,6 +35,9 @@ class Command(BaseCommand):
         make_option(
             '-i', type='int', action='store', dest='index'
         ),
+        make_option(
+            '-o', type='int', action='store', dest='offset', default=0
+        ),
     )
     help = (
         'Generates gprof.txt file for a corresponding gmon.out file.'
@@ -52,5 +55,9 @@ class Command(BaseCommand):
                 Q(number='0.5.0') | Q(number='0.6.0')
             )
 
+        index = options.get('index', None)
+        if index is not None:
+            index += options.get('offset', 0)
+
         for revision in revisions:
-            profile(revision, FFmpeg, options.get('index', None))
+            profile(revision, FFmpeg, index)
