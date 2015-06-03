@@ -35,6 +35,7 @@ class FFmpeg(subject.Subject):
         cmd = 'make -j %d fate-rsync' % self.num_jobs
         self.execute(cmd)
 
+        # TODO: Review
         # Hook for any manual steps that must be completed by a human
         raise Exception('HUMAN: Execute manual steps and rerun script.')
 
