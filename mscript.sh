@@ -73,7 +73,7 @@ git apply patch.patch
 rm patch.patch
 
 # Run tests
-if [ "$release" -eq "0.5.0" ]
+if [ "$release" == "0.5.0" ]
 then
     make test
 else
