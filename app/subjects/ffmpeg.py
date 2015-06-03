@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 from app.subjects import subject
@@ -24,18 +25,18 @@ class FFmpeg(subject.Subject):
             './configure --samples=fate-suite/ --extra-cflags=\'-g -pg\''
             ' --extra-ldflags=\'-g -pg\''
         )
-        return self.__execute__(cmd)
+        return self.execute(cmd)
+
+    def make(self):
+        cmd = 'make -j %d' % self.num_jobs
+        return self.execute(cmd)
 
     def test(self):
         cmd = 'make -j %d fate-rsync' % self.num_jobs
-        returncode = self.__execute__(cmd)
+        self.execute(cmd)
 
-        returncode = 0
-        if returncode == 0:
-            cmd = 'make -j %d fate' % self.num_jobs
-            returncode = self.__execute__(cmd)
-
-        return returncode
+        # Hook for any manual steps that must be completed by a human
+        raise Exception('HUMAN: Execute manual steps and rerun script.')
 
     def cflow(self):
         cmd = (
@@ -44,13 +45,38 @@ class FFmpeg(subject.Subject):
         )
 
         with open(self.cflow_file_path, 'w+') as _cflow_file:
-            return self.__execute__(cmd, stdout=_cflow_file)
+            return self.execute(cmd, stdout=_cflow_file)
 
-    def gprof(self):
-        cmd = 'gprof -q -b -l -c -z -L ffmpeg_g'
+    def gprof(self, index=None):
+        if index:
+            gmon_file_path = os.path.join(
+                self.gmon_files_dir, self.gmon_files_name[index])
+            gprof_file_path = os.path.join(
+                self.gprof_files_dir,
+                '{0}.txt'.format(self.gmon_files_name[index])
+            )
+            return self.__gprof__(gmon_file_path, gprof_file_path)
 
-        with open(self.gprof_file_path, 'w+') as _gprof_file:
-            returncode = self.__execute__(cmd, stdout=_gprof_file)
+        returncode = 0
+        for gmon_file in self.gmon_files_name:
+            gmon_file_path = os.path.join(self.gmon_files_dir, gmon_file)
+            gprof_file_path = os.path.join(
+                self.gprof_files_dir, '{0}.txt'.format(gmon_file)
+            )
+            returncode = self.__gprof__(gmon_file_path, gprof_file_path)
+
+        return returncode
+
+    def __gprof__(self, gmon_file_path, gprof_file_path):
+        if 'basegmon.out' in gmon_file_path:
+            cmd = 'gprof -q -b -l -c -z -L ffmpeg_g {0}'
+        else:
+            cmd = 'gprof -q -b -l -c -L ffmpeg_g {0}'
+
+        cmd = cmd.format(gmon_file_path, gprof_file_path)
+
+        with open(gprof_file_path, 'w+') as _gprof_file:
+            returncode = self.execute(cmd, stdout=_gprof_file)
 
         # gprof's -L is printing absolute path instead of relative path.
         #   Fixing the paths used sed.
@@ -58,16 +84,16 @@ class FFmpeg(subject.Subject):
         #   /home/rady/ffmpeg/libavcodec/utils.c     > ./libavcodec/utils.c
         #   /home/rady/ffmpeg/./libavutil/internal.h > ./libavutil/internal.h
 
-        self.__execute__(
+        self.execute(
             "sed -i 's;{0}\/\.;.;g' {1}".format(
-                self.__source_dir__.replace('/', '\/'),
-                self.gprof_file_path
+                self.source_dir.replace('/', '\/'),
+                gprof_file_path
             )
         )
-        self.__execute__(
+        self.execute(
             "sed -i 's;{0};.;g' {1}".format(
-                self.__source_dir__.replace('/', '\/'),
-                self.gprof_file_path
+                self.source_dir.replace('/', '\/'),
+                gprof_file_path
             )
         )
 

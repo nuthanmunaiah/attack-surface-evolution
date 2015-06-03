@@ -1,7 +1,7 @@
 import csv
 import os
 import re
-import subprocess
+import subprocess as sp
 import threading
 import hashlib
 from urllib import parse
@@ -10,6 +10,7 @@ import requests
 from attacksurfacemeter.call_graph import CallGraph
 from attacksurfacemeter.loaders.cflow_loader import CflowLoader
 from attacksurfacemeter.loaders.gprof_loader import GprofLoader
+from attacksurfacemeter.loaders.multigprof_loader import MultigprofLoader
 from app import errors, helpers
 from app.gitapi import Repo
 
@@ -42,9 +43,9 @@ class Subject(object):
 
     def clone(self):
         if not self.__clone_exists__:
-            self.repo = Repo.git_clone(self.clone_url, self.__source_dir__)
+            self.repo = Repo.git_clone(self.clone_url, self.source_dir)
         else:
-            self.repo = Repo(self.__source_dir__)
+            self.repo = Repo(self.source_dir)
 
     def checkout(self):
         if self.git_reference:
@@ -53,13 +54,16 @@ class Subject(object):
     def configure(self):
         raise NotImplementedError
 
+    def make(self):
+        raise NotImplementedError
+
     def test(self):
         raise NotImplementedError
 
     def cflow(self):
         raise NotImplementedError
 
-    def gprof(self):
+    def gprof(self, index=None):
         raise NotImplementedError
 
     def initialize(self):
@@ -71,23 +75,12 @@ class Subject(object):
             self.initialized = True
 
     def prepare(self):
-        if not (self.__cflow_file_exists__ and self.__gprof_file_exists__):
+        if not (self.__cflow_file_exists__ and self.__gprof_files_exists__):
             self.initialize()
             self.configure()
+            self.make()
+            self.cflow()
             self.test()
-
-            # cflow and gprof are independent of one another, so run them in
-            #   parallel
-            cflow_thread = threading.Thread(
-                target=self.cflow, name='subject.cflow')
-            gprof_thread = threading.Thread(
-                target=self.gprof, name='subject.gprof')
-
-            cflow_thread.start()
-            gprof_thread.start()
-
-            cflow_thread.join()
-            gprof_thread.join()
 
         self.prepared = True
 
@@ -99,11 +92,13 @@ class Subject(object):
 
         if not self.call_graph:
             cflow_loader = CflowLoader(self.cflow_file_path, reverse=True)
-            gprof_loader = GprofLoader(self.gprof_file_path, reverse=False)
+            multigprof_loader = MultigprofLoader(
+                self.gprof_files_path, reverse=False
+            )
 
             self.call_graph = CallGraph.from_merge(
                 CallGraph.from_loader(cflow_loader),
-                CallGraph.from_loader(gprof_loader)
+                CallGraph.from_loader(multigprof_loader)
             )
             self.call_graph.remove_standard_library_calls()
 
@@ -128,7 +123,7 @@ class Subject(object):
             )
 
     def get_absolute_path(self, name):
-        return os.path.join(self.__source_dir__, name)
+        return os.path.join(self.source_dir, name)
 
     def load_function_sloc(self):
         if not self.function_sloc:
@@ -154,7 +149,7 @@ class Subject(object):
             for commit_hash in commit_hashes:
                 for file_ in self.repo.get_files_changed(commit_hash):
                     file_path = self.get_absolute_path(file_)
-                    file_path = file_path.replace(self.__source_dir__, '.')
+                    file_path = file_path.replace(self.source_dir, '.')
 
                     if file_path not in self.vulnerable_functions:
                         self.vulnerable_functions[file_path] = set()
@@ -170,26 +165,47 @@ class Subject(object):
                 return name in self.vulnerable_functions[in_file]
         return False
 
+    def execute(self, cmd, cwd=None, stdout=sp.DEVNULL, stderr=sp.DEVNULL):
+        if not cwd:
+            cwd = self.source_dir
+
+        process = sp.Popen(
+            cmd, stdout=stdout, stderr=stderr, cwd=cwd, shell=True
+        )
+
+        return process.wait()
+
+    @property
+    def source_dir(self):
+        return os.path.join(self.scratch_dir, self.uuid, 'src')
+
     @property
     def cflow_file_path(self):
         return os.path.join(self.scratch_dir, self.uuid, 'cflow.txt')
 
     @property
-    def gprof_file_path(self):
-        return os.path.join(self.scratch_dir, self.uuid, 'gprof.txt')
+    def gprof_files_dir(self):
+        return os.path.join(self.scratch_dir, self.uuid, 'gprof')
 
-    def __execute__(
-        self, command, cwd=None, stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL
-    ):
-        if not cwd:
-            cwd = self.__source_dir__
+    @property
+    def gprof_files_path(self):
+        gprof_files = [
+            os.path.join(
+                self.gprof_files_dir,
+                gprof_file_name
+            )
+            for gprof_file_name in os.listdir(self.gprof_files_dir)
+        ]
+        gprof_files.sort()
+        return gprof_files
 
-        process = subprocess.Popen(
-            command, stdout=stdout, stderr=stderr, cwd=cwd, shell=True
-        )
+    @property
+    def gmon_files_dir(self):
+        return os.path.join(self.source_dir, 'gmon')
 
-        return process.wait()
+    @property
+    def gmon_files_name(self):
+        return os.listdir(self.gmon_files_dir)
 
     def __clean_up__(self):
         raise NotImplementedError
@@ -201,10 +217,6 @@ class Subject(object):
                 for chunk in response.iter_content(1024, True):
                     file_.write(chunk)
                     file_.flush()
-
-    @property
-    def __source_dir__(self):
-        return os.path.join(self.scratch_dir, self.uuid, 'src')
 
     @property
     def __sloc_file_url__(self):
@@ -238,9 +250,11 @@ class Subject(object):
         return os.path.exists(self.cflow_file_path)
 
     @property
-    def __gprof_file_exists__(self):
-        return os.path.exists(self.gprof_file_path)
+    def __gprof_files_exist__(self):
+        if self.gprof_files_path:
+            return True
+        return False
 
     @property
     def __clone_exists__(self):
-        return os.path.exists(self.__source_dir__)
+        return os.path.exists(self.source_dir)
