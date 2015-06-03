@@ -277,3 +277,8 @@ def get_commit_hashes(revision):
     ]
 
     return commit_hashes
+
+
+def profile(revision, subject_cls, index):
+    subject = subject_cls(git_reference=revision.ref)
+    subject.gprof(index)
