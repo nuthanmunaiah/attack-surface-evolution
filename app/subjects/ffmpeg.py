@@ -49,7 +49,7 @@ class FFmpeg(subject.Subject):
             return self.execute(cmd, stdout=_cflow_file)
 
     def gprof(self, index=None):
-        if index:
+        if index is not None:
             gmon_file_path = os.path.join(
                 self.gmon_files_dir, self.gmon_files_name[index])
             gprof_file_path = os.path.join(
