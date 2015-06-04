@@ -62,7 +62,7 @@ fi
 
 # Run base test case
 curl http://jell.yfish.us/media/Jellyfish-3-Mbps.mkv > input.mkv
-ffmpeg -i input.mkv -acodec copy -vcodec copy output.mp4
+./ffmpeg -i input.mkv -acodec copy -vcodec copy output.mp4
 mv gmon.out gmon/basegmon.out
 rm input.mkv
 rm output.mp4
