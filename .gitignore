@@ -59,5 +59,5 @@ target/
 # SQLite database file
 db.sqlite3
 
-# Temporary file
-_temp.txt
+# Python virtual environment
+venv/
