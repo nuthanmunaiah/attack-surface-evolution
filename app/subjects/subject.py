@@ -75,7 +75,7 @@ class Subject(object):
             self.initialized = True
 
     def prepare(self):
-        if not (self.__cflow_file_exists__ and self.__gprof_files_exists__):
+        if not (self.__cflow_file_exists__ and self.__gprof_files_exist__):
             self.initialize()
             self.configure()
             self.make()
