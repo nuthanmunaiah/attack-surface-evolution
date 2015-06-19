@@ -37,6 +37,7 @@ class Function(models.Model):
     is_vulnerability_sink = models.BooleanField(default=False)
     is_connected_to_attack_surface = models.BooleanField(default=False)
     sloc = models.PositiveIntegerField(default=None, null=True)
+    coupling = models.PositiveSmallIntegerField(null=False)
     proximity_to_entry = models.FloatField(default=None, null=True)
     proximity_to_exit = models.FloatField(default=None, null=True)
     surface_coupling_with_entry = models.PositiveIntegerField(

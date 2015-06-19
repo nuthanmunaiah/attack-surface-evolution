@@ -210,6 +210,7 @@ def process_node(node, revision, subject):
         node.function_name,
         node.function_signature
     )
+    function.coupling = subject.call_graph.get_degree(node)
     function.page_rank_10000_1_hl = subject.call_graph.call_graph.node[node][
         'page_rank_10000_1_hl'
     ]
