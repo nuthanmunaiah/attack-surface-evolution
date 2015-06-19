@@ -22,7 +22,8 @@ def load_revisions():
         with open(revisions_file, 'r') as _revisions_file:
             reader = csv.reader(_revisions_file)
             for row in reader:
-                if not Revision.objects.filter(number=row[0]).exists():
+                print('Loading revision {0}'.format(row[1]))
+                if not Revision.objects.filter(number=row[1]).exists():
                     revision = Revision()
                     revision.number = (
                         '%d.%d.%d' %
@@ -44,6 +45,7 @@ def load_cves():
             with open(cve_file, 'r') as _cve_file:
                 reader = csv.reader(_cve_file)
                 for row in reader:
+                    print('Loading CVE {0}'.format(row[0]))
                     cve = Cve()
                     cve.cve_id = row[0]
                     cve.publish_dt = datetime.datetime.strptime(
@@ -74,11 +76,13 @@ def map_cve_to_revision():
     with transaction.atomic():
         for cve in Cve.objects.all():
             if cve.cve_id in fixed_cves:
+                print('Mapping fix for {0}'.format(cve.cve_id))
                 with transaction.atomic():
                     cve.is_fixed = True
                     cve.save()
 
                     for cve_fix in fixed_cves[cve.cve_id]:
+                        print(' to revision {0}'.format(cve_fix['revision']))
                         rev_num = cve_fix['revision']
                         cve_revision = CveRevision()
                         cve_revision.cve = cve
