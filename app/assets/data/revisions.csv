@@ -1,3 +1,12 @@
+t,refs/tags/n2.2.16
+t,refs/tags/n2.0.7
+t,refs/tags/n2.7
+t,refs/tags/n2.4.10
+t,refs/tags/n2.5.7
+t,refs/tags/n2.6.3
+t,refs/tags/n2.1.8
+t,refs/tags/n2.4.9
+t,refs/tags/n2.5.6
 t,refs/tags/n2.2.15
 t,refs/tags/n2.6.2
 t,refs/tags/n2.4.8
@@ -198,3 +207,4 @@ b,refs/remotes/origin/release/2.3
 b,refs/remotes/origin/release/2.4
 b,refs/remotes/origin/release/2.5
 b,refs/remotes/origin/release/2.6
+b,refs/remotes/origin/release/2.7
