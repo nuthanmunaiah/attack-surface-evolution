@@ -49,35 +49,39 @@ class Command(BaseCommand):
             '-g', type='str', action='callback', callback=check_gprof_path,
             dest='gprof_path',
             help=(
-                'Absolute path to a file containing the gprof call graph. '
-                'If the path is to a directory all text files in the directory'
-                'are treated as containing gprof call graphs'
+                'Absolute path to a file containing the gprof call graph (or) '
+                'the absolute path to a directory in which all files are '
+                'assumed to contain gprof call graphs.'
             )
         ),
         make_option(
             '-o', action='store_true', dest='is_output_enabled',
             help=(
-                'When enabled, output files are created at the user\'s home '
-                'directory.'
+                'When enabled, the following output files are created in '
+                '~\.stat directory: a CSV file containing the names of '
+                'uncalled functions, a text file containing the stats of '
+                'connected component subgraphs, and .dot files of '
+                'significantly sized connected components.'
             )
         ),
         make_option(
-            '-p', type='int', action='store', dest='num_processes', default=1,
+            '-p', type='int', action='store', dest='num_processes', default=4,
             help=(
                 'Number of processes to spawn when loading multiple gprof files'
             )
         ),
     )
     help = (
-        'Prints various statistics about an set of call graphs. The  Attack '
-        'Surface Meter is used to load call graphs.'
+        'Loads a set of call graphs (cflow, gprof, or both) and prints various '
+        'statistics about the resultant call graph. The Attack Surface Meter '
+        'is used to load call graphs.'
     )
 
     def handle(self, *args, **options):
         is_output_enabled = options.get('is_output_enabled', False)
         cflow_path = options.get('cflow_path', None)
         gprof_path = options.get('gprof_path', None)
-        num_processes = options.get('num_processes', 1)
+        num_processes = options.get('num_processes')
 
         stat(cflow_path, gprof_path, is_output_enabled, num_processes)
 
