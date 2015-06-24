@@ -141,7 +141,7 @@ def process_revision(revision, subject):
     with transaction.atomic():
         # TODO: Evaluate the Global Interpreter Lock (GIL) phenemenon
         results = Parallel(
-            n_jobs=settings.PARALLEL['THREADS'],
+            n_jobs=settings.PARALLEL['SUBPROCESSES'],
             backend='threading'
         )(
             delayed(process_node)(node, revision, subject)
@@ -292,6 +292,8 @@ def get_commit_hashes(revision):
 
 def profile(revision, subject_cls, index):
     subject = subject_cls(
-        num_jobs=settings.PARALLEL['THREADS'], git_reference=revision.ref
+        configure_options=revision.configure_options,
+        processes=settings.PARALLEL['SUBPROCESSES'],
+        git_reference=revision.ref
     )
     subject.gprof(index)
