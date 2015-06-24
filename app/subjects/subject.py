@@ -176,6 +176,15 @@ class Subject(object):
         return False
 
     def execute(self, cmd, cwd=None, stdout=sp.DEVNULL, stderr=sp.DEVNULL):
+        # Debugging override
+        if 'DEBUG' in os.environ:
+            if stdout == sp.DEVNULL:
+                stdout = None
+            if stderr == sp.DEVNULL:
+                stderr = None
+
+        self.__dbug__(cmd)
+
         if not cwd:
             cwd = self.source_dir
 
@@ -227,6 +236,10 @@ class Subject(object):
                 for chunk in response.iter_content(1024, True):
                     file_.write(chunk)
                     file_.flush()
+
+    def __dbug__(self, message):
+        if 'DEBUG' in os.environ:
+            print('[DEBUG] {0}'.format(message))
 
     @property
     def __sloc_file_url__(self):
