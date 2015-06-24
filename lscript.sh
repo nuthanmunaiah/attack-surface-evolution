@@ -23,7 +23,7 @@
 #SBATCH -p work -n 1 -c 10
 
 # Job memory requirements in MB
-#SBATCH --mem=1024
+#SBATCH --mem=2048
 
 # Explicitly state you are a free user
 #SBATCH --qos=free
