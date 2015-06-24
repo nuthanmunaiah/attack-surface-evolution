@@ -100,7 +100,9 @@ def load(revision, subject_cls):
     connection.close()
 
     subject = subject_cls(
-        num_jobs=settings.PARALLEL['THREADS'], git_reference=revision.ref
+        configure_options=revisions.configure_options,
+        processes=settings.PARALLEL['SUBPROCESSES'],
+        git_reference=revision.ref
     )
     subject.initialize()
     subject.prepare()

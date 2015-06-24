@@ -6,7 +6,8 @@ from app.subjects import subject
 
 class FFmpeg(subject.Subject):
     def __init__(
-            self, configure_options, git_reference=None, scratch_root='~'
+            self, configure_options, processes=1, git_reference=None,
+            scratch_root='~'
         ):
         
         name = 'FFmpeg'
@@ -21,8 +22,8 @@ class FFmpeg(subject.Subject):
             scratch_root = os.path.expanduser(scratch_root)
 
         super().__init__(
-            name, clone_url, configure_options, git_reference, sloc_folder_url,
-            scratch_root
+            name, clone_url, configure_options, processes, git_reference,
+            sloc_folder_url, scratch_root
         )
 
     def configure(self):
