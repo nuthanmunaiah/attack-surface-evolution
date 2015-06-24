@@ -64,3 +64,6 @@ venv/
 
 # vim swap files
 *.swp
+
+# SLURM standard output and standard error files
+slurm/
