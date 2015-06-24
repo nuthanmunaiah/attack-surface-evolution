@@ -6,7 +6,7 @@ from app.subjects import subject
 
 class FFmpeg(subject.Subject):
     def __init__(
-            self, configure_options, git_reference=None, scratch_root='/tmp'
+            self, configure_options, git_reference=None, scratch_root='~'
         ):
         
         name = 'FFmpeg'
@@ -16,6 +16,9 @@ class FFmpeg(subject.Subject):
             'googledrive.com/host/0B1eWsh8KZjRrfjg0Z1VkcU96U2h'
             'Qal9scHM3NzVmYTk2WVhiQzQtdGFpNWc5c0VzbUJFTE0/FFmpeg/SLOC/'
         )
+
+        if '~' in scratch_root:
+            scratch_root = os.path.expanduser(scratch_root)
 
         super().__init__(
             name, clone_url, configure_options, git_reference, sloc_folder_url,
