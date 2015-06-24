@@ -12,6 +12,11 @@ class Revision(models.Model):
     )
     ref = models.CharField(max_length=50, blank=False)
     is_loaded = models.BooleanField(default=False)
+    configure_options = models.TextField(
+        max_length=2000,
+        default='--extra-cflags=\'-g -pg\' --extra-ldflags=\'-g -pg\'',
+        blank=False
+    )
 
     num_entry_points = models.PositiveIntegerField(default=0, blank=False)
     num_exit_points = models.PositiveIntegerField(default=0, blank=False)

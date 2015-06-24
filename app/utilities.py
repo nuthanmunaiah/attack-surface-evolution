@@ -31,6 +31,8 @@ def load_revisions():
                     )
                     revision.type = row[0]
                     revision.ref = row[1]
+                    if row[2].strip():
+                        revision.configure_options = row[2]
                     revision.save()
 
 

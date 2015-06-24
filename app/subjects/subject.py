@@ -17,12 +17,14 @@ from app.gitapi import Repo
 
 class Subject(object):
     def __init__(
-        self, name, clone_url, git_reference=None, sloc_folder_url=None,
-        scratch_root='/tmp'
+        self, name, clone_url, configure_options, processes=1,
+        git_reference=None, sloc_folder_url=None, scratch_root='/tmp'
     ):
 
         self.name = name
         self.clone_url = clone_url
+        self.configure_options = configure_options
+        self.processes = processes
         self.git_reference = git_reference
         self.sloc_folder_url = sloc_folder_url
         self.repo = None
@@ -77,10 +79,18 @@ class Subject(object):
     def prepare(self):
         if not (self.__cflow_file_exists__ and self.__gprof_files_exist__):
             self.initialize()
-            self.configure()
-            self.make()
-            self.cflow()
-            self.test()
+            return_code = self.configure()
+            if return_code != 0:
+                raise Exception('configure() returned {0}'.format(return_code))
+            return_code = self.make()
+            if return_code != 0:
+                raise Exception('make() returned {0}'.format(return_code))
+            return_code = self.cflow()
+            if return_code != 0:
+                raise Exception('cflow() returned {0}'.format(return_code))
+            return_code = self.test()
+            if return_code != 0:
+                raise Exception('test() returned {0}'.format(return_code))
 
         self.prepared = True
 
@@ -92,13 +102,13 @@ class Subject(object):
 
         if not self.call_graph:
             cflow_loader = CflowLoader(self.cflow_file_path, reverse=True)
-            multigprof_loader = MultigprofLoader(
-                self.gprof_files_path, reverse=False
+            gprof_loader = MultigprofLoader(
+                self.gprof_files_path, processes=self.processes, reverse=False
             )
 
             self.call_graph = CallGraph.from_merge(
                 CallGraph.from_loader(cflow_loader),
-                CallGraph.from_loader(multigprof_loader)
+                CallGraph.from_loader(gprof_loader)
             )
             self.call_graph.remove_standard_library_calls()
 

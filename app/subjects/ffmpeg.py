@@ -5,7 +5,10 @@ from app.subjects import subject
 
 
 class FFmpeg(subject.Subject):
-    def __init__(self, num_jobs=1, git_reference=None, scratch_root='/tmp'):
+    def __init__(
+            self, configure_options, git_reference=None, scratch_root='/tmp'
+        ):
+        
         name = 'FFmpeg'
         clone_url = 'https://github.com/FFmpeg/FFmpeg.git'
         sloc_folder_url = (
@@ -15,29 +18,24 @@ class FFmpeg(subject.Subject):
         )
 
         super().__init__(
-            name, clone_url, git_reference, sloc_folder_url, scratch_root
+            name, clone_url, configure_options, git_reference, sloc_folder_url,
+            scratch_root
         )
-
-        self.num_jobs = num_jobs
 
     def configure(self):
-        cmd = (
-            './configure --samples=fate-suite/ --extra-cflags=\'-g -pg\''
-            ' --extra-ldflags=\'-g -pg\''
-        )
+        cmd = './configure {0}'.format(self.configure_options)
         return self.execute(cmd)
 
     def make(self):
-        cmd = 'make -j %d' % self.num_jobs
+        cmd = 'make -j %d' % self.processes
         return self.execute(cmd)
 
     def test(self):
-        cmd = 'make -j %d fate-rsync' % self.num_jobs
+        cmd = 'make -j %d fate-rsync' % self.processes
         self.execute(cmd)
-
-        # TODO: Review
-        # Hook for any manual steps that must be completed by a human
-        raise Exception('HUMAN: Execute manual steps and rerun script.')
+        
+        # Returning non-zero return value to allow execution of manual script
+        return 2
 
     def cflow(self):
         cmd = (
@@ -106,3 +104,4 @@ class FFmpeg(subject.Subject):
         )
 
         return returncode
+
