@@ -32,7 +32,12 @@
 # Your job script goes below this line.
 #
 
-declare -a revisions=("0.5.0" "0.6.0" "0.7.0" "0.8.0" "0.9.0" "0.10.0" "0.11.0" "1.0.0" "1.1.0" "1.2.0" "2.0.0" "2.1.0" "2.2.0" "2.3.0" "2.4.0" "2.5.0")
+declare -a releases=("0.5.0" "0.6.0" "0.7.0" "0.8.0" "0.9.0" "0.10.0" "0.11.0" "1.0.0" "1.1.0" "1.2.0" "2.0.0" "2.1.0" "2.2.0" "2.3.0" "2.4.0" "2.5.0")
+
+if [ "$#" -eq 1 ]; then
+    SLURM_ARRAY_TASK_ID=$1
+    echo "Loading release ${releases[${SLURM_ARRAY_TASK_ID}]}"
+fi
 
 export LD_LIBRARY_PATH="$HOME/lib:$HOME/lib64"
 export PKG_CONFIG_PATH="$HOME/lib/pkgconfig:$HOME/lib64/pkgconfig"
@@ -41,4 +46,4 @@ module load python/3.4.3
 module load cflow/1.4
 source venv/bin/activate
 
-python3 manage.py loaddb -r ${revisions[${SLURM_ARRAY_TASK_ID}]}
+python3 manage.py loaddb -r ${releases[${SLURM_ARRAY_TASK_ID}]}
