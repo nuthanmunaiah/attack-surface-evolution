@@ -117,10 +117,11 @@ def stat(cflow_path, gprof_path, is_output_enabled, num_processes):
 
     call_graph = None
     if cflow_call_graph and gprof_call_graph:
-        print('Merging cflow and gprof call graphs')
-        call_graph = CallGraph.from_merge(cflow_call_graph, gprof_call_graph)
         if 'DEBUG' in os.environ:
             print()
+
+        print('Merging cflow and gprof call graphs')
+        call_graph = CallGraph.from_merge(cflow_call_graph, gprof_call_graph)
     elif cflow_call_graph:
         call_graph = cflow_call_graph
     elif gprof_call_graph:
@@ -130,19 +131,16 @@ def stat(cflow_path, gprof_path, is_output_enabled, num_processes):
         print('Nothing to stat. Exiting.')
         sys.exit(0)
 
-    print('Load completed in {0:.2f} seconds.'.format(
+    print('Load completed in {0:.2f} seconds'.format(
         (end - begin).total_seconds()
     ))
-    call_graph.remove_standard_library_calls()
 
-    uncalled_functions = [
+    
+    call_graph.remove_standard_library_calls()
+    zero_degree_nodes = [
         k for (k, v) in nx.degree(call_graph.call_graph).items() if v == 0
     ]
-
-    undirected_call_graph = call_graph.call_graph.to_undirected()
-    connected_components = list(
-        nx.connected_component_subgraphs(undirected_call_graph)
-    )
+    components = call_graph.get_components()
 
     print('')
     print('#' * 30)
@@ -150,15 +148,16 @@ def stat(cflow_path, gprof_path, is_output_enabled, num_processes):
     print('#' * 30)
     print('    Nodes            {0}'.format(len(call_graph.nodes)))
     print('    Edges            {0}'.format(len(call_graph.edges)))
-    print('    Components       {0}'.format(len(connected_components)))
-    print('    0-degree Nodes   {0}'.format(len(uncalled_functions)))
+    print('    Components       {0}'.format(len(components)))
+    print('    0-degree Nodes   {0}'.format(len(zero_degree_nodes)))
     print('#' * 30)
 
+
     if is_output_enabled:
-        create_output_files(connected_components, uncalled_functions)
+        create_output_files(connected_components, zero_degree_nodes)
 
 
-def create_output_files(components, functions):
+def create_output_files(components, nodes):
     root = os.path.expanduser('~/.stat')
     if not os.path.exists(root):
         os.mkdir(root)
@@ -174,11 +173,11 @@ def create_output_files(components, functions):
         shutil.rmtree(root)
         os.mkdir(root)
 
-    file_path = os.path.join(root, 'uncalled.csv')
+    file_path = os.path.join(root, 'zero_degree_nodes.csv')
     with open(file_path, 'w+') as file_:
-        for function in functions:
+        for fnode in nodes:
             file_.write('{0},{1}\n'.format(
-                function.function_name, function.function_signature
+                node.function_name, node.function_signature
             ))
     print('The list of uncalled functions written to {0}'.format(file_path))
 
