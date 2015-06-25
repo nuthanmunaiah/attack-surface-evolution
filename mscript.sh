@@ -32,6 +32,10 @@
 # Your job script goes below this line.
 #
 
+unset -v GMON_OUT_PREFIX
+export LD_LIBRARY_PATH="$HOME/lib:$HOME/lib64"
+export PKG_CONFIG_PATH="$HOME/lib/pkgconfig:$HOME/lib64/pkgconfig"
+
 # scratch_root must the same as the one used by loaddb
 scratch_root="$HOME"
 subject='FFmpeg'
