@@ -55,26 +55,17 @@ class Command(BaseCommand):
             )
         ),
         make_option(
-            '-o', action='store_true', dest='is_output_enabled',
-            help=(
-                'When enabled, the following output files are created in '
-                '~\.stat directory: a CSV file containing the names of '
-                'uncalled functions, a text file containing the stats of '
-                'connected component subgraphs, and .dot files of '
-                'significantly sized connected components.'
-            )
-        ),
-        make_option(
             '-p', type='int', action='store', dest='num_processes', default=4,
             help=(
-                'Number of processes to spawn when loading multiple gprof files'
+                'Number of processes to spawn when loading multiple gprof '
+                'files'
             )
         ),
     )
     help = (
-        'Loads a set of call graphs (cflow, gprof, or both) and prints various '
-        'statistics about the resultant call graph. The Attack Surface Meter '
-        'is used to load call graphs.'
+        'Loads a set of call graphs (cflow, gprof, or both) and prints '
+        'various statistics about the resultant call graph. The Attack '
+        'Surface Meter is used to load call graphs.'
     )
 
     def handle(self, *args, **options):
@@ -98,7 +89,7 @@ def stat(cflow_path, gprof_path, is_output_enabled, num_processes):
         print('Loading cflow call graph')
         cflow_loader = CflowLoader(cflow_path, reverse=True)
         cflow_call_graph = CallGraph.from_loader(cflow_loader)
-    
+
     if gprof_path:
         print('Loading gprof call graph')
         if os.path.isdir(gprof_path):
@@ -121,7 +112,9 @@ def stat(cflow_path, gprof_path, is_output_enabled, num_processes):
             print()
 
         print('Merging cflow and gprof call graphs')
-        call_graph = CallGraph.from_merge(cflow_call_graph, gprof_call_graph)
+        call_graph = CallGraph.from_merge(
+            cflow_call_graph, gprof_call_graph, fragmentize=True
+        )
     elif cflow_call_graph:
         call_graph = cflow_call_graph
     elif gprof_call_graph:
@@ -135,70 +128,16 @@ def stat(cflow_path, gprof_path, is_output_enabled, num_processes):
         (end - begin).total_seconds()
     ))
 
-    
-    call_graph.remove_standard_library_calls()
-    zero_degree_nodes = [
-        k for (k, v) in nx.degree(call_graph.call_graph).items() if v == 0
-    ]
-    components = call_graph.get_components()
-
-    print('')
-    print('#' * 30)
-    print('  Call Graph Statistics')    
-    print('#' * 30)
-    print('    Nodes            {0}'.format(len(call_graph.nodes)))
-    print('    Edges            {0}'.format(len(call_graph.edges)))
-    print('    Components       {0}'.format(len(components)))
-    print('    0-degree Nodes   {0}'.format(len(zero_degree_nodes)))
-    print('#' * 30)
-
-
-    if is_output_enabled:
-        create_output_files(connected_components, zero_degree_nodes)
-
-
-def create_output_files(components, nodes):
-    root = os.path.expanduser('~/.stat')
-    if not os.path.exists(root):
-        os.mkdir(root)
-        print('Output path {0} created'.format(root))
-    else:
-        print('Using existing Output path {0}'.format(root))
-        if len(os.listdir(root)) != 0:
-            print(
-                (
-                    '[WARNING] {0} is not empty. Exising files will be deleted.'
-                ).format(root)
-            )
-        shutil.rmtree(root)
-        os.mkdir(root)
-
-    file_path = os.path.join(root, 'zero_degree_nodes.csv')
-    with open(file_path, 'w+') as file_:
-        for fnode in nodes:
-            file_.write('{0},{1}\n'.format(
-                node.function_name, node.function_signature
-            ))
-    print('The list of uncalled functions written to {0}'.format(file_path))
-
-    node_threshold = 9
-    file_path = os.path.join(root, 'components.txt')
-    with open(file_path, 'w+') as file_:
-        file_.write('{0} {1} {2}\n'.format('Index', 'Nodes', 'Edges'))
-        for index, component in enumerate(components):
-            file_.write('{0:5d} {1:5d} {2:5d}\n'.format(
-                (index + 1), len(component.nodes()), len(component.edges())
-            ))
-            if len(component.nodes()) > node_threshold:
-                nx.write_dot(
-                    component,
-                    os.path.join(root, '{0}.dot'.format(index + 1))
-                )
-    print('The statistics of components written to {0}'.format(file_path))
-    print(
-        (
-            'Dot file of components containing more than {0} nodes written to '
-            '{1}'
-        ).format(node_threshold, root)
-    )
-
+    print('#' * 50)
+    print('              Call Graph Statistics')
+    print('#' * 50)
+    print('    Nodes               {0}'.format(len(call_graph.nodes)))
+    print('    Edges               {0}'.format(len(call_graph.edges)))
+    print('    Entry Points        {0}'.format(len(call_graph.entry_points)))
+    print('    Exit Points         {0}'.format(len(call_graph.exit_points)))
+    print('    Dangerous           {0}'.format(
+        len(nx.get_node_attributes(call_graph.call_graph, 'dangerous'))
+    ))
+    print('    Monolithicity       {0:4f}'.format(call_graph.monolithicity))
+    print('    Fragments           {0}'.format(call_graph.num_fragments))
+    print('#' * 50)

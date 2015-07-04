@@ -100,23 +100,36 @@ def load(revision, subject_cls):
     connection.close()
 
     subject = subject_cls(
-            configure_options=revision.configure_options,
+        configure_options=revision.configure_options,
         processes=settings.PARALLEL['SUBPROCESSES'],
         git_reference=revision.ref
     )
     subject.initialize()
     subject.prepare()
 
-    # load_call_graph, load_vulnerable_functions, and load_function_sloc are
-    #   independent of one another, so run them in parallel
-    call_graph_thread = threading.Thread(
-        target=subject.load_call_graph,
-        name='subject.load_call_graph'
-    )
+    # load_vulnerable_functions and load_designed_defenses are independent of
+    #   one another, so run them in parallel
     vulnerable_functions_thread = threading.Thread(
         target=subject.load_vulnerable_functions,
         name='subject.load_vulnerable_functions',
         args=(get_commit_hashes(revision),)
+    )
+    designed_defenses_thread = threading.Thread(
+        target=subject.load_designed_defenses,
+        name='subject.load_designed_defenses'
+    )
+
+    vulnerable_functions_thread.start()
+    designed_defenses_thread.start()
+
+    vulnerable_functions_thread.join()
+    designed_defenses_thread.join()
+
+    # load_call_graph and load_function_sloc are independent of one another, so
+    #   run them in parallel
+    call_graph_thread = threading.Thread(
+        target=subject.load_call_graph,
+        name='subject.load_call_graph'
     )
     function_sloc_thread = threading.Thread(
         target=subject.load_function_sloc,
@@ -124,11 +137,9 @@ def load(revision, subject_cls):
     )
 
     call_graph_thread.start()
-    vulnerable_functions_thread.start()
     function_sloc_thread.start()
 
     call_graph_thread.join()
-    vulnerable_functions_thread.join()
     function_sloc_thread.join()
 
     process_revision(revision, subject)
@@ -144,8 +155,8 @@ def process_revision(revision, subject):
             n_jobs=settings.PARALLEL['SUBPROCESSES'],
             backend='threading'
         )(
-            delayed(process_node)(node, revision, subject)
-            for node in subject.call_graph.nodes
+            delayed(process_node)(node, attrs, revision, subject)
+            for (node, attrs) in subject.call_graph.nodes
         )
 
         for (node, function, vsource, vsink) in results:
@@ -156,13 +167,16 @@ def process_revision(revision, subject):
                 reachability = get_reachability(
                     node, function, constants.RT_EN, subject
                 )
-            elif function.is_exit:
+                if reachability:
+                    reachability.save()
+
+            reachability = None
+            if function.is_exit:
                 reachability = get_reachability(
                     node, function, constants.RT_EX, subject
                 )
-
-            if reachability:
-                reachability.save()
+                if reachability:
+                    reachability.save()
 
             for item in vsource:
                 vulnerability_source.add(item)
@@ -170,12 +184,13 @@ def process_revision(revision, subject):
             for item in vsink:
                 vulnerability_sink.add(item)
 
+        revision.monolithicity = subject.call_graph.monolithicity
+
         revision.num_entry_points = len(subject.call_graph.entry_points)
         revision.num_exit_points = len(subject.call_graph.exit_points)
         revision.num_functions = len(subject.call_graph.nodes)
-        revision.num_attack_surface_functions = len(
-            subject.call_graph.attack_surface_graph_nodes
-        )
+        revision.num_fragments = subject.call_graph.num_fragments
+
         revision.is_loaded = True
         revision.save()
 
@@ -196,7 +211,8 @@ def process_revision(revision, subject):
             function.save()
 
 
-def process_node(node, revision, subject):
+def process_node(node, attrs, revision, subject):
+    print(node)
     vsource = set()
     vsink = set()
 
@@ -207,51 +223,30 @@ def process_node(node, revision, subject):
     function.revision = revision
     function.is_entry = node in subject.call_graph.entry_points
     function.is_exit = node in subject.call_graph.exit_points
-    function.is_vulnerable = subject.is_function_vulnerable(
-        node.function_name,
-        node.function_signature
-    )
-    function.is_tested = subject.call_graph.call_graph.node[node][
-        'tested'
-    ]
+    function.is_vulnerable = 'vulnerable' in attrs
+    function.is_tested = 'tested' in attrs
+    function.is_dangerous = 'dangerous' in attrs
+    function.is_defense = 'defense' in attrs
     function.sloc = subject.get_function_sloc(
         node.function_name,
         node.function_signature
     )
     function.coupling = subject.call_graph.get_degree(node)
-    function.page_rank_10000_1_hl = subject.call_graph.call_graph.node[node][
-        'page_rank_10000_1_hl'
-    ]
-    function.page_rank_100_1_hl = subject.call_graph.call_graph.node[node][
-        'page_rank_100_1_hl'
-    ]
-    function.page_rank_10000_1_lh = subject.call_graph.call_graph.node[node][
-        'page_rank_10000_1_lh'
-    ]
-    function.page_rank_100_1_lh = subject.call_graph.call_graph.node[node][
-        'page_rank_100_1_lh'
-    ]
 
-    if node in subject.call_graph.attack_surface_graph_nodes:
-        function.is_connected_to_attack_surface = True
+    metrics = subject.call_graph.get_entry_surface_metrics(node)
+    function.proximity_to_entry = metrics['proximity']
+    function.surface_coupling_with_entry = metrics['surface_coupling']
+    if function.is_vulnerable and metrics['points']:
+        for point in metrics['points']:
+            vsource.add(point)
 
-        metrics = subject.call_graph.get_entry_surface_metrics(node)
-        function.proximity_to_entry = metrics['proximity']
-        function.surface_coupling_with_entry = metrics['surface_coupling']
+    metrics = subject.call_graph.get_exit_surface_metrics(node)
+    function.proximity_to_exit = metrics['proximity']
+    function.surface_coupling_with_exit = metrics['surface_coupling']
+    if function.is_vulnerable and metrics['points']:
+        for point in metrics['points']:
+            vsink.add(point)
 
-        if function.is_vulnerable and metrics['points']:
-            for point in metrics['points']:
-                vsource.add(point)
-
-        metrics = subject.call_graph.get_exit_surface_metrics(node)
-        function.proximity_to_exit = metrics['proximity']
-        function.surface_coupling_with_exit = metrics['surface_coupling']
-
-        if function.is_vulnerable and metrics['points']:
-            for point in metrics['points']:
-                vsink.add(point)
-
-    # TODO: Review returning node
     return (node, function, vsource, vsink)
 
 

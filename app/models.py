@@ -18,12 +18,11 @@ class Revision(models.Model):
         blank=False
     )
 
+    monolithicity = models.FloatField(default=0.0, blank=False)
     num_entry_points = models.PositiveIntegerField(default=0, blank=False)
     num_exit_points = models.PositiveIntegerField(default=0, blank=False)
     num_functions = models.PositiveIntegerField(default=0, blank=False)
-    num_attack_surface_functions = models.PositiveIntegerField(
-        default=0, blank=False
-    )
+    num_fragments = models.PositiveIntegerField(default=0, blank=False)
 
     class Meta:
         unique_together = ('number', 'type')
@@ -37,10 +36,11 @@ class Function(models.Model):
     is_entry = models.BooleanField(default=False)
     is_exit = models.BooleanField(default=False)
     is_tested = models.BooleanField(default=False)
+    is_dangerous = models.BooleanField(default=False)
+    is_defense = models.BooleanField(default=False)
     is_vulnerable = models.BooleanField(default=False)
     is_vulnerability_source = models.BooleanField(default=False)
     is_vulnerability_sink = models.BooleanField(default=False)
-    is_connected_to_attack_surface = models.BooleanField(default=False)
     sloc = models.PositiveIntegerField(default=None, null=True)
     coupling = models.PositiveSmallIntegerField(null=False)
     proximity_to_entry = models.FloatField(default=None, null=True)
@@ -51,10 +51,7 @@ class Function(models.Model):
     surface_coupling_with_exit = models.PositiveIntegerField(
         default=None, null=True
     )
-    page_rank_10000_1_hl = models.FloatField(default=None, null=True)
-    page_rank_100_1_hl = models.FloatField(default=None, null=True)
-    page_rank_10000_1_lh = models.FloatField(default=None, null=True)
-    page_rank_100_1_lh = models.FloatField(default=None, null=True)
+    page_rank = models.FloatField(default=None, null=True)
 
     class Meta:
         app_label = 'app'

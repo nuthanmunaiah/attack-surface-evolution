@@ -8,14 +8,14 @@ class FFmpeg(subject.Subject):
     def __init__(
             self, configure_options, processes=1, git_reference=None,
             scratch_root='~'
-        ):
-        
+    ):
+
         name = 'FFmpeg'
         clone_url = 'https://github.com/FFmpeg/FFmpeg.git'
-        sloc_folder_url = (
+        remote_url = (
             'https://5751f28e22fbde2d8ba3f9b75936e0767c761c6a.'
             'googledrive.com/host/0B1eWsh8KZjRrfjg0Z1VkcU96U2h'
-            'Qal9scHM3NzVmYTk2WVhiQzQtdGFpNWc5c0VzbUJFTE0/FFmpeg/SLOC/'
+            'Qal9scHM3NzVmYTk2WVhiQzQtdGFpNWc5c0VzbUJFTE0/FFmpeg/'
         )
 
         if '~' in scratch_root:
@@ -23,7 +23,7 @@ class FFmpeg(subject.Subject):
 
         super().__init__(
             name, clone_url, configure_options, processes, git_reference,
-            sloc_folder_url, scratch_root
+            remote_url, scratch_root
         )
 
     def configure(self):
@@ -37,7 +37,7 @@ class FFmpeg(subject.Subject):
     def test(self):
         cmd = 'make -j %d fate-rsync' % self.processes
         self.execute(cmd)
-        
+
         # Returning non-zero return value to allow execution of manual script
         return 2
 
@@ -108,4 +108,3 @@ class FFmpeg(subject.Subject):
         )
 
         return returncode
-

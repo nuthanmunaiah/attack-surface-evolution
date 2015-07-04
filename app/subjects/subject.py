@@ -7,7 +7,9 @@ import hashlib
 from urllib import parse
 
 import requests
+from attacksurfacemeter.call import Call
 from attacksurfacemeter.call_graph import CallGraph
+from attacksurfacemeter.environments import Environments
 from attacksurfacemeter.loaders.cflow_loader import CflowLoader
 from attacksurfacemeter.loaders.gprof_loader import GprofLoader
 from attacksurfacemeter.loaders.multigprof_loader import MultigprofLoader
@@ -18,7 +20,7 @@ from app.gitapi import Repo
 class Subject(object):
     def __init__(
         self, name, clone_url, configure_options, processes=1,
-        git_reference=None, sloc_folder_url=None, scratch_root='/tmp'
+        git_reference=None, remote_url=None, scratch_root='/tmp'
     ):
 
         self.name = name
@@ -26,7 +28,7 @@ class Subject(object):
         self.configure_options = configure_options
         self.processes = processes
         self.git_reference = git_reference
-        self.sloc_folder_url = sloc_folder_url
+        self.remote_url = remote_url
         self.repo = None
         self.scratch_dir = os.path.join(scratch_root, name)
 
@@ -42,6 +44,7 @@ class Subject(object):
         self.call_graph = None
         self.function_sloc = None
         self.vulnerable_functions = None
+        self.designed_defenses = None
 
     def clone(self):
         if not self.__clone_exists__:
@@ -72,7 +75,6 @@ class Subject(object):
         if not self.initialized:
             self.clone()
             self.checkout()
-            self.__download_sloc_file__()
 
             self.initialized = True
 
@@ -101,41 +103,31 @@ class Subject(object):
             )
 
         if not self.call_graph:
-            cflow_loader = CflowLoader(self.cflow_file_path, reverse=True)
+            cflow_loader = CflowLoader(
+                self.cflow_file_path, reverse=True,
+                defenses=self.designed_defenses,
+                vulnerabilities=self.vulnerable_functions
+            )
             gprof_loader = MultigprofLoader(
-                self.gprof_files_path, processes=self.processes, reverse=False
+                self.gprof_files_path, processes=self.processes, reverse=False,
+                defenses=self.designed_defenses,
+                vulnerabilities=self.vulnerable_functions
             )
 
             self.call_graph = CallGraph.from_merge(
                 CallGraph.from_loader(cflow_loader),
-                CallGraph.from_loader(gprof_loader)
+                CallGraph.from_loader(gprof_loader),
+                fragmentize=True
             )
-            self.call_graph.remove_standard_library_calls()
-
-            # Assign page ranks computed for different values of edge weights
-            # and personalization vectors
-            self.call_graph.assign_page_rank(
-                cflow_edge_weight=1.0, gprof_edge_weight=0.5,
-                primary=10000, secondary=1, name='page_rank_10000_1_hl'
-            )
-            self.call_graph.assign_page_rank(
-                cflow_edge_weight=1.0, gprof_edge_weight=0.5,
-                primary=100, secondary=1, name='page_rank_100_1_hl'
-            )
-
-            self.call_graph.assign_page_rank(
-                cflow_edge_weight=0.5, gprof_edge_weight=1.0,
-                primary=10000, secondary=1, name='page_rank_10000_1_lh'
-            )
-            self.call_graph.assign_page_rank(
-                cflow_edge_weight=0.5, gprof_edge_weight=1.0,
-                primary=100, secondary=1, name='page_rank_100_1_lh'
-            )
+            self.call_graph.assign_weights()
+            self.call_graph.assign_page_rank(name='page_rank')
+            print(self.call_graph.monolithicity)
 
     def get_absolute_path(self, name):
         return os.path.join(self.source_dir, name)
 
     def load_function_sloc(self):
+        self.__download_sloc_file__()
         if not self.function_sloc:
             re_function = re.compile('^([^\(]*)')
 
@@ -155,19 +147,30 @@ class Subject(object):
 
     def load_vulnerable_functions(self, commit_hashes):
         if not self.vulnerable_functions and commit_hashes:
-            self.vulnerable_functions = dict()
+            self.vulnerable_functions = list()
             for commit_hash in commit_hashes:
                 for file_ in self.repo.get_files_changed(commit_hash):
                     file_path = self.get_absolute_path(file_)
                     file_path = file_path.replace(self.source_dir, '.')
 
-                    if file_path not in self.vulnerable_functions:
-                        self.vulnerable_functions[file_path] = set()
-
-                    for function in self.repo.get_functions_changed(
+                    functions = self.repo.get_functions_changed(
                         commit_hash, file=file_
-                    ):
-                        self.vulnerable_functions[file_path].add(function)
+                    )
+                    for function in functions:
+                        self.vulnerable_functions.append(
+                            Call(function, file_path, Environments.C)
+                        )
+
+    def load_designed_defenses(self):
+        self.__download_defenses_file__()
+        if not self.designed_defenses:
+            self.designed_defenses = list()
+            with open(self.__defenses_file_path__, 'r') as _defenses_file:
+                reader = csv.reader(_defenses_file)
+                for row in reader:
+                    self.designed_defenses.append(
+                        Call(row[0], row[1], Environments.C)
+                    )
 
     def is_function_vulnerable(self, name, in_file):
         if self.vulnerable_functions:
@@ -237,6 +240,16 @@ class Subject(object):
                     file_.write(chunk)
                     file_.flush()
 
+    def __download_defenses_file__(self):
+        if (self.__defenses_file_url__ and not self.__defenses_file_exists__):
+            with open(self.__defenses_file_path__, 'w+') as file_:
+                response = requests.get(
+                    self.__defenses_file_url__, stream=True
+                )
+                for chunk in response.iter_content(1024, True):
+                    file_.write(chunk)
+                    file_.flush()
+
     def __dbug__(self, message):
         if 'DEBUG' in os.environ:
             print('[DEBUG] {0}'.format(message))
@@ -245,7 +258,7 @@ class Subject(object):
     def __sloc_file_url__(self):
         url = None
 
-        if self.sloc_folder_url:
+        if self.remote_url:
             sloc_file_name = '{0}.csv'.format(self.name)
 
             if self.git_reference:
@@ -256,7 +269,9 @@ class Subject(object):
                     sloc_file_name
                 )
 
-            url = parse.urljoin(self.sloc_folder_url, sloc_file_name)
+            url = parse.urljoin(
+                self.remote_url, 'sloc/{0}'.format(sloc_file_name)
+            )
 
         return url
 
@@ -267,6 +282,26 @@ class Subject(object):
     @property
     def __sloc_file_exists__(self):
         return os.path.exists(self.__sloc_file_path__)
+
+    @property
+    def __defenses_file_url__(self):
+        url = None
+
+        if self.remote_url:
+            defenses_file_name = '{0}.csv'.format(self.name)
+            url = parse.urljoin(
+                self.remote_url, 'defenses/{0}'.format(defenses_file_name)
+            )
+
+        return url
+
+    @property
+    def __defenses_file_path__(self):
+        return os.path.join(self.scratch_dir, self.uuid, 'defenses.csv')
+
+    @property
+    def __defenses_file_exists__(self):
+        return os.path.exists(self.__defenses_file_path__)
 
     @property
     def __cflow_file_exists__(self):
