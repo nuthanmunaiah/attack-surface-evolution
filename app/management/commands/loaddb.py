@@ -61,5 +61,6 @@ class Command(BaseCommand):
 
         num_processes = min(settings.PARALLEL['PROCESSES'], revisions.count())
 
-        with Pool(num_processes) as pool:
-            pool.starmap(load, [(revision, FFmpeg) for revision in revisions])
+        # TODO: Resolve daemonic process issue
+        for revision in revisions:
+            load(revision, FFmpeg)
