@@ -212,7 +212,6 @@ def process_revision(revision, subject):
 
 
 def process_node(node, attrs, revision, subject):
-    print(node)
     vsource = set()
     vsink = set()
 
