@@ -232,6 +232,7 @@ def process_node(node, attrs, revision, subject):
         node.function_signature
     )
     function.coupling = subject.call_graph.get_degree(node)
+    function.page_rank = subject.call_graph.call_graph.node[node]['page_rank']
 
     metrics = subject.call_graph.get_entry_surface_metrics(node)
     function.proximity_to_entry = metrics['proximity']
