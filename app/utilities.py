@@ -1,13 +1,14 @@
 import datetime
 import csv
+import multiprocessing
 import os
+import sys
 import threading
 
 from queue import Queue
 
 from django.conf import settings
 from django.db import connection, transaction
-from joblib import Parallel, delayed
 
 from app import constants, helpers
 from app.models import Revision, Cve, CveRevision, Function, Reachability
@@ -96,9 +97,7 @@ def map_cve_to_revision():
 
 
 def load(revision, subject_cls):
-    # TODO: Revisit call to connection.close()
-    connection.close()
-
+    debug('Loading {0}'.format(revision.number))
     subject = subject_cls(
         configure_options=revision.configure_options,
         processes=settings.PARALLEL['SUBPROCESSES'],
@@ -107,8 +106,12 @@ def load(revision, subject_cls):
     subject.initialize()
     subject.prepare()
 
-    # load_vulnerable_functions and load_designed_defenses are independent of
-    #   one another, so run them in parallel
+    # load_function_sloc, load_vulnerable_functions, and load_designed_defenses
+    # are independent of one another, so run them in parallel
+    function_sloc_thread = threading.Thread(
+        target=subject.load_function_sloc,
+        name='subject.load_function_sloc'
+    )
     vulnerable_functions_thread = threading.Thread(
         target=subject.load_vulnerable_functions,
         name='subject.load_vulnerable_functions',
@@ -119,102 +122,83 @@ def load(revision, subject_cls):
         name='subject.load_designed_defenses'
     )
 
+    function_sloc_thread.start()
     vulnerable_functions_thread.start()
     designed_defenses_thread.start()
 
+    function_sloc_thread.join()
     vulnerable_functions_thread.join()
     designed_defenses_thread.join()
 
-    # load_call_graph and load_function_sloc are independent of one another, so
-    #   run them in parallel
-    call_graph_thread = threading.Thread(
-        target=subject.load_call_graph,
-        name='subject.load_call_graph'
-    )
-    function_sloc_thread = threading.Thread(
-        target=subject.load_function_sloc,
-        name='subject.load_function_sloc'
-    )
+    subject.load_call_graph()
 
-    call_graph_thread.start()
-    function_sloc_thread.start()
-
-    call_graph_thread.join()
-    function_sloc_thread.join()
-
-    process_revision(revision, subject)
+    process(revision, subject)
 
 
-def process_revision(revision, subject):
-    vulnerability_source = set()
-    vulnerability_sink = set()
+def process(revision, subject):
+    debug('Processing {0}'.format(revision.number))
+    vsources = None
+    vsinks = None
 
-    with transaction.atomic():
-        # TODO: Evaluate the Global Interpreter Lock (GIL) phenemenon
-        results = Parallel(
-            n_jobs=settings.PARALLEL['SUBPROCESSES'],
-            backend='threading'
-        )(
-            delayed(process_node)(node, attrs, revision, subject)
-            for (node, attrs) in subject.call_graph.nodes
+    manager = multiprocessing.Manager()
+
+    # Shared lists that accumulate the vulnerability source and sink
+    #   information when processing each node in the call graph
+    vsource = manager.list()
+    vsink = manager.list()
+    # Shared queue for communication between process_node and save
+    queue = manager.Queue(100)
+
+    # Consumer: Spawn a process to save function to the database
+    process = multiprocessing.Process(target=_save, args=(subject, queue))
+    process.start()
+
+    # Producers: Spawn a pool processes to generate Function objects
+    with multiprocessing.Pool(settings.PARALLEL['SUBPROCESSES']) as pool:
+        pool.starmap(
+            _process,
+            [
+                (node, attrs, revision, subject, vsource, vsink, queue)
+                for (node, attrs) in subject.call_graph.nodes
+            ]
         )
 
-        for (node, function, vsource, vsink) in results:
-            function.save()
+        vsources = set(vsource)
+        vsinks = set(vsink)
 
-            reachability = None
-            if function.is_entry:
-                reachability = get_reachability(
-                    node, function, constants.RT_EN, subject
-                )
-                if reachability:
-                    reachability.save()
+    process.join()
 
-            reachability = None
-            if function.is_exit:
-                reachability = get_reachability(
-                    node, function, constants.RT_EX, subject
-                )
-                if reachability:
-                    reachability.save()
+    # TODO: Review hack
+    connection.close()
 
-            for item in vsource:
-                vulnerability_source.add(item)
-
-            for item in vsink:
-                vulnerability_sink.add(item)
-
-        revision.monolithicity = subject.call_graph.monolithicity
-
-        revision.num_entry_points = len(subject.call_graph.entry_points)
-        revision.num_exit_points = len(subject.call_graph.exit_points)
-        revision.num_functions = len(subject.call_graph.nodes)
-        revision.num_fragments = subject.call_graph.num_fragments
-
-        revision.is_loaded = True
-        revision.save()
-
-        for item in vulnerability_source:
-            function = Function.objects.get(
-                revision=revision, name=item.function_name,
-                file=item.function_signature
+    if vsource or vsinks:
+        functions = Function.objects.filter(revision=revision)
+        for i in vsources:
+            function = functions.get(
+                name=i.function_name, file=i.function_signature
             )
             function.is_vulnerability_source = True
             function.save()
 
-        for item in vulnerability_sink:
-            function = Function.objects.get(
-                revision=revision, name=item.function_name,
-                file=item.function_signature
+        for i in vsinks:
+            function = functions.get(
+                name=i.function_name, file=i.function_signature
             )
             function.is_vulnerability_sink = True
             function.save()
 
+    revision.monolithicity = subject.call_graph.monolithicity
 
-def process_node(node, attrs, revision, subject):
-    vsource = set()
-    vsink = set()
+    revision.num_entry_points = len(subject.call_graph.entry_points)
+    revision.num_exit_points = len(subject.call_graph.exit_points)
+    revision.num_functions = len(subject.call_graph.nodes)
+    revision.num_fragments = subject.call_graph.num_fragments
 
+    revision.is_loaded = True
+    revision.save()
+
+
+def _process(node, attrs, revision, subject, vsource, vsink, queue):
     function = Function()
 
     function.name = node.function_name
@@ -238,32 +222,51 @@ def process_node(node, attrs, revision, subject):
     function.surface_coupling_with_entry = metrics['surface_coupling']
     if function.is_vulnerable and metrics['points']:
         for point in metrics['points']:
-            vsource.add(point)
+            vsource.append(point)
 
     metrics = subject.call_graph.get_exit_surface_metrics(node)
     function.proximity_to_exit = metrics['proximity']
     function.surface_coupling_with_exit = metrics['surface_coupling']
     if function.is_vulnerable and metrics['points']:
         for point in metrics['points']:
-            vsink.add(point)
+            vsink.append(point)
 
-    return (node, function, vsource, vsink)
+    queue.put((function, node), block=True)
 
 
-def get_reachability(node, function, type_, subject):
-    reachability = Reachability()
-    reachability.type = type_
-    reachability.function = function
-    if type_ == constants.RT_EN:
-        reachability.value = subject.call_graph.get_entry_point_reachability(
-            node
-        )
-    elif type_ == constants.RT_EX:
-        reachability.value = subject.call_graph.get_exit_point_reachability(
-            node
-        )
+def _save(subject, queue):
+    index = 1
+    count = len(subject.call_graph.nodes)
 
-    return reachability
+    with transaction.atomic():
+        while index <= count:
+            (function, node) = queue.get(block=True)
+            function.save()
+
+            # Compute reachability
+            if function.is_entry:
+                reachability = Reachability()
+                reachability.type = constants.RT_EN
+                reachability.function = function
+                reachability.value = (
+                    subject.call_graph.get_entry_point_reachability(node)
+                )
+                reachability.save()
+            if function.is_exit:
+                reachability = Reachability()
+                reachability.type = constants.RT_EX
+                reachability.function = function
+                reachability.value = (
+                    subject.call_graph.get_exit_point_reachability(node)
+                )
+                reachability.save()
+
+            debug(
+                'Saving {0:5d}/{1:5d} {2}'.format(index, count, function.name),
+                line=True
+            )
+            print('')
+            index += 1
 
 
 def get_commit_hashes(revision):
@@ -292,3 +295,14 @@ def profile(revision, subject_cls, index):
         git_reference=revision.ref
     )
     subject.gprof(index)
+
+
+def debug(message, line=False):
+    if 'DEBUG' in os.environ:
+        if line:
+            sys.stdout.write('\r')
+            sys.stdout.write('\033[K')
+            sys.stdout.write('[DEBUG] {0}'.format(message))
+            sys.stdout.flush()
+        else:
+            print('[DEBUG] {0}'.format(message))
