@@ -27,14 +27,17 @@ class FFmpeg(subject.Subject):
         )
 
     def configure(self):
+        self.__dbug__('Configuring {0}'.format(self.name))
         cmd = './configure {0}'.format(self.configure_options)
         return self.execute(cmd)
 
     def make(self):
+        self.__dbug__('Buildingg {0}'.format(self.name))
         cmd = 'make -j %d' % self.processes
         return self.execute(cmd)
 
     def test(self):
+        self.__dbug__('Testing {0}'.format(self.name))
         cmd = 'make -j %d fate-rsync' % self.processes
         self.execute(cmd)
 
@@ -42,6 +45,9 @@ class FFmpeg(subject.Subject):
         return 2
 
     def cflow(self):
+        self.__dbug__('Generating call graph for {0} using cflow'.format(
+            self.name
+        ))
         cmd = (
             'cflow -b -r '
             '`find -name "*.c" -or -name "*.h" | grep -vwE "(tests|doc)"`'
@@ -51,6 +57,9 @@ class FFmpeg(subject.Subject):
             return self.execute(cmd, stdout=_cflow_file)
 
     def gprof(self, index=None):
+        self.__dbug__('Generating call graph for {0} using gprof'.format(
+            self.name
+        ))
         if index is not None:
             gmon_file_path = os.path.join(
                 self.gmon_files_dir, self.gmon_files_name[index])
@@ -71,6 +80,10 @@ class FFmpeg(subject.Subject):
         return returncode
 
     def __gprof__(self, gmon_file_path, gprof_file_path):
+        self.__dbug__(
+            'Generating call graph for {0} using gprof with profile '
+            'information from {1}'.format(self.name, gmon_file_path)
+        )
         if 'basegmon.out' in gmon_file_path:
             cmd = 'gprof -q -b -l -c -z -L ffmpeg_g {0}'
         else:

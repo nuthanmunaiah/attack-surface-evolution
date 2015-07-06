@@ -13,7 +13,7 @@ from attacksurfacemeter.environments import Environments
 from attacksurfacemeter.loaders.cflow_loader import CflowLoader
 from attacksurfacemeter.loaders.gprof_loader import GprofLoader
 from attacksurfacemeter.loaders.multigprof_loader import MultigprofLoader
-from app import errors, helpers
+from app import errors, helpers, utilities
 from app.gitapi import Repo
 
 
@@ -48,14 +48,18 @@ class Subject(object):
 
     def clone(self):
         if not self.__clone_exists__:
+            self.__dbug__('Cloning {0}'.format(self.clone_url))
             self.repo = Repo.git_clone(self.clone_url, self.source_dir)
             return True
-
+        self.__dbug__(
+            'Attaching to existing clone at {0}'.format(self.source_dir
+        ))
         self.repo = Repo(self.source_dir)
         return False
 
     def checkout(self):
         if self.git_reference:
+            self.__dbug__('Checking out {0}'.format(self.git_reference))
             self.repo.git_checkout(self.git_reference)
 
     def configure(self):
@@ -100,6 +104,7 @@ class Subject(object):
         self.prepared = True
 
     def load_call_graph(self):
+        self.__dbug__('Loading call graph')
         if not self.prepared:
             raise errors.SubjectNotPreparedError(
                 'prepare() must be invoked before load_call_graph()'
@@ -122,13 +127,17 @@ class Subject(object):
                 CallGraph.from_loader(gprof_loader),
                 fragmentize=True
             )
+            print('')
+            self.__dbug__('Assigning edge weights')
             self.call_graph.assign_weights()
+            self.__dbug__('Assigning page ranks')
             self.call_graph.assign_page_rank(name='page_rank')
 
     def get_absolute_path(self, name):
         return os.path.join(self.source_dir, name)
 
     def load_function_sloc(self):
+        self.__dbug__('Loading function SLOC')
         self.__download_sloc_file__()
         if not self.function_sloc:
             re_function = re.compile('^([^\(]*)')
@@ -148,6 +157,7 @@ class Subject(object):
             return self.function_sloc[key]
 
     def load_vulnerable_functions(self, commit_hashes):
+        self.__dbug__('Loading vulnerable functions')
         if not self.vulnerable_functions and commit_hashes:
             self.vulnerable_functions = list()
             for commit_hash in commit_hashes:
@@ -164,6 +174,7 @@ class Subject(object):
                         )
 
     def load_designed_defenses(self):
+        self.__dbug__('Loading designed defenses')
         self.__download_defenses_file__()
         if not self.designed_defenses:
             self.designed_defenses = list()
@@ -235,6 +246,9 @@ class Subject(object):
         raise NotImplementedError
 
     def __download_sloc_file__(self):
+        self.__dbug__('Downloading function SLOC file {0}'.format(
+            self.__sloc_file_url__
+        ))
         if (self.__sloc_file_url__ and not self.__sloc_file_exists__):
             with open(self.__sloc_file_path__, 'w+') as file_:
                 response = requests.get(self.__sloc_file_url__, stream=True)
@@ -243,6 +257,9 @@ class Subject(object):
                     file_.flush()
 
     def __download_defenses_file__(self):
+        self.__dbug__('Downloading designed defenses file {0}'.format(
+            self.__defenses_file_url__
+        ))
         if (self.__defenses_file_url__ and not self.__defenses_file_exists__):
             with open(self.__defenses_file_path__, 'w+') as file_:
                 response = requests.get(
@@ -252,9 +269,8 @@ class Subject(object):
                     file_.write(chunk)
                     file_.flush()
 
-    def __dbug__(self, message):
-        if 'DEBUG' in os.environ:
-            print('[DEBUG] {0}'.format(message))
+    def __dbug__(self, message, line=False):
+        utilities.debug(message, line)
 
     @property
     def __sloc_file_url__(self):
