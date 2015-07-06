@@ -3,7 +3,6 @@ attacksurfacemeter==0.9.0
 coverage==3.7.1
 decorator==3.4.0
 gitapi==1.0.1
-joblib==0.8.4
 networkx==1.9.1
 psycopg2==2.6
 pydot2==1.0.33
