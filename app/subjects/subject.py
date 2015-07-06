@@ -49,8 +49,10 @@ class Subject(object):
     def clone(self):
         if not self.__clone_exists__:
             self.repo = Repo.git_clone(self.clone_url, self.source_dir)
-        else:
-            self.repo = Repo(self.source_dir)
+            return True
+
+        self.repo = Repo(self.source_dir)
+        return False
 
     def checkout(self):
         if self.git_reference:
@@ -73,8 +75,9 @@ class Subject(object):
 
     def initialize(self):
         if not self.initialized:
-            self.clone()
-            self.checkout()
+            cloned = self.clone()
+            if cloned:
+                self.checkout()
 
             self.initialized = True
 
@@ -121,7 +124,6 @@ class Subject(object):
             )
             self.call_graph.assign_weights()
             self.call_graph.assign_page_rank(name='page_rank')
-            print(self.call_graph.monolithicity)
 
     def get_absolute_path(self, name):
         return os.path.join(self.source_dir, name)
