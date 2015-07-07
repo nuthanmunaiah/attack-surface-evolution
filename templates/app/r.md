@@ -18,32 +18,13 @@ Surface Coupling Metrics
 {% for r in revisions %}| {{ r.number|stringformat:"8s" }} |       {{ r.scen.significant }}       | {{ r.scen.p|stringformat:"6.5e" }} | {{ r.scen.median.vuln|stringformat:"12.6f" }} | {{ r.scen.median.neut|stringformat:"12.6f" }} |       {{ r.scex.significant }}       | {{ r.scex.p|stringformat:"6.5e" }} | {{ r.scex.median.vuln|stringformat:"12.6f" }} | {{ r.scex.median.neut|stringformat:"12.6f" }} |
 {% endfor %}
 
-Page Rank Metrics
-=================
+Page Rank
+=========
 
-Page Rank (10000 to 1)
-----------------------
-
-|  Metric  |                  cflow (1.0) & gprof (0.5)                |                  cflow (0.5) & gprof (1.0)                |
-| -------- | --------------------------------------------------------- | --------------------------------------------------------- |
-| Revision |  Significant  |   p-value   | Median(vuln) | Median(neut) |  Significant  |   p-value   | Median(vuln) | Median(neut) |
-| -------- | ------------- | ----------- | ------------ | ------------ | ------------- | ----------- | ------------ | ------------ |
-{% for r in revisions %}| {{ r.number|stringformat:"8s" }} |       {{ r.pr_10k_1_hl.significant }}       | {{ r.pr_10k_1_hl.p|stringformat:"6.5e" }} | {{ r.pr_10k_1_hl.median.vuln|stringformat:"12.6e" }} | {{ r.pr_10k_1_hl.median.neut|stringformat:"12.6e" }} |       {{ r.pr_10k_1_lh.significant }}       | {{ r.pr_10k_1_lh.p|stringformat:"6.5e" }} | {{ r.pr_10k_1_lh.median.vuln|stringformat:"12.6e" }} | {{ r.pr_10k_1_lh.median.neut|stringformat:"12.6e" }} |
+| Revision |  Significant  |   p-value   | Median(vuln) | Median(neut) |
+| -------- | ------------- | ----------- | ------------ | ------------ |
+{% for r in revisions %}| {{ r.number|stringformat:"8s" }} |       {{r.page_rank.significant }}       | {{ r.page_rank.p|stringformat:"6.5e" }} | {{ r.page_rank.median.vuln|stringformat:"12.6e" }} | {{ r.page_rank.median.neut|stringformat:"12.6e" }} |
 {% endfor %}
-
-Note: Entry/exit points were assigned a personalization value of 10000 and all other nodes were assigned a personalization value of 1.
-
-Page Rank (100 to 1)
---------------------
-
-|  Metric  |                  cflow (1.0) & gprof (0.5)                |                 cflow (0.5) & gprof (1.0)                 |
-| -------- | --------------------------------------------------------- | --------------------------------------------------------- |
-| Revision |  Significant  |   p-value   | Median(vuln) | Median(neut) |  Significant  |   p-value   | Median(vuln) | Median(neut) |
-| -------- | ------------- | ----------- | ------------ | ------------ | ------------- | ----------- | ------------ | ------------ |
-{% for r in revisions %}| {{ r.number|stringformat:"8s" }} |       {{ r.pr_100_1_hl.significant }}       | {{ r.pr_100_1_hl.p|stringformat:"6.5e" }} | {{ r.pr_100_1_hl.median.vuln|stringformat:"12.6e" }} | {{ r.pr_100_1_hl.median.neut|stringformat:"12.6e" }} |       {{ r.pr_100_1_lh.significant }}       | {{ r.pr_100_1_lh.p|stringformat:"6.5e" }} | {{ r.pr_100_1_lh.median.vuln|stringformat:"12.6e" }} | {{ r.pr_100_1_lh.median.neut|stringformat:"12.6e" }} |
-{% endfor %}
-
-Note: Entry/exit points were assigned a personalization value of 100 and all other nodes were assigned a personalization value of 1.
 
 Legend
 ======

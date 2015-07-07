@@ -39,17 +39,8 @@ def run(output_file):
                 'surface_coupling_with_exit', 'is_vulnerable', normalize=True
             )
 
-            result['pr_10k_1_hl'] = association(
-                'page_rank_10000_1_hl', 'is_vulnerable', normalize=True
-            )
-            result['pr_10k_1_lh'] = association(
-                'page_rank_10000_1_lh', 'is_vulnerable', normalize=True
-            )
-            result['pr_100_1_hl'] = association(
-                'page_rank_100_1_hl', 'is_vulnerable', normalize=True
-            )
-            result['pr_100_1_lh'] = association(
-                'page_rank_100_1_lh', 'is_vulnerable', normalize=True
+            result['page_rank'] = association(
+                'page_rank', 'is_vulnerable', normalize=False
             )
 
             results['revisions'].append(result)
