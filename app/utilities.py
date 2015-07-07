@@ -2,6 +2,7 @@ import datetime
 import csv
 import multiprocessing
 import os
+import statistics as stat
 import sys
 import threading
 
@@ -231,6 +232,18 @@ def _process(node, attrs, revision, subject, vsource, vsink, queue):
         for point in metrics['points']:
             vsink.append(point)
 
+    # Designed defenses
+    metrics = subject.call_graph.get_association_metrics(node, 'defense')
+    if metrics:
+        function.coupling_with_defense = len(metrics)
+        function.proximity_to_defense = stat.mean(metrics.values())
+
+    # Dangerous functions
+    metrics = subject.call_graph.get_association_metrics(node, 'dangerous')
+    if metrics:
+        function.coupling_with_dangerous = len(metrics)
+        function.proximity_to_dangerous = stat.mean(metrics.values())
+
     queue.put((function, node), block=True)
 
 
@@ -265,8 +278,8 @@ def _save(subject, queue):
                 'Saving {0:5d}/{1:5d} {2}'.format(index, count, function.name),
                 line=True
             )
-            print('')
             index += 1
+        print('')
 
 
 def get_commit_hashes(revision):

@@ -51,6 +51,10 @@ class Function(models.Model):
     surface_coupling_with_exit = models.PositiveIntegerField(
         default=None, null=True
     )
+    proximity_to_defense = models.FloatField(default=None, null=True)
+    coupling_with_defense = models.FloatField(default=None, null=True)
+    proximity_to_dangerous = models.FloatField(default=None, null=True)
+    coupling_with_dangerous = models.FloatField(default=None, null=True)
     page_rank = models.FloatField(default=None, null=True)
 
     class Meta:
