@@ -231,7 +231,7 @@ def _process(node, attrs, revision, subject, vsource, vsink, queue):
     # Exit points
     metrics = subject.call_graph.get_shortest_path_length(node, 'exit')
     if metrics is not None:
-        function.proximity_to_entry = (
+        function.proximity_to_exit = (
             stat.mean(metrics.values()) if metrics else 0.0
         )
         if function.is_vulnerable:
