@@ -2,6 +2,7 @@ import os
 import sys
 from django.conf import settings
 from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
 
 from rpy2 import robjects, rinterface
 
@@ -32,11 +33,11 @@ def run(output_file):
             result['ptex'] = association(
                 'proximity_to_exit', 'is_vulnerable', normalize=False
             )
-            result['scen'] = association(
-                'surface_coupling_with_entry', 'is_vulnerable', normalize=True
+            result['ptde'] = association(
+                'proximity_to_defense', 'is_vulnerable', normalize=False
             )
-            result['scex'] = association(
-                'surface_coupling_with_exit', 'is_vulnerable', normalize=True
+            result['ptda'] = association(
+                'proximity_to_dangerous', 'is_vulnerable', normalize=False
             )
 
             result['page_rank'] = association(
@@ -146,7 +147,11 @@ def association(column, switch, normalize):
             'significant': 'Y' if r['p'][0] <= 0.05 else 'N',
             'p': r['p'][0],
             'mean': {'vuln': r['v_mean'][0], 'neut': r['n_mean'][0]},
-            'median': {'vuln': r['v_median'][0], 'neut': r['n_median'][0]}
+            'median': {'vuln': r['v_median'][0], 'neut': r['n_median'][0]},
+            'rel': (
+                mark_safe('<')
+                if r['v_median'][0] < r['n_median'][0] else mark_safe('>')
+            )
         }
     except rinterface.RRuntimeError as error:
         print('[ERROR]')
