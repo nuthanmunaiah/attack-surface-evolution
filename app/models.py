@@ -33,28 +33,25 @@ class Function(models.Model):
     revision = models.ForeignKey(Revision, blank=False)
     name = models.CharField(max_length=52, blank=False)
     file = models.CharField(max_length=50, blank=False)
+
     is_entry = models.BooleanField(default=False)
     is_exit = models.BooleanField(default=False)
     is_tested = models.BooleanField(default=False)
-    is_dangerous = models.BooleanField(default=False)
+    calls_dangerous = models.BooleanField(default=False)
     is_defense = models.BooleanField(default=False)
     is_vulnerable = models.BooleanField(default=False)
     is_vulnerability_source = models.BooleanField(default=False)
     is_vulnerability_sink = models.BooleanField(default=False)
+
     sloc = models.PositiveIntegerField(default=None, null=True)
-    coupling = models.PositiveSmallIntegerField(null=False)
+
+    fan_in = models.PositiveSmallIntegerField(null=False)
+    fan_out = models.PositiveSmallIntegerField(null=False)
+
     proximity_to_entry = models.FloatField(default=None, null=True)
     proximity_to_exit = models.FloatField(default=None, null=True)
-    surface_coupling_with_entry = models.PositiveIntegerField(
-        default=None, null=True
-    )
-    surface_coupling_with_exit = models.PositiveIntegerField(
-        default=None, null=True
-    )
     proximity_to_defense = models.FloatField(default=None, null=True)
-    coupling_with_defense = models.FloatField(default=None, null=True)
     proximity_to_dangerous = models.FloatField(default=None, null=True)
-    coupling_with_dangerous = models.FloatField(default=None, null=True)
     page_rank = models.FloatField(default=None, null=True)
 
     class Meta:

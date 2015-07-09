@@ -209,40 +209,48 @@ def _process(node, attrs, revision, subject, vsource, vsink, queue):
     function.is_exit = node in subject.call_graph.exit_points
     function.is_vulnerable = 'vulnerable' in attrs
     function.is_tested = 'tested' in attrs
-    function.is_dangerous = 'dangerous' in attrs
+    function.calls_dangerous = 'dangerous' in attrs
     function.is_defense = 'defense' in attrs
     function.sloc = subject.get_function_sloc(
         node.function_name,
         node.function_signature
     )
-    function.coupling = subject.call_graph.get_degree(node)
-    function.page_rank = subject.call_graph.call_graph.node[node]['page_rank']
+    (function.fan_in, function.fan_out) = subject.call_graph.get_fan(node)
+    function.page_rank = attrs['page_rank']
 
-    metrics = subject.call_graph.get_entry_surface_metrics(node)
-    function.proximity_to_entry = metrics['proximity']
-    function.surface_coupling_with_entry = metrics['surface_coupling']
-    if function.is_vulnerable and metrics['points']:
-        for point in metrics['points']:
-            vsource.append(point)
+    # Entry points
+    metrics = subject.call_graph.get_shortest_path_length(node, 'entry')
+    if metrics is not None:
+        function.proximity_to_entry = (
+            stat.mean(metrics.values()) if metrics else 0.0
+        )
+        if function.is_vulnerable:
+            for point in metrics.keys():
+                vsource.append(point)
 
-    metrics = subject.call_graph.get_exit_surface_metrics(node)
-    function.proximity_to_exit = metrics['proximity']
-    function.surface_coupling_with_exit = metrics['surface_coupling']
-    if function.is_vulnerable and metrics['points']:
-        for point in metrics['points']:
-            vsink.append(point)
+    # Exit points
+    metrics = subject.call_graph.get_shortest_path_length(node, 'exit')
+    if metrics is not None:
+        function.proximity_to_entry = (
+            stat.mean(metrics.values()) if metrics else 0.0
+        )
+        if function.is_vulnerable:
+            for point in metrics.keys():
+                vsink.append(point)
 
     # Designed defenses
-    metrics = subject.call_graph.get_association_metrics(node, 'defense')
-    if metrics:
-        function.coupling_with_defense = len(metrics)
-        function.proximity_to_defense = stat.mean(metrics.values())
+    metrics = subject.call_graph.get_shortest_path_length(node, 'defense')
+    if metrics is not None:
+        function.proximity_to_defense = (
+            stat.mean(metrics.values()) if metrics else 0.0
+        )
 
     # Dangerous functions
-    metrics = subject.call_graph.get_association_metrics(node, 'dangerous')
-    if metrics:
-        function.coupling_with_dangerous = len(metrics)
-        function.proximity_to_dangerous = stat.mean(metrics.values())
+    metrics = subject.call_graph.get_shortest_path_length(node, 'dangerous')
+    if metrics is not None:
+        function.proximity_to_dangerous = (
+            stat.mean(metrics.values()) if metrics else 0.0
+        )
 
     queue.put((function, node), block=True)
 
@@ -313,8 +321,7 @@ def profile(revision, subject_cls, index):
 def debug(message, line=False):
     if 'DEBUG' in os.environ:
         if line:
-            sys.stdout.write('\r')
-            sys.stdout.write('\033[K')
+            sys.stdout.write('\033[K\r')
             sys.stdout.write('[DEBUG] {0}'.format(message))
             sys.stdout.flush()
         else:
