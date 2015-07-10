@@ -39,7 +39,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.setup()
-        status = r.run(self.output_file)
+        status = r.run(fname=self.output_file)
         self.slackpost(status)
         self.teardown()
 
