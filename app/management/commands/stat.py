@@ -86,11 +86,19 @@ def stat(cflow_path, gprof_path, is_output_enabled, num_processes):
 
     begin = datetime.datetime.now()
     if cflow_path:
+        fragmentize = False
+        if not gprof_path:
+            fragmentize = True
+
         print('Loading cflow call graph')
         cflow_loader = CflowLoader(cflow_path, reverse=True)
-        cflow_call_graph = CallGraph.from_loader(cflow_loader)
+        cflow_call_graph = CallGraph.from_loader(cflow_loader, fragmentize)
 
     if gprof_path:
+        fragmentize = False
+        if not cflow_path:
+            fragmentize = True
+
         print('Loading gprof call graph')
         if os.path.isdir(gprof_path):
             sources = [
@@ -100,10 +108,10 @@ def stat(cflow_path, gprof_path, is_output_enabled, num_processes):
             ]
             os.environ['DEBUG'] = '1'
             gprof_loader = MultigprofLoader(sources, processes=num_processes)
-            gprof_call_graph = CallGraph.from_loader(gprof_loader)
+            gprof_call_graph = CallGraph.from_loader(gprof_loader, fragmentize)
         else:
             gprof_loader = GprofLoader(gprof_path, reverse=False)
-            gprof_call_graph = CallGraph.from_loader(gprof_loader)
+            gprof_call_graph = CallGraph.from_loader(gprof_loader, fragmentize)
     end = datetime.datetime.now()
 
     call_graph = None
