@@ -1,13 +1,11 @@
 from optparse import make_option, OptionValueError
-from multiprocessing import Pool
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db.models import Q
 
 from app.errors import InvalidVersionError
-from app.models import Revision
 from app.helpers import get_version_components
-from app.subjects.ffmpeg import FFmpeg
+from app.models import Revision
+from app.subjects import curl, ffmpeg
 from app.utilities import load
 
 
@@ -31,7 +29,7 @@ def check_revision(option, opt_str, value, parser, *args, **kwargs):
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option(
-            '-s', type='str', choices=['ffmpeg', 'curl'], dest='subject',
+            '-s', choices=['ffmpeg', 'curl'], dest='subject',
             help='Name of the subject to load the database with.'
         ),
         make_option(
@@ -52,19 +50,22 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        revisions = Revision.objects.filter(type='b', is_loaded=False)
+        subject = options['subject']
+        revision = options['revision']
+
+        revisions = Revision.objects.filter(subject=subject, is_loaded=False)
+        if 'ffmpeg' in subject:
+            revisions = Revision.objects.filter(type='b')
+            subject_cls = ffmpeg.FFmpeg
+        elif 'curl' in subject:
+            revisions = Revision.objects.filter(type='t')
+            subject_cls = curl.cURL
 
         if options['revision']:
-            revisions = revisions.filter(number=options['revision'])
-        else:
-            # Versions 0.5.0 and 0.6.0 are being excluded because these
-            # versions do not support FATE
-            revisions = revisions.exclude(
-                Q(number='0.5.0') | Q(number='0.6.0')
-            )
+            revisions = revisions.filter(number=revision)
 
         num_processes = min(settings.PARALLEL['PROCESSES'], revisions.count())
 
         # TODO: Resolve daemonic process issue
         for revision in revisions:
-            load(revision, FFmpeg)
+            load(revision, subject_cls)
