@@ -31,6 +31,10 @@ def check_revision(option, opt_str, value, parser, *args, **kwargs):
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option(
+            '-s', type='str', choices=['ffmpeg', 'curl'], dest='subject',
+            help='Name of the subject to load the database with.'
+        ),
+        make_option(
             '-r', type='str', action='callback', callback=check_revision,
             dest='revision',
             help=(
