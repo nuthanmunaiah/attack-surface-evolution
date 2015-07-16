@@ -61,7 +61,7 @@ class Command(BaseCommand):
             revisions = Revision.objects.filter(type='t')
             subject_cls = curl.cURL
 
-        if options['revision']:
+        if revision:
             revisions = revisions.filter(number=revision)
 
         num_processes = min(settings.PARALLEL['PROCESSES'], revisions.count())
