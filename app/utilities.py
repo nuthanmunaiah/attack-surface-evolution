@@ -24,17 +24,18 @@ def load_revisions():
         with open(revisions_file, 'r') as _revisions_file:
             reader = csv.reader(_revisions_file)
             for row in reader:
-                print('Loading revision {0}'.format(row[1]))
+                print('Loading revision {0} of {1}'.format(row[2], row[0]))
                 if not Revision.objects.filter(number=row[1]).exists():
                     revision = Revision()
+                    revision.subject = row[0].strip()
+                    revision.type = row[1]
                     revision.number = (
                         '%d.%d.%d' %
-                        helpers.get_version_components(row[1])
+                        helpers.get_version_components(row[2])
                     )
-                    revision.type = row[0]
-                    revision.ref = row[1]
-                    if row[2].strip():
-                        revision.configure_options = row[2]
+                    revision.ref = row[2]
+                    if row[3].strip():
+                        revision.configure_options = row[3]
                     revision.save()
 
 

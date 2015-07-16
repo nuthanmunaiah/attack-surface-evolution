@@ -6,6 +6,7 @@ from app import constants
 
 
 class Revision(models.Model):
+    subject = models.CharField(max_length=10, blank=False)
     number = models.CharField(max_length=10, blank=False)
     type = models.CharField(
         max_length=4, choices=constants.REVISION_TYPE, blank=False
