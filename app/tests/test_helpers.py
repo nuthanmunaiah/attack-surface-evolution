@@ -6,7 +6,7 @@ from django.test import TestCase
 from app import helpers, errors
 
 
-class UtilitiesTestCase(TestCase):
+class HelpersTestCase(TestCase):
     def setUp(self):
         pass
 
@@ -47,6 +47,31 @@ class UtilitiesTestCase(TestCase):
         self.assertEqual(
             helpers.get_version_components('refs/remotes/origin/release/2.5'),
             (2, 5, 0)
+        )
+
+        self.assertEqual(
+            helpers.get_version_components('0_1'),
+            (0, 1, 0)
+        )
+        self.assertEqual(
+            helpers.get_version_components('0_0_1'),
+            (0, 0, 1)
+        )
+        self.assertEqual(
+            helpers.get_version_components('1_00_1'),
+            (1, 0, 1)
+        )
+        self.assertEqual(
+            helpers.get_version_components('00_01_00'),
+            (0, 1, 0)
+        )
+        self.assertEqual(
+            helpers.get_version_components('0_1_00'),
+            (0, 1, 0)
+        )
+        self.assertEqual(
+            helpers.get_version_components('refs/tags/curl-7_30_0'),
+            (7, 30, 0)
         )
 
     def test_get_absolute_path(self):
