@@ -52,8 +52,8 @@ class Subject(object):
             self.repo = Repo.git_clone(self.clone_url, self.source_dir)
             return True
         self.__dbug__(
-            'Attaching to existing clone at {0}'.format(self.source_dir
-        ))
+            'Attaching to existing clone at {0}'.format(self.source_dir)
+        )
         self.repo = Repo(self.source_dir)
         return False
 
