@@ -43,6 +43,8 @@ class cURL(subject.Subject):
 
     def test(self):
         self.__dbug__('Testing {0}'.format(self.name))
+        cmd = 'make -j %d -C tests' % self.processes
+        self.execute(cmd)
 
         # Returning non-zero return value to allow execution of manual script
         return 2
