@@ -102,11 +102,11 @@ class cURL(subject.Subject):
         # gprof's -L is printing absolute path instead of relative path.
         #   Fixing the paths using sed.
         # Examples:
-        #   /home/rady/curl/../lib/internal.h > ./lib/internal.h
-        #   /home/rady/curl/lib/utils.c     > ./lib/utils.c
+        #   /home/rady/curl/src/src/../lib/rawstr.c > ./lib/help.c
+        #   /home/rady/curl/src/lib/utils.c     > ./lib/utils.c
 
         self.execute(
-            "sed -i 's;{0}\/\.\.;.;g' {1}".format(
+            "sed -i 's;{0}\/src\/\.\.;.;g' {1}".format(
                 self.source_dir.replace('/', '\/'),
                 gprof_file_path
             )
