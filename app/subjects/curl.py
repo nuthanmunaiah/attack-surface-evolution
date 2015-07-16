@@ -103,10 +103,17 @@ class cURL(subject.Subject):
         #   Fixing the paths using sed.
         # Examples:
         #   /home/rady/curl/src/src/../lib/rawstr.c > ./lib/help.c
+        #   /home/rady/curl/src/src/lib/rawstr.c > ./lib/help.c
         #   /home/rady/curl/src/lib/utils.c     > ./lib/utils.c
 
         self.execute(
             "sed -i 's;{0}\/src\/\.\.;.;g' {1}".format(
+                self.source_dir.replace('/', '\/'),
+                gprof_file_path
+            )
+        )
+        self.execute(
+            "sed -i 's;{0}\/src;.;g' {1}".format(
                 self.source_dir.replace('/', '\/'),
                 gprof_file_path
             )
