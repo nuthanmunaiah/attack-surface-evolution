@@ -29,14 +29,14 @@ def check_revision(option, opt_str, value, parser, *args, **kwargs):
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option(
+            '-s', choices=['ffmpeg', 'curl'], dest='subject'
+        ),
+        make_option(
             '-r', type='str', action='callback', callback=check_revision,
             dest='revision'
         ),
         make_option(
             '-i', type='int', action='store', dest='index'
-        ),
-        make_option(
-            '-o', type='int', action='store', dest='offset', default=0
         ),
     )
     help = (
@@ -44,20 +44,21 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        revisions = Revision.objects.filter(type='b', is_loaded=False)
+        subject = options['subject']
+        revision = options['revision']
 
-        if options['revision']:
-            revisions = revisions.filter(number=options['revision'])
-        else:
-            # Versions 0.5.0 and 0.6.0 are being excluded because these
-            # versions do not support FATE
-            revisions = revisions.exclude(
-                Q(number='0.5.0') | Q(number='0.6.0')
-            )
+        revisions = Revision.objects.filter(subject=subject, is_loaded=False)
+        if 'ffmpeg' in subject:
+            revisions = Revision.objects.filter(type='b')
+            subject_cls = ffmpeg.FFmpeg
+        elif 'curl' in subject:
+            revisions = Revision.objects.filter(type='t')
+            subject_cls = curl.cURL
+
+        if revision:
+            revisions = revisions.filter(number=revision)
 
         index = options.get('index', None)
-        if index is not None:
-            index += options.get('offset', 0)
 
         for revision in revisions:
-            profile(revision, FFmpeg, index)
+            profile(revision, subject_cls, index)
