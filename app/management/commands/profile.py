@@ -5,7 +5,7 @@ from django.db.models import Q
 from app.errors import InvalidVersionError
 from app.models import Revision
 from app.helpers import get_version_components
-from app.subjects.ffmpeg import FFmpeg
+from app.subjects import curl, ffmpeg
 from app.utilities import profile
 
 
