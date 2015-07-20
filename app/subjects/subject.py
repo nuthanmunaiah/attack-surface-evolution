@@ -139,7 +139,10 @@ class Subject(object):
     def load_function_sloc(self):
         self.__dbug__('Loading function SLOC')
         self.__download_sloc_file__()
-        if not self.function_sloc:
+        if (
+            not self.function_sloc and
+            os.path.getsize(self.__sloc_file_path__) > 0
+        ):
             re_function = re.compile('^([^\(]*)')
 
             self.function_sloc = dict()
@@ -176,7 +179,10 @@ class Subject(object):
     def load_designed_defenses(self):
         self.__dbug__('Loading designed defenses')
         self.__download_defenses_file__()
-        if not self.designed_defenses:
+        if (
+            not self.designed_defenses and
+            os.path.getsize(self.__defenses_file_path__) > 0
+        ):
             self.designed_defenses = list()
             with open(self.__defenses_file_path__, 'r') as _defenses_file:
                 reader = csv.reader(_defenses_file)
