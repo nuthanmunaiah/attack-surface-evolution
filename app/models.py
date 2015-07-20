@@ -32,8 +32,8 @@ class Revision(models.Model):
 
 class Function(models.Model):
     revision = models.ForeignKey(Revision, blank=False)
-    name = models.CharField(max_length=52, blank=False)
-    file = models.CharField(max_length=50, blank=False)
+    name = models.CharField(max_length=75, blank=False)
+    file = models.CharField(max_length=100, blank=False)
 
     is_entry = models.BooleanField(default=False)
     is_exit = models.BooleanField(default=False)
