@@ -29,7 +29,7 @@ def check_revision(option, opt_str, value, parser, *args, **kwargs):
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option(
-            '-s', choices=['ffmpeg', 'curl'], dest='subject',
+            '-s', choices=settings.SUBJECTS, dest='subject',
             help='Name of the subject to load the database with.'
         ),
         make_option(
@@ -53,7 +53,9 @@ class Command(BaseCommand):
         subject = options['subject']
         revision = options['revision']
 
-        revisions = Revision.objects.filter(subject=subject, is_loaded=False)
+        revisions = Revision.objects.filter(
+            subject__name=subject, is_loaded=False
+        )
         if 'ffmpeg' in subject:
             revisions = Revision.objects.filter(type='b')
             subject_cls = ffmpeg.FFmpeg

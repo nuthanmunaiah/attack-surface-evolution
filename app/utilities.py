@@ -12,87 +12,103 @@ from django.conf import settings
 from django.db import connection, transaction
 
 from app import constants, helpers
-from app.models import Revision, Cve, CveRevision, Function, Reachability
+from app.models import (
+    Subject, Revision, Cve, CveRevision, Function, Reachability
+)
+
+
+def load_subjects():
+    for item in settings.SUBJECTS:
+        print('Loading subject {0}'.format(item))
+        subject = Subject()
+        subject.name = item
+        subject.save()
 
 
 def load_revisions():
-    revisions_file = helpers.get_absolute_path(
-        'app/assets/data/revisions.csv'
-    )
-
-    with transaction.atomic():
+    for item in settings.SUBJECTS:
+        subject = Subject.objects.get(name=item)
+        revisions_file = helpers.get_absolute_path(
+            'app/assets/data/{0}/revisions.csv'.format(subject.name)
+        )
         with open(revisions_file, 'r') as _revisions_file:
             reader = csv.reader(_revisions_file)
             for row in reader:
-                print('Loading revision {0} of {1}'.format(row[2], row[0]))
-                if not Revision.objects.filter(number=row[1]).exists():
-                    revision = Revision()
-                    revision.subject = row[0].strip()
-                    revision.type = row[1]
-                    revision.number = (
-                        '%d.%d.%d' %
-                        helpers.get_version_components(row[2])
-                    )
-                    revision.ref = row[2]
-                    if row[3].strip():
-                        revision.configure_options = row[3]
-                    revision.save()
+                print('Loading revision {0} of {1}'.format(
+                    row[1], subject.name)
+                )
+                revision = Revision()
+                revision.subject = subject
+                revision.type = row[0]
+                revision.number = (
+                    '%d.%d.%d' %
+                    helpers.get_version_components(row[1])
+                )
+                revision.ref = row[1]
+                revision.configure_options = row[2]
+                revision.save()
 
 
 def load_cves():
-    cve_files = [
-        helpers.get_absolute_path('app/assets/data/cves_reported.csv'),
-        helpers.get_absolute_path('app/assets/data/cves_non_ffmpeg.csv')
-    ]
-
-    with transaction.atomic():
-        for cve_file in cve_files:
-            with open(cve_file, 'r') as _cve_file:
-                reader = csv.reader(_cve_file)
-                for row in reader:
-                    print('Loading CVE {0}'.format(row[0]))
-                    cve = Cve()
-                    cve.cve_id = row[0]
-                    cve.publish_dt = datetime.datetime.strptime(
-                        row[1],
-                        '%m/%d/%Y'
-                    )
-                    cve.save()
+    for item in settings.SUBJECTS:
+        subject = Subject.objects.get(name=item)
+        cves_file = helpers.get_absolute_path(
+            'app/assets/data/{0}/cves.csv'.format(subject.name)
+        )
+        with open(cves_file, 'r') as _cve_file:
+            reader = csv.reader(_cve_file)
+            for row in reader:
+                print('Loading CVE {0} of {1}'.format(
+                    row[0], subject.name
+                ))
+                cve = Cve()
+                cve.subject = subject
+                cve.cve_id = row[0]
+                cve.publish_dt = datetime.datetime.strptime(
+                    row[1], '%m/%d/%Y'
+                )
+                cve.save()
 
 
 def map_cve_to_revision():
-    cves_fixed_file = helpers.get_absolute_path(
-        'app/assets/data/cves_fixed.csv'
-    )
+    for item in settings.SUBJECTS:
+        subject = Subject.objects.get(name=item)
+        cves_fixed_file = helpers.get_absolute_path(
+            'app/assets/data/{0}/cves_fixed.csv'.format(subject.name)
+        )
 
-    fixed_cves = dict()
-    with open(cves_fixed_file, 'r') as _cves_fixed_file:
-        reader = csv.reader(_cves_fixed_file)
-        for row in reader:
-            if row[1] in fixed_cves:
-                fixed_cves[row[1]].append({
-                    'revision': row[0], 'commit_hash': row[2]
-                })
-            else:
-                fixed_cves[row[1]] = [{
-                    'revision': row[0], 'commit_hash': row[2]
-                }]
+        fixed_cves = dict()
+        with open(cves_fixed_file, 'r') as _cves_fixed_file:
+            reader = csv.reader(_cves_fixed_file)
+            for row in reader:
+                if row[1] in fixed_cves:
+                    fixed_cves[row[1]].append({
+                        'revision': row[0], 'commit_hash': row[2]
+                    })
+                else:
+                    fixed_cves[row[1]] = [{
+                        'revision': row[0], 'commit_hash': row[2]
+                    }]
 
-    with transaction.atomic():
-        for cve in Cve.objects.all():
+        for cve in Cve.objects.filter(subject=subject):
             if cve.cve_id in fixed_cves:
-                print('Mapping fix for {0}'.format(cve.cve_id))
+                print('Mapping fix for {0} of {1}'.format(
+                    cve.cve_id, subject.name
+                ))
                 with transaction.atomic():
                     cve.is_fixed = True
                     cve.save()
 
                     for cve_fix in fixed_cves[cve.cve_id]:
-                        print(' to revision {0}'.format(cve_fix['revision']))
+                        print(' to revision {0}'.format(
+                            cve_fix['revision']
+                        ))
                         rev_num = cve_fix['revision']
                         cve_revision = CveRevision()
                         cve_revision.cve = cve
                         cve_revision.revision = Revision.objects.get(
-                            number=rev_num, type=constants.RT_TAG
+                            subject=subject, number=rev_num,
+                            type=constants.RT_TAG
                         )
                         cve_revision.commit_hash = cve_fix['commit_hash']
                         cve_revision.save()

@@ -1,4 +1,5 @@
 from optparse import make_option, OptionValueError
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 
@@ -29,7 +30,7 @@ def check_revision(option, opt_str, value, parser, *args, **kwargs):
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option(
-            '-s', choices=['ffmpeg', 'curl'], dest='subject'
+            '-s', choices=settings.SUBJECTS, dest='subject'
         ),
         make_option(
             '-r', type='str', action='callback', callback=check_revision,
@@ -47,7 +48,9 @@ class Command(BaseCommand):
         subject = options['subject']
         revision = options['revision']
 
-        revisions = Revision.objects.filter(subject=subject, is_loaded=False)
+        revisions = Revision.objects.filter(
+            subject__name=subject, is_loaded=False
+        )
         if 'ffmpeg' in subject:
             revisions = Revision.objects.filter(type='b')
             subject_cls = ffmpeg.FFmpeg

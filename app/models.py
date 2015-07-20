@@ -5,19 +5,19 @@ from app import constants
 # TODO: Figure out a model to tie-up CVE fix to functions affected.
 
 
+class Subject(models.Model):
+    name = models.CharField(max_length=10, blank=False)
+
+
 class Revision(models.Model):
-    subject = models.CharField(max_length=10, blank=False)
+    subject = models.ForeignKey(Subject, blank=False)
     number = models.CharField(max_length=10, blank=False)
     type = models.CharField(
         max_length=4, choices=constants.REVISION_TYPE, blank=False
     )
     ref = models.CharField(max_length=50, blank=False)
     is_loaded = models.BooleanField(default=False)
-    configure_options = models.TextField(
-        max_length=2000,
-        default='--extra-cflags=\'-g -pg\' --extra-ldflags=\'-g -pg\'',
-        blank=False
-    )
+    configure_options = models.TextField(max_length=2000, blank=False)
 
     monolithicity = models.FloatField(default=0.0, blank=False)
     num_entry_points = models.PositiveIntegerField(default=0, blank=False)
@@ -71,6 +71,7 @@ class Reachability(models.Model):
 
 
 class Cve(models.Model):
+    subject = models.ForeignKey(Subject, blank=False)
     cve_id = models.CharField(max_length=13, blank=False)
     publish_dt = models.DateField(blank=False)
     is_fixed = models.BooleanField(default=False)
