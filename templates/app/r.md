@@ -1,3 +1,6 @@
+{% for s in subjects %}Subject: {{ s.name|stringformat:"-9s" }}
+==================
+{% with revisions=s.revisions %}
 Association Tests
 =================
 
@@ -52,5 +55,4 @@ Modeling
    | --------- | ---------- | --------------------------------------------------------------------------- | --------- | ------ | ------- |
    | {{ r.model.control.aic|stringformat:"9.4f" }} |     --     | {{ r.model.control.formula|stringformat:"-75s" }} |    ---    |   --   |   ---   |
    {% for m in r.model.models %}| {{ m.aic|stringformat:"9.4f" }} | {{ m.aic_change_pct|stringformat:"10.6f" }} | {{ m.formula|stringformat:"-75s" }} | {{ m.prediction_result.precision|stringformat:"9.4f"  }} | {{ m.prediction_result.recall|stringformat:"6.4f" }} | {{ m.prediction_result.fscore|stringformat:"7.4f" }} |
-   {% endfor %}
-{% endfor %}
+   {% endfor %}{% endfor %}{% endwith %}{% endfor %}
