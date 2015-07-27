@@ -17,10 +17,6 @@ BASE_SQL = '''
 MODELING_SQL = '''
     {0}
     AND sloc IS NOT NULL
-    AND is_entry = false
-    AND is_exit = false
-    AND calls_dangerous = false
-    AND is_defense = false
 '''.format(BASE_SQL)
 
 # Combination of features
