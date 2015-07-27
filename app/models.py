@@ -26,7 +26,7 @@ class Revision(models.Model):
     num_fragments = models.PositiveIntegerField(default=0, blank=False)
 
     class Meta:
-        unique_together = ('number', 'type')
+        unique_together = ('subject', 'number', 'type')
         app_label = 'app'
 
 
