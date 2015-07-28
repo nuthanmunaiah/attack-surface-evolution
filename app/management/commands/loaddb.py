@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from app.errors import InvalidVersionError
 from app.helpers import get_version_components
 from app.models import Revision
-from app.subjects import curl, ffmpeg
+from app.subjects import curl, ffmpeg, wireshark
 from app.utilities import load
 
 
@@ -62,6 +62,9 @@ class Command(BaseCommand):
         elif 'curl' in subject:
             revisions = Revision.objects.filter(type='t')
             subject_cls = curl.cURL
+        elif 'wireshark' in subject:
+            revisions = Revision.objects.filter(type='b')
+            subject_cls = wireshark.Wireshark
 
         if revision:
             revisions = revisions.filter(number=revision)
