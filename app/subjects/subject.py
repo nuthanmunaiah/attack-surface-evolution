@@ -86,7 +86,7 @@ class Subject(object):
             self.initialized = True
 
     def prepare(self):
-        if not (self.__cflow_file_exists__ and self.__gprof_files_exist__):
+        if not (self.__cflow_file_exists__ or self.__gprof_files_exist__):
             self.initialize()
             return_code = self.configure()
             if return_code != 0:
@@ -111,23 +111,37 @@ class Subject(object):
             )
 
         if not self.call_graph:
-            cflow_loader = CflowLoader(
-                self.cflow_file_path, reverse=True,
-                defenses=self.designed_defenses,
-                vulnerabilities=self.vulnerable_functions
-            )
-            gprof_loader = MultigprofLoader(
-                self.gprof_files_path, processes=self.processes, reverse=False,
-                defenses=self.designed_defenses,
-                vulnerabilities=self.vulnerable_functions
-            )
+            cflow_loader = None
+            gprof_loader = None
+            if self.__cflow_file_exists__:
+                cflow_loader = CflowLoader(
+                    self.cflow_file_path, reverse=True,
+                    defenses=self.designed_defenses,
+                    vulnerabilities=self.vulnerable_functions
+                )
+            if self.__gprof_files_exist__:
+                gprof_loader = MultigprofLoader(
+                    self.gprof_files_path, processes=self.processes,
+                    reverse=False,
+                    defenses=self.designed_defenses,
+                    vulnerabilities=self.vulnerable_functions
+                )
 
-            self.call_graph = CallGraph.from_merge(
-                CallGraph.from_loader(cflow_loader),
-                CallGraph.from_loader(gprof_loader),
-                fragmentize=True
-            )
-            print('')
+            if cflow_loader and gprof_loader:
+                self.call_graph = CallGraph.from_merge(
+                    CallGraph.from_loader(cflow_loader),
+                    CallGraph.from_loader(gprof_loader),
+                    fragmentize=True
+                )
+                print('')
+            elif cflow_loader:
+                self.call_graph = CallGraph.from_loader(
+                    cflow_loader, fragmentize=True
+                )
+            elif gprof_loader:
+                self.call_graph = CallGraph.from_loader(
+                    gprof_loader, fragmentize=True
+                )
             self.__dbug__('Assigning edge weights')
             self.call_graph.assign_weights()
             self.__dbug__('Assigning page ranks')
@@ -230,14 +244,16 @@ class Subject(object):
 
     @property
     def gprof_files_path(self):
-        gprof_files = [
-            os.path.join(
-                self.gprof_files_dir,
-                gprof_file_name
-            )
-            for gprof_file_name in os.listdir(self.gprof_files_dir)
-        ]
-        gprof_files.sort()
+        gprof_files = None
+        if os.path.exists(self.gprof_files_dir):
+            gprof_files = [
+                os.path.join(
+                    self.gprof_files_dir,
+                    gprof_file_name
+                )
+                for gprof_file_name in os.listdir(self.gprof_files_dir)
+            ]
+            gprof_files.sort()
         return gprof_files
 
     @property
