@@ -32,7 +32,7 @@ class Revision(models.Model):
 
 class Function(models.Model):
     revision = models.ForeignKey(Revision, blank=False, db_index=True)
-    name = models.CharField(max_length=75, blank=False, db_index=True)
+    name = models.CharField(max_length=125, blank=False, db_index=True)
     file = models.CharField(max_length=100, blank=False, db_index=True)
 
     is_entry = models.BooleanField(default=False)
@@ -72,7 +72,7 @@ class Reachability(models.Model):
 
 class Cve(models.Model):
     subject = models.ForeignKey(Subject, blank=False)
-    cve_id = models.CharField(max_length=13, blank=False)
+    cve_id = models.CharField(max_length=25, blank=False)
     publish_dt = models.DateField(blank=False)
     is_fixed = models.BooleanField(default=False)
 
