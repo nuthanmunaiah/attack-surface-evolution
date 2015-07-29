@@ -301,7 +301,10 @@ def _save(subject, queue):
                 reachability.save()
 
             debug(
-                'Saving {0:5d}/{1:5d} {2}'.format(index, count, function.name),
+                'Saving {0:5d}/{1:5d} {2}'.format(
+                    index, count,
+                    function.name[:50] + (function.name[50:] and '...')
+                ),
                 line=True
             )
             index += 1
