@@ -178,7 +178,8 @@ def process(revision, subject):
             [
                 (node, attrs, revision, subject, vsource, vsink, queue)
                 for (node, attrs) in subject.call_graph.nodes
-            ]
+            ],
+            chunksize=1
         )
 
         vsources = set(vsource)
@@ -338,7 +339,7 @@ def profile(revision, subject_cls, index):
 def debug(message, line=False):
     if 'DEBUG' in os.environ:
         if line:
-            sys.stdout.write('\033[K\r')
+            sys.stdout.write('\r\033[K')
             sys.stdout.write('[DEBUG] {0}'.format(message))
             sys.stdout.flush()
         else:
