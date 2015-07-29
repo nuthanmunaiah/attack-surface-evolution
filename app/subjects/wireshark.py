@@ -35,17 +35,5 @@ class Wireshark(subject.Subject):
     def test(self):
         return 0
 
-    def cflow(self):
-        self.__dbug__('Generating call graph for {0} using cflow'.format(
-            self.name
-        ))
-        cmd = (
-            'cflow -b -r '
-            '`find -name "*.c" -or -name "*.h" | grep -vwE "(tests|doc)"`'
-        )
-
-        with open(self.cflow_file_path, 'w+') as _cflow_file:
-            return self.execute(cmd, stdout=_cflow_file)
-
-    def gprof(self, index=None):
+    def __gprof__(self, gmon_file_path, gprof_file_path):
         return 0

@@ -44,41 +44,6 @@ class FFmpeg(subject.Subject):
         # Returning non-zero return value to allow execution of manual script
         return 2
 
-    def cflow(self):
-        self.__dbug__('Generating call graph for {0} using cflow'.format(
-            self.name
-        ))
-        cmd = (
-            'cflow -b -r '
-            '`find -name "*.c" -or -name "*.h" | grep -vwE "(tests|doc)"`'
-        )
-
-        with open(self.cflow_file_path, 'w+') as _cflow_file:
-            return self.execute(cmd, stdout=_cflow_file)
-
-    def gprof(self, index=None):
-        self.__dbug__('Generating call graph for {0} using gprof'.format(
-            self.name
-        ))
-        if index is not None:
-            gmon_file_path = os.path.join(
-                self.gmon_files_dir, self.gmon_files_name[index])
-            gprof_file_path = os.path.join(
-                self.gprof_files_dir,
-                '{0}.txt'.format(self.gmon_files_name[index])
-            )
-            return self.__gprof__(gmon_file_path, gprof_file_path)
-
-        returncode = 0
-        for gmon_file in self.gmon_files_name:
-            gmon_file_path = os.path.join(self.gmon_files_dir, gmon_file)
-            gprof_file_path = os.path.join(
-                self.gprof_files_dir, '{0}.txt'.format(gmon_file)
-            )
-            returncode = self.__gprof__(gmon_file_path, gprof_file_path)
-
-        return returncode
-
     def __gprof__(self, gmon_file_path, gprof_file_path):
         self.__dbug__(
             'Generating call graph for {0} using gprof with profile '
