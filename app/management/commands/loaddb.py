@@ -60,10 +60,10 @@ class Command(BaseCommand):
             revisions = revisions.filter(type='b')
             subject_cls = ffmpeg.FFmpeg
         elif 'curl' in subject:
-            revisions = revisions.objects.filter(type='t')
+            revisions = revisions.filter(type='t')
             subject_cls = curl.cURL
         elif 'wireshark' in subject:
-            revisions = revisions.objects.filter(type='b')
+            revisions = revisions.filter(type='b')
             subject_cls = wireshark.Wireshark
 
         if revision:
