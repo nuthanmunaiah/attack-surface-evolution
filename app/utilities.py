@@ -115,6 +115,8 @@ def map_cve_to_revision():
 
 
 def load(revision, subject_cls):
+    begin = datetime.datetime.now()
+
     debug('Loading {0}'.format(revision.number))
     subject = subject_cls(
         configure_options=revision.configure_options,
@@ -152,6 +154,11 @@ def load(revision, subject_cls):
 
     process(revision, subject)
 
+    end = datetime.datetime.now()
+    debug('Loading {0} completed in {1:.2f} minutes'.format(
+        revision.number, ((end - begin).total_seconds() / 60)
+    ))
+
 
 def process(revision, subject):
     debug('Processing {0}'.format(revision.number))
@@ -165,7 +172,7 @@ def process(revision, subject):
     vsource = manager.list()
     vsink = manager.list()
     # Shared queue for communication between process_node and save
-    queue = manager.Queue(100)
+    queue = manager.Queue(200)
 
     # Consumer: Spawn a process to save function to the database
     process = multiprocessing.Process(target=_save, args=(subject, queue))
