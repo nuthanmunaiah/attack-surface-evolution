@@ -189,6 +189,9 @@ class Subject(object):
                         self.vulnerable_functions.append(
                             Call(function, file_path, Environments.C)
                         )
+            self.__dbug__('Loaded {0} vulnerable functions'.format(
+                len(self.vulnerable_functions)
+            ))
 
     def load_designed_defenses(self):
         self.__dbug__('Loading designed defenses')
@@ -204,6 +207,9 @@ class Subject(object):
                     self.designed_defenses.append(
                         Call(row[0], row[1], Environments.C)
                     )
+            self.__dbug__('Loaded {0} designed defenses'.format(
+                len(self.designed_defenses)
+            ))
 
     def is_function_vulnerable(self, name, in_file):
         if self.vulnerable_functions:
