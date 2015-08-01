@@ -12,9 +12,7 @@ from django.conf import settings
 from django.db import connection, transaction
 
 from app import constants, helpers
-from app.models import (
-    Subject, Revision, Cve, CveRevision, Function, Reachability
-)
+from app.models import Subject, Revision, Cve, CveRevision, Function
 
 
 def load_subjects():
@@ -284,29 +282,11 @@ def _save(subject, queue):
     index = 1
     count = len(subject.call_graph.nodes)
 
+    size = 999
+    functions = list()
     with transaction.atomic():
         while index <= count:
             (function, node) = queue.get(block=True)
-            function.save()
-
-            # Compute reachability
-            if function.is_entry:
-                reachability = Reachability()
-                reachability.type = constants.RT_EN
-                reachability.function = function
-                reachability.value = (
-                    subject.call_graph.get_entry_point_reachability(node)
-                )
-                reachability.save()
-            if function.is_exit:
-                reachability = Reachability()
-                reachability.type = constants.RT_EX
-                reachability.function = function
-                reachability.value = (
-                    subject.call_graph.get_exit_point_reachability(node)
-                )
-                reachability.save()
-
             debug(
                 'Saving {0:5d}/{1:5d} {2}'.format(
                     index, count,
@@ -314,8 +294,28 @@ def _save(subject, queue):
                 ),
                 line=True
             )
+            functions.append(function)
+            if (index % 999) == 0:
+                print('')
+                debug(
+                    'Inserting {0} functions into the database.'.format(
+                        size
+                    )
+                )
+                Function.objects.bulk_create(functions, batch_size=size)
+                functions.clear()
+
             index += 1
+
         print('')
+        if functions:
+            debug(
+                'Inserting the last {0} functions into the database.'.format(
+                    len(functions)
+                )
+            )
+            Function.objects.bulk_create(functions)
+            functions.clear()
 
 
 def get_commit_hashes(revision):

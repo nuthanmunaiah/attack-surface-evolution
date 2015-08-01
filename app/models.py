@@ -59,17 +59,6 @@ class Function(models.Model):
         app_label = 'app'
 
 
-class Reachability(models.Model):
-    type = models.CharField(
-        max_length=8, choices=constants.REACHABILITY_TYPE, blank=False
-    )
-    function = models.ForeignKey(Function, blank=False)
-    value = models.DecimalField(decimal_places=6, max_digits=10, blank=False)
-
-    class Meta:
-        app_label = 'app'
-
-
 class Cve(models.Model):
     subject = models.ForeignKey(Subject, blank=False)
     cve_id = models.CharField(max_length=25, blank=False)
