@@ -41,8 +41,6 @@ class Function(models.Model):
     calls_dangerous = models.BooleanField(default=False)
     is_defense = models.BooleanField(default=False)
     is_vulnerable = models.BooleanField(default=False)
-    is_vulnerability_source = models.BooleanField(default=False)
-    is_vulnerability_sink = models.BooleanField(default=False)
 
     sloc = models.PositiveIntegerField(default=None, null=True)
 

@@ -160,15 +160,9 @@ def load(revision, subject_cls):
 
 def process(revision, subject):
     debug('Processing {0}'.format(revision.number))
-    vsources = None
-    vsinks = None
 
     manager = multiprocessing.Manager()
 
-    # Shared lists that accumulate the vulnerability source and sink
-    #   information when processing each node in the call graph
-    vsource = manager.list()
-    vsink = manager.list()
     # Shared queue for communication between process_node and save
     queue = manager.Queue(200)
 
@@ -181,35 +175,16 @@ def process(revision, subject):
         pool.starmap(
             _process,
             [
-                (node, attrs, revision, subject, vsource, vsink, queue)
+                (node, attrs, revision, subject, queue)
                 for (node, attrs) in subject.call_graph.nodes
             ],
             chunksize=1
         )
 
-        vsources = set(vsource)
-        vsinks = set(vsink)
-
     process.join()
 
     # TODO: Review hack
     connection.close()
-
-    if vsource or vsinks:
-        functions = Function.objects.filter(revision=revision)
-        for i in vsources:
-            function = functions.get(
-                name=i.function_name, file=i.function_signature
-            )
-            function.is_vulnerability_source = True
-            function.save()
-
-        for i in vsinks:
-            function = functions.get(
-                name=i.function_name, file=i.function_signature
-            )
-            function.is_vulnerability_sink = True
-            function.save()
 
     revision.monolithicity = subject.call_graph.monolithicity
 
@@ -222,7 +197,7 @@ def process(revision, subject):
     revision.save()
 
 
-def _process(node, attrs, revision, subject, vsource, vsink, queue):
+def _process(node, attrs, revision, subject, queue):
     function = Function()
 
     function.name = node.function_name
@@ -247,9 +222,6 @@ def _process(node, attrs, revision, subject, vsource, vsink, queue):
         function.proximity_to_entry = (
             stat.mean(metrics.values()) if metrics else 0.0
         )
-        if function.is_vulnerable:
-            for point in metrics.keys():
-                vsource.append(point)
 
     # Exit points
     metrics = subject.call_graph.get_shortest_path_length(node, 'exit')
@@ -257,9 +229,6 @@ def _process(node, attrs, revision, subject, vsource, vsink, queue):
         function.proximity_to_exit = (
             stat.mean(metrics.values()) if metrics else 0.0
         )
-        if function.is_vulnerable:
-            for point in metrics.keys():
-                vsink.append(point)
 
     # Designed defenses
     metrics = subject.call_graph.get_shortest_path_length(node, 'defense')
