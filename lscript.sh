@@ -1,6 +1,6 @@
 #!/bin/bash -l
 
-#SBATCH -p work -n 1 -c 25
+#SBATCH -p work -n 1
 #SBATCH --mail-user nm6061@rit.edu
 #SBATCH --mail-type=ALL
 #SBATCH --qos=free
