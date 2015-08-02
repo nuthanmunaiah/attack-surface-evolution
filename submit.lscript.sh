@@ -79,7 +79,7 @@ sbatch --job-name="ASEL-$subject" \
     --mem=$memory \
     --partition=$partition \
     --array=$releases \
-    --cpus-per-task=$cpus
+    --cpus-per-task=$cpus \
     lscript.sh $subject $cpus > /dev/null
 
 if [ $? -eq 0 ]; then
