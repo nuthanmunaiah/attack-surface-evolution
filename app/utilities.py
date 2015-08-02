@@ -293,17 +293,19 @@ def get_commit_hashes(revision):
         queryset = CveRevision.objects.filter(revision=revision)
     elif revision.type == constants.RT_BRANCH:
         version_components = helpers.get_version_components(revision.number)
-        queryset = CveRevision.objects.filter(
-            revision__number__startswith='%d.%d' % (
+        revisions = Revision.objects.filter(
+            subject=revision.subject, type='t',
+            number__startswith='%d.%d' % (
                 version_components[0], version_components[1]
             )
         )
+        queryset = CveRevision.objects.filter(revision=revisions)
 
     commit_hashes = [
         item.commit_hash for item in queryset if item.commit_hash != 'NA'
     ]
 
-    return commit_hashes
+    return set(commit_hashes)
 
 
 def profile(revision, subject_cls, index):
