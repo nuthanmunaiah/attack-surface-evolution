@@ -43,8 +43,9 @@ case $subject in
         echo "-----------------------------------------"
     
         # SLURM: FFmpeg-specific arguments
+        cpus=10
         memory=12288    # 12 GiB
-        duration=10:0:0
+        duration=12:0:0
         ;;
     "wireshark")
         echo "-----------------------------------------"
@@ -52,8 +53,9 @@ case $subject in
         echo "-----------------------------------------"
     
         # SLURM: Wireshark-specific arguments
+        cpus=20
         memory=51200    # 50 GiB
-        duration=48:0:0
+        duration=60:0:0
         ;;
     *)
         echo "ERROR: Invalid subject - $subject."
@@ -77,7 +79,8 @@ sbatch --job-name="ASEL-$subject" \
     --mem=$memory \
     --partition=$partition \
     --array=$releases \
-    lscript.sh $subject > /dev/null
+    --cpus-per-task=$cpus
+    lscript.sh $subject $cpus > /dev/null
 
 if [ $? -eq 0 ]; then
     echo "INFO: Submitted SLURM job to load $subject."

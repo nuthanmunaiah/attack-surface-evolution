@@ -6,6 +6,7 @@
 #SBATCH --qos=free
 
 subject=$1
+cpus=$2
 
 if [ $subject == "ffmpeg"  ]; then
     declare -a releases=(
@@ -25,4 +26,7 @@ module load python/3.4.3
 module load cflow/1.4
 source venv/bin/activate
 
-DEBUG=1 python3 manage.py loaddb -s $subject -r ${releases[${SLURM_ARRAY_TASK_ID}]}
+DEBUG=1 python3 manage.py loaddb \
+    -s $subject \
+    -r ${releases[${SLURM_ARRAY_TASK_ID}]} \
+    -p $cpus

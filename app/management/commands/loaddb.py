@@ -41,7 +41,13 @@ class Command(BaseCommand):
                 ' the subject are loaded.'
             )
         ),
+        make_option(
+            '-p', type='int', dest='processes',
+            default=settings.PARALLEL['SUBPROCESSES'],
+            help='Number of processes to spawn when loading a revision.',
+        )
     )
+
     help = (
         'Clone, checkout, build, test, and profile revisions of a '
         'subject. The profile information is used to measure the attack '
@@ -52,6 +58,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         subject = options['subject']
         revision = options['revision']
+        processes = options['processes']
 
         revisions = Revision.objects.filter(
             subject__name=subject, is_loaded=False
@@ -69,8 +76,5 @@ class Command(BaseCommand):
         if revision:
             revisions = revisions.filter(number=revision)
 
-        num_processes = min(settings.PARALLEL['PROCESSES'], revisions.count())
-
-        # TODO: Resolve daemonic process issue
         for revision in revisions:
-            load(revision, subject_cls)
+            load(revision, subject_cls, processes)

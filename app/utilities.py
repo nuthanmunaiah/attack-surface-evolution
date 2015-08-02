@@ -112,13 +112,13 @@ def map_cve_to_revision():
                         cve_revision.save()
 
 
-def load(revision, subject_cls):
+def load(revision, subject_cls, processes):
     begin = datetime.datetime.now()
 
     debug('Loading {0}'.format(revision.number))
     subject = subject_cls(
         configure_options=revision.configure_options,
-        processes=settings.PARALLEL['SUBPROCESSES'],
+        processes=processes,
         git_reference=revision.ref
     )
     subject.initialize()
@@ -150,7 +150,7 @@ def load(revision, subject_cls):
 
     subject.load_call_graph()
 
-    process(revision, subject)
+    process(revision, subject, processes)
 
     end = datetime.datetime.now()
     debug('Loading {0} completed in {1:.2f} minutes'.format(
@@ -158,20 +158,20 @@ def load(revision, subject_cls):
     ))
 
 
-def process(revision, subject):
+def process(revision, subject, processes):
     debug('Processing {0}'.format(revision.number))
 
     manager = multiprocessing.Manager()
 
     # Shared queue for communication between process_node and save
-    queue = manager.Queue(200)
+    queue = manager.Queue(500)
 
     # Consumer: Spawn a process to save function to the database
     process = multiprocessing.Process(target=_save, args=(subject, queue))
     process.start()
 
     # Producers: Spawn a pool processes to generate Function objects
-    with multiprocessing.Pool(settings.PARALLEL['SUBPROCESSES']) as pool:
+    with multiprocessing.Pool(processes) as pool:
         pool.starmap(
             _process,
             [
@@ -244,7 +244,7 @@ def _process(node, attrs, revision, subject, queue):
             stat.mean(metrics.values()) if metrics else 0.0
         )
 
-    queue.put((function, node), block=True)
+    queue.put(function, block=True)
 
 
 def _save(subject, queue):
@@ -255,7 +255,7 @@ def _save(subject, queue):
     functions = list()
     with transaction.atomic():
         while index <= count:
-            (function, node) = queue.get(block=True)
+            function = queue.get(block=True)
             debug(
                 'Saving {0:5d}/{1:5d} {2}'.format(
                     index, count,
