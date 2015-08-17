@@ -49,12 +49,8 @@ class FFmpeg(subject.Subject):
             'Generating call graph for {0} using gprof with profile '
             'information from {1}'.format(self.name, gmon_file_path)
         )
-        if 'basegmon.out' in gmon_file_path:
-            cmd = 'gprof -q -b -l -c -z -L ffmpeg_g {0}'
-        else:
-            cmd = 'gprof -q -b -l -c -L ffmpeg_g {0}'
-
-        cmd = cmd.format(gmon_file_path, gprof_file_path)
+        cmd = 'gprof -q -b -l -c -L ffmpeg_g {0}'
+        cmd = cmd.format(gmon_file_path)
 
         with open(gprof_file_path, 'w+') as _gprof_file:
             returncode = self.execute(cmd, stdout=_gprof_file)
