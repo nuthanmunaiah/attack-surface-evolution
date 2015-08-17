@@ -214,11 +214,11 @@ def _process(node, attrs, revision, subject, queue):
         node.function_signature
     )
     (function.fan_in, function.fan_out) = subject.call_graph.get_fan(node)
-    page_rank_b = attrs['page_rank_b']
-    page_rank_bv = attrs['page_rank_bv']
-    page_rank_bvd = attrs['page_rank_bvd']
-    page_rank_bvdt = attrs['page_rank_bvdt']
-    page_rank_bvdtd = attrs['page_rank_bvdtd']
+    function.page_rank_b = attrs['page_rank_b']
+    function.page_rank_bv = attrs['page_rank_bv']
+    function.page_rank_bvd = attrs['page_rank_bvd']
+    function.page_rank_bvdt = attrs['page_rank_bvdt']
+    function.page_rank_bvdtd = attrs['page_rank_bvdtd']
 
     # Entry points
     metrics = subject.call_graph.get_shortest_path_length(node, 'entry')
