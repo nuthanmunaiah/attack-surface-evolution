@@ -32,7 +32,7 @@ class FFmpeg(subject.Subject):
         return self.execute(cmd)
 
     def make(self):
-        self.__dbug__('Buildingg {0}'.format(self.name))
+        self.__dbug__('Building {0}'.format(self.name))
         cmd = 'make -j %d' % self.processes
         return self.execute(cmd)
 
