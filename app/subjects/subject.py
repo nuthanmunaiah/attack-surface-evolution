@@ -142,10 +142,49 @@ class Subject(object):
                 self.call_graph = CallGraph.from_loader(
                     gprof_loader, fragmentize=True
                 )
-            self.__dbug__('Assigning edge weights')
-            self.call_graph.assign_weights()
-            self.__dbug__('Assigning page ranks')
-            self.call_graph.assign_page_rank(name='page_rank')
+
+            self.__dbug__('Assigning edge weights and page ranks')
+
+            # Base
+            weights = {
+                'base': {'call': 100, 'return': 50},
+                'vulnerable': 0, 'dangerous': 0, 'tested': 0, 'defense': 0
+            }
+            self.call_graph.assign_weights(weights)
+            self.call_graph.assign_page_rank(name='page_rank_b')
+
+            # Base + Vulnerable
+            weights = {
+                'base': {'call': 100, 'return': 50},
+                'vulnerable': 25, 'dangerous': 0, 'tested': 0, 'defense': 0
+            }
+            self.call_graph.assign_weights(weights)
+            self.call_graph.assign_page_rank(name='page_rank_bv')
+
+            # Base + Vulnerable + Dangerous
+            weights = {
+                'base': {'call': 100, 'return': 50},
+                'vulnerable': 25, 'dangerous': 25, 'tested': 0, 'defense': 0
+            }
+            self.call_graph.assign_weights(weights)
+            self.call_graph.assign_page_rank(name='page_rank_bvd')
+
+            # Base + Vulnerable + Dangerous + Tested
+            weights = {
+                'base': {'call': 100, 'return': 50},
+                'vulnerable': 25, 'dangerous': 25, 'tested': -25, 'defense': 0
+            }
+            self.call_graph.assign_weights(weights)
+            self.call_graph.assign_page_rank(name='page_rank_bvdt')
+
+            # Base + Vulnerable + Dangerous + Tested + Defense
+            weights = {
+                'base': {'call': 100, 'return': 50},
+                'vulnerable': 25, 'dangerous': 25, 'tested': -25,
+                'defense': -25
+            }
+            self.call_graph.assign_weights(weights)
+            self.call_graph.assign_page_rank(name='page_rank_bvdtd')
 
     def get_absolute_path(self, name):
         return os.path.join(self.source_dir, name)

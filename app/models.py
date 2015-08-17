@@ -51,7 +51,11 @@ class Function(models.Model):
     proximity_to_exit = models.FloatField(default=None, null=True)
     proximity_to_defense = models.FloatField(default=None, null=True)
     proximity_to_dangerous = models.FloatField(default=None, null=True)
-    page_rank = models.FloatField(default=None, null=True)
+    page_rank_b = models.FloatField(default=None, null=True)
+    page_rank_bv = models.FloatField(default=None, null=True)
+    page_rank_bvd = models.FloatField(default=None, null=True)
+    page_rank_bvdt = models.FloatField(default=None, null=True)
+    page_rank_bvdtd = models.FloatField(default=None, null=True)
 
     class Meta:
         app_label = 'app'
