@@ -145,46 +145,54 @@ class Subject(object):
 
             self.__dbug__('Assigning edge weights and page ranks')
 
-            # Base
-            weights = {
-                'base': {'call': 100, 'return': 50},
-                'vulnerable': 0, 'dangerous': 0, 'tested': 0, 'defense': 0
-            }
-            self.call_graph.assign_weights(weights)
-            self.call_graph.assign_page_rank(name='page_rank_b')
+            # Default: Use all weights
+            self.call_graph.assign_weights()
+            self.call_graph.assign_page_rank(name='page_rank')
 
-            # Base + Vulnerable
-            weights = {
-                'base': {'call': 100, 'return': 50},
-                'vulnerable': 25, 'dangerous': 0, 'tested': 0, 'defense': 0
-            }
-            self.call_graph.assign_weights(weights)
-            self.call_graph.assign_page_rank(name='page_rank_bv')
+            # Various combination of weights
+            # Legend
+            #   b - Base, v - Vulnerable, da - Dangerous, de - Defense
+            self._assign_page_rank('page_rank_b')
+            self._assign_page_rank('page_rank_bv')
+            self._assign_page_rank('page_rank_bvt')
+            self._assign_page_rank('page_rank_bvtda')
+            self._assign_page_rank('page_rank_bvtde')
+            self._assign_page_rank('page_rank_bvda')
+            self._assign_page_rank('page_rank_bvdade')
+            self._assign_page_rank('page_rank_bvde')
+            self._assign_page_rank('page_rank_bt')
+            self._assign_page_rank('page_rank_btda')
+            self._assign_page_rank('page_rank_tdade')
+            self._assign_page_rank('page_rank_btde')
+            self._assign_page_rank('page_rank_bda')
+            self._assign_page_rank('page_rank_bde')
+            self._assign_page_rank('page_rank_bdade')
 
-            # Base + Vulnerable + Dangerous
-            weights = {
-                'base': {'call': 100, 'return': 50},
-                'vulnerable': 25, 'dangerous': 25, 'tested': 0, 'defense': 0
-            }
-            self.call_graph.assign_weights(weights)
-            self.call_graph.assign_page_rank(name='page_rank_bvd')
+    def _assign_page_rank(self, name):
+        # Initialize weights dictionary
+        vulnerable = 0
+        if 'v' in name:
+            vulnerable = 25
+        dangerous = 0
+        if 'da' in name:
+            dangerous = 25
+        defense = 0
+        if 'de' in name:
+            defense = -25
+        tested = 0
+        if 't' in name:
+            tested = -25
+        weights = {
+            'base': {'call': 100, 'return': 50},
+            'vulnerable': vulnerable, 'dangerous': dangerous,
+            'tested': tested, 'defense': defense
+        }
 
-            # Base + Vulnerable + Dangerous + Tested
-            weights = {
-                'base': {'call': 100, 'return': 50},
-                'vulnerable': 25, 'dangerous': 25, 'tested': -25, 'defense': 0
-            }
-            self.call_graph.assign_weights(weights)
-            self.call_graph.assign_page_rank(name='page_rank_bvdt')
+        # Weight the edges
+        self.call_graph.assign_weights(weights)
 
-            # Base + Vulnerable + Dangerous + Tested + Defense
-            weights = {
-                'base': {'call': 100, 'return': 50},
-                'vulnerable': 25, 'dangerous': 25, 'tested': -25,
-                'defense': -25
-            }
-            self.call_graph.assign_weights(weights)
-            self.call_graph.assign_page_rank(name='page_rank_bvdtd')
+        # Assign page rank
+        self.call_graph.assign_page_rank(name=name)
 
     def get_absolute_path(self, name):
         return os.path.join(self.source_dir, name)
