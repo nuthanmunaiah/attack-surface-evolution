@@ -107,3 +107,53 @@ class PredictionResult(object):
         _instance.fscore = robject.do_slot('fscore')[0]
 
         return _instance
+
+
+class TrackingResult(object):
+    def __init__(self):
+        self.p = 0.0
+        self._is_significant = False
+
+        self.amean = 0.0
+        self.bmean = 0.0
+        self._rel_mean = '='
+
+        self.amedian = 0.0
+        self.bmedian = 0.0
+        self._rel_median = '='
+
+    @property
+    def is_significant(self):
+        return 'Y' if self._is_significant else 'N'
+
+    @property
+    def rel_mean(self):
+        return mark_safe(self._rel_mean)
+
+    @property
+    def rel_median(self):
+        return mark_safe(self._rel_median)
+
+    @staticmethod
+    def from_robject(robject):
+        _instance = TrackingResult()
+
+        if robject:
+            _instance.p = robject.do_slot('p')[0]
+            _instance._is_significant = _instance.p <= 0.01
+
+            _instance.amean = robject.do_slot('a.mean')[0]
+            _instance.bmean = robject.do_slot('b.mean')[0]
+            if _instance.amean > _instance.bmean:
+                _instance._rel_mean = '>'
+            elif _instance.amean < _instance.bmean:
+                _instance._rel_mean = '<'
+
+            _instance.amedian = robject.do_slot('a.median')[0]
+            _instance.bmedian = robject.do_slot('b.median')[0]
+            if _instance.amedian > _instance.bmedian:
+                _instance._rel_median = '>'
+            elif _instance.amedian < _instance.bmedian:
+                _instance._rel_median = '<'
+
+        return _instance

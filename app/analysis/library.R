@@ -31,6 +31,14 @@ setClass("PredictionResult",
     )
 )
 
+setClass("TrackingResult",
+    slots = list(
+        p = "numeric",
+        a.mean = "numeric", b.mean = "numeric",
+        a.median = "numeric", b.median = "numeric"
+    )
+)
+
 # Function Definitions
 init.libraries <- function(){
     library("DBI")
@@ -187,4 +195,40 @@ regression.predict <- function(model, data, switch){
     prediction.result@fscore = mean(fscore, na.rm=TRUE)
     
     return(prediction.result)
+}
+
+# tracking.test <- function(data, metric, a.keys, b.keys){
+#     print(a.keys)
+#     print("introduced" %in% a.keys)
+# }
+
+tracking.test <- function(data, metric, a.keys, b.keys){
+    column <- paste("delta_", metric, sep="")
+    population.a <- data[[column]][data$transition %in% a.keys]
+    population.b <- data[[column]][data$transition %in% b.keys]
+    
+    a.mean = mean(population.a)
+    a.median = median(population.a)
+    b.mean = mean(population.b)
+    b.median = median(population.b)
+    
+    delta.median <- (a.median - b.median)
+    if(delta.median > 0){
+        alt <- "greater"
+    } else { 
+        alt <- "less"
+    }
+    
+    # Mann-Whitney-Wilcoxon Test
+    htest <- wilcox.test(population.a, population.b, alternative=alt)
+    
+    tracking.result <- new("TrackingResult",
+        p = htest$p.value,
+        a.mean = a.mean,
+        b.mean = b.mean,
+        a.median = a.median,
+        b.median = b.median
+    )
+
+    return(tracking.result)
 }

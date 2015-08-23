@@ -4,7 +4,7 @@ from rpy2 import robjects
 
 from app.analysis import constants
 from app.analysis.adapters import (
-    AssociationResult, ModelingResult, Model, PredictionResult
+    AssociationResult, ModelingResult, Model, PredictionResult, TrackingResult
 )
 
 # Load custom external R library
@@ -45,6 +45,7 @@ class Db(object):
 class Tests(object):
     def __init__(self):
         self._association = robjects.r('association.test')
+        self._tracking = robjects.r('tracking.test')
 
     def association(self, data, column, switch=constants.SWITCH,
                     normalize_by=None):
@@ -56,6 +57,15 @@ class Tests(object):
             result = self._association(data, column, switch, normalize_by)
 
         return AssociationResult.from_robject(result)
+
+    def tracking(self, data, metric, akeys, bkeys):
+        result = None
+
+        _akeys = robjects.vectors.StrVector(akeys)
+        _bkeys = robjects.vectors.StrVector(bkeys)
+
+        result = self._tracking(data, metric, _akeys, _bkeys)
+        return TrackingResult.from_robject(result)
 
 
 class Regression(object):

@@ -7,7 +7,7 @@ from django.db.models import Max
 from django.template.loader import render_to_string
 
 from app.analysis import constants, helpers
-from app.models import Function, Revision
+from app.models import Function, Revision, Subject
 
 
 def run(database='default', fname=None):
@@ -20,21 +20,22 @@ def run(database='default', fname=None):
     try:
         db.connect()
 
-        data = dict()
-        data['subjects'] = list()
+        templatedata = dict()
+        templatedata['subjects'] = list()
         for item in settings.SUBJECTS:
+            subject = Subject.objects.get(name=item)
             revisions = Revision.objects.filter(
-                subject__name=item, is_loaded=True
+                subject=subject, is_loaded=True
             )
             if revisions.count() == 0:
                 continue
 
-            subject = {'name': item, 'revisions': list()}
+            _subject = {'name': item, 'revisions': list(), 'tracking': list()}
 
             aggregate = revisions.aggregate(Max('id'))
             maxid = aggregate['id__max']
-
             for revision in revisions.order_by('id'):
+                functions = Function.objects.filter(revision=revision)
                 result = {'number': revision.number}
 
                 # Association tests
@@ -46,9 +47,10 @@ def run(database='default', fname=None):
                 result['pex'] = tests.association(
                     trdata, 'proximity_to_exit'
                 )
-                result['pde'] = tests.association(
-                    trdata, 'proximity_to_defense'
-                )
+                if functions.filter(is_defense=True).count() > 0:
+                    result['pde'] = tests.association(
+                        trdata, 'proximity_to_defense'
+                    )
                 result['pda'] = tests.association(
                     trdata, 'proximity_to_dangerous'
                 )
@@ -63,10 +65,23 @@ def run(database='default', fname=None):
                 )
                 result['model'] = model
 
-                subject['revisions'].append(result)
-            data['subjects'].append(subject)
+                _subject['revisions'].append(result)
 
-        summary = render_to_string('app/r.md', data)
+            # Tracking validation
+            data = db.query(constants.TRACKING_SQL.format(subject.pk))
+            for (metric, akeys, bkeys) in constants.TRACKING_SETS:
+                result = {
+                    'metric': metric,
+                    'comparing': '({0}) vs. ({1})'.format(
+                        ','.join(akeys), ','.join(bkeys)
+                    )
+                }
+                result['result'] = tests.tracking(data, metric, akeys, bkeys)
+                _subject['tracking'].append(result)
+
+            templatedata['subjects'].append(_subject)
+
+        summary = render_to_string('app/r.md', templatedata)
 
         if fname:
             with open(fname, 'w+') as _file:

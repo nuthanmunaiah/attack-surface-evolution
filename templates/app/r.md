@@ -29,6 +29,14 @@ Page Rank
 {% for r in revisions %}| {{ r.number|stringformat:"8s" }} |       {{r.pr.is_significant }}       | {{ r.pr.p|stringformat:"6.5e" }} | {{ r.pr.vmedian|stringformat:"12.6e" }} | {{ r.pr.rel_median  }} | {{ r.pr.nmedian|stringformat:"12.6e" }} |
 {% endfor %}
 
+Tracking Tests
+==============
+
+|        Metric        |                                       Tracking                           |  Significant  |   p-value   |  Median(a)  |   |  Median(b)  |
+| -------------------- | ------------------------------------------------------------------------ | ------------- | ----------- | ----------- | - | ----------- |
+{% for t in s.tracking %}| {{ t.metric|stringformat:"-20s" }} | {{ t.comparing|stringformat:"-72s" }} |       {{ t.result.is_significant }}       | {{ t.result.p|stringformat:"6.5e" }} | {{ t.result.amedian|stringformat:"11.6e" }} | {{ t.result.rel_median  }} | {{ t.result.bmedian|stringformat:"11.6e" }} | 
+{% endfor %} 
+
 Legend
 ======
 
@@ -51,8 +59,8 @@ Modeling
  Models
  ------
 
-   |    AIC    |  % Change  | Formula                                                                     | Precision | Recall | F-score |
-   | --------- | ---------- | --------------------------------------------------------------------------- | --------- | ------ | ------- |
-   | {{ r.model.control.aic|stringformat:"9.4f" }} |     --     | {{ r.model.control.formula|stringformat:"-75s" }} |    ---    |   --   |   ---   |
-   {% for m in r.model.models %}| {{ m.aic|stringformat:"9.4f" }} | {{ m.aic_change_pct|stringformat:"10.6f" }} | {{ m.formula|stringformat:"-75s" }} | {{ m.prediction_result.precision|stringformat:"9.4f"  }} | {{ m.prediction_result.recall|stringformat:"6.4f" }} | {{ m.prediction_result.fscore|stringformat:"7.4f" }} |
+   |    AIC    |  % Change  | Formula                                                                                              | Precision | Recall | F-score |
+   | --------- | ---------- | ---------------------------------------------------------------------------------------------------- | --------- | ------ | ------- |
+   | {{ r.model.control.aic|stringformat:"9.4f" }} |     --     | {{ r.model.control.formula|stringformat:"-100s" }} |    ---    |   --   |   ---   |
+   {% for m in r.model.models %}| {{ m.aic|stringformat:"9.4f" }} | {{ m.aic_change_pct|stringformat:"10.6f" }} | {{ m.formula|stringformat:"-100s" }} | {{ m.prediction_result.precision|stringformat:"9.4f"  }} | {{ m.prediction_result.recall|stringformat:"6.4f" }} | {{ m.prediction_result.fscore|stringformat:"7.4f" }} |
    {% endfor %}{% endfor %}{% endwith %}{% endfor %}
