@@ -31,7 +31,7 @@ class AssociationResult(object):
 
         if robject:
             _instance.p = robject.do_slot('p')[0]
-            _instance._is_significant = _instance.p <= 0.01
+            _instance._is_significant = _instance.p <= 0.05
 
             _instance.vmean = robject.do_slot('true.mean')[0]
             _instance.nmean = robject.do_slot('false.mean')[0]
@@ -140,7 +140,7 @@ class TrackingResult(object):
 
         if robject:
             _instance.p = robject.do_slot('p')[0]
-            _instance._is_significant = _instance.p <= 0.01
+            _instance._is_significant = _instance.p <= 0.05
 
             _instance.amean = robject.do_slot('a.mean')[0]
             _instance.bmean = robject.do_slot('b.mean')[0]
