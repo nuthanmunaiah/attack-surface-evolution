@@ -197,11 +197,6 @@ regression.predict <- function(model, data, switch){
     return(prediction.result)
 }
 
-# tracking.test <- function(data, metric, a.keys, b.keys){
-#     print(a.keys)
-#     print("introduced" %in% a.keys)
-# }
-
 tracking.test <- function(data, metric, a.keys, b.keys){
     column <- paste("delta_", metric, sep="")
     population.a <- data[[column]][data$transition %in% a.keys]
