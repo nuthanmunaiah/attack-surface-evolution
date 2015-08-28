@@ -28,12 +28,12 @@ TRACKING_SQL = '''
            -- Proximity to Entry
            before.proximity_to_entry AS bproximity_to_entry,
            after.proximity_to_entry AS aproximity_to_entry,
-           (before.proximity_to_entry - after.proximity_to_entry)
+           (after.proximity_to_entry - before.proximity_to_entry)
                 AS delta_proximity_to_entry,
            -- Proximity to Entry
            before.proximity_to_exit AS bproximity_to_exit,
            after.proximity_to_exit AS aproximity_to_exit,
-           (before.proximity_to_exit - after.proximity_to_exit)
+           (after.proximity_to_exit - before.proximity_to_exit)
                 AS delta_proximity_to_exit,
            before.is_vulnerable, after.is_vulnerable,
            CASE
