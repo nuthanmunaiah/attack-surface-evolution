@@ -69,15 +69,14 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        is_output_enabled = options.get('is_output_enabled', False)
         cflow_path = options.get('cflow_path', None)
         gprof_path = options.get('gprof_path', None)
         num_processes = options.get('num_processes')
 
-        stat(cflow_path, gprof_path, is_output_enabled, num_processes)
+        stat(cflow_path, gprof_path, num_processes)
 
 
-def stat(cflow_path, gprof_path, is_output_enabled, num_processes):
+def stat(cflow_path, gprof_path, num_processes):
     cflow_loader = None
     gprof_loader = None
 
