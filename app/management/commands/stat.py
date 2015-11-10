@@ -1,17 +1,24 @@
 import datetime
+import multiprocessing
+import operator
 import os
 import sys
 import shutil
 
 from optparse import make_option, OptionValueError
+from django.core.management.base import BaseCommand
+from django.conf import settings
 
 import networkx as nx
 
+from app.errors import InvalidVersionError
+from app.helpers import get_version_components
+from app.models import Function, Revision
+from attacksurfacemeter.call import Call
 from attacksurfacemeter.call_graph import CallGraph
 from attacksurfacemeter.loaders.cflow_loader import CflowLoader
 from attacksurfacemeter.loaders.gprof_loader import GprofLoader
 from attacksurfacemeter.loaders.multigprof_loader import MultigprofLoader
-from django.core.management.base import BaseCommand
 
 
 def check_cflow_path(option, opt_str, value, parser, *args, **kwargs):
@@ -36,8 +43,38 @@ def check_gprof_path(option, opt_str, value, parser, *args, **kwargs):
             )
 
 
+def check_revision(option, opt_str, value, parser, *args, **kwargs):
+    setattr(parser.values, option.dest, value)
+    if value:
+        try:
+            (ma, mi, bu) = get_version_components(value)
+
+            if not Revision.objects.filter(number=value).exists():
+                raise OptionValueError(
+                    'Revision %s does not exist in the database.' % value
+                )
+        except InvalidVersionError:
+            raise OptionValueError(
+                'Invalid revision number specified. %s must be formatted as '
+                '0.0.0' % opt_str
+            )
+
+
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
+        make_option(
+            '-s', choices=settings.SUBJECTS, dest='subject',
+            help='Name of the subject to load the database with.'
+        ),
+        make_option(
+            '-r', type='str', action='callback', callback=check_revision,
+            dest='revision',
+            help=(
+                'Revision number of the subject to load the database with, '
+                'e.g. 2.6.0. Default is None, in which case all revisions of'
+                ' the subject are loaded.'
+            )
+        ),
         make_option(
             '-c', type='str', action='callback', callback=check_cflow_path,
             dest='cflow_path',
@@ -57,8 +94,22 @@ class Command(BaseCommand):
         make_option(
             '-p', type='int', action='store', dest='num_processes', default=4,
             help=(
-                'Number of processes to spawn when loading multiple gprof '
-                'files'
+                'Number of processes to spawn when executing the command.'
+            )
+        ),
+        make_option(
+            '-o', action='store_true', dest='output',
+            help=(
+                'Enable the creation of file containing the list of all '
+                'functions that reach or are reachable from vulnerable '
+                'functions within a specified number of hops.'
+            )
+        ),
+        make_option(
+            '-t', type='int', action='store', dest='threshold', default=2,
+            help=(
+                'Number of hops to traverse when identifying ancestors and '
+                'descendants of the vulnerable functions.'
             )
         ),
     )
@@ -69,14 +120,18 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        cflow_path = options.get('cflow_path', None)
-        gprof_path = options.get('gprof_path', None)
-        num_processes = options.get('num_processes')
-
-        stat(cflow_path, gprof_path, num_processes)
+        stat(**options)
 
 
-def stat(cflow_path, gprof_path, num_processes):
+def stat(**options):
+    cflow_path = options.get('cflow_path', None)
+    gprof_path = options.get('gprof_path', None)
+    num_processes = options.get('num_processes')
+    output = options.get('output', False)
+    threshold = options.get('threshold', None)
+    subject = options.get('subject', None)
+    revision = options.get('revision', None)
+
     cflow_loader = None
     gprof_loader = None
 
@@ -148,3 +203,100 @@ def stat(cflow_path, gprof_path, num_processes):
     print('    Monolithicity       {0:4f}'.format(call_graph.monolithicity))
     print('    Fragments           {0}'.format(call_graph.num_fragments))
     print('#' * 50)
+
+    if output:
+        generate(
+            subject, revision, call_graph, threshold, num_processes
+        )
+
+
+def generate(subject, revision, call_graph, threshold, num_processes):
+    print(
+        'Generating nodes that reach or are reachable from a vulnerable '
+        'function'
+    )
+
+    functions = Function.objects.filter(
+        revision__number=revision,
+        revision__subject__name=subject,
+        revision__is_loaded=True,
+        is_vulnerable=True
+    )
+
+    manager = multiprocessing.Manager()
+    queue = manager.Queue(len(functions))
+
+    # Consumer
+    consumer = multiprocessing.Process(
+        target=process, args=(revision, len(functions), threshold, queue)
+    )
+    consumer.start()
+
+    # Producers
+    with multiprocessing.Pool(num_processes) as pool:
+        pool.starmap(
+            _generate_,
+            [
+                (
+                    call_graph,
+                    Call(function.name, function.file, environment='C'),
+                    threshold, queue
+                )
+                for function in functions
+            ]
+        )
+    consumer.join()
+
+
+def _generate_(call_graph, function, threshold, queue):
+    print(' {0}@{1}'.format(
+        function.function_name, function.function_signature
+    ))
+
+    reachable = dict()
+    for ancestor in nx.ancestors(call_graph.call_graph, function):
+        if (
+                ancestor not in call_graph.entry_points and
+                ancestor not in call_graph.exit_points
+           ):
+
+            path_length = nx.shortest_path_length(
+                call_graph.call_graph, ancestor, function
+            )
+            if path_length <= threshold:
+                reachable[ancestor] = path_length
+
+    queue.put(
+        {
+            'function': function,
+            'reachable': sorted(
+                reachable.items(), key=operator.itemgetter(1)
+            ),
+        },
+        block=True
+    )
+
+
+def process(revision, count, threshold, queue):
+    reachables = dict()
+    for i in range(1, threshold + 1):
+        reachables[i] = set()
+
+    index = 0
+    while index < count:
+        item = queue.get(block=True)
+        index += 1
+
+        reachable = item['reachable']
+        for (key, value) in reachable:
+            reachables[value].add(key)
+
+    with open('{0}.txt'.format(revision), 'w') as file_:
+        for (key, value) in reachables.items():
+            file_.write('{0}\n'.format('#' * 30))
+            file_.write('Nodes reachable in {0} hop(s)\n'.format(key))
+            file_.write('{0}\n'.format('#' * 30))
+            for item in value:
+                file_.write('  {0}@{1}\n'.format(
+                    item.function_name, item.function_signature
+                ))
