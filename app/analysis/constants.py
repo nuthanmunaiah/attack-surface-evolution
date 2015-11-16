@@ -68,7 +68,7 @@ FEATURE_SETS = [
     [
         "page_rank",
         "proximity_to_entry", "proximity_to_exit", "proximity_to_dangerous"
-    ]
+    ],
     ["proximity_to_defense"],
     ["page_rank", "proximity_to_defense"],
     ["page_rank", "proximity_to_defense", "proximity_to_dangerous"],
