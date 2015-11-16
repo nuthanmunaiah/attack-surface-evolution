@@ -2,6 +2,7 @@
 setClass("AssociationResult",
     slots = list(
         p = "numeric",
+        effect = "character",
         true.mean = "numeric", false.mean = "numeric",
         true.median = "numeric", false.median = "numeric"
     )
@@ -43,6 +44,7 @@ setClass("TrackingResult",
 init.libraries <- function(){
     library("DBI")
     suppressPackageStartupMessages(library("ROCR"))
+    suppressPackageStartupMessages(library("effsize"))
 }
 
 db.connect <- function(host, port, user, password, dbname,
@@ -107,7 +109,10 @@ association.test <- function(data, column.name, switch, normalize.by = NULL){
         true.mean = mean(true.population),
         false.mean = mean(false.population),
         true.median = median(true.population),
-        false.median = median(false.population)
+        false.median = median(false.population),
+        effect = cohen.d(
+            true.population, false.population, na.rm = T
+        )$magnitude
     )
 
     return(association.result)
@@ -133,7 +138,7 @@ regression.model <- function(tr.data, te.data, feature.sets, control, switch){
     model@aic.change.pct <- 0.0
     model@prediction.result <- regression.predict(lmfit, te.data, switch)
     modeling.result@control <- model
-    
+
     if(length(feature.sets) > 0){
         modeling.result@models <- list()
         index <- 1
@@ -146,12 +151,12 @@ regression.model <- function(tr.data, te.data, feature.sets, control, switch){
             model@formula <- paste(
                 "switch", paste(feature.set, collapse=" + "), sep=" ~ "
             )
-            lmfit <- glm(formula = as.formula(model@formula), 
+            lmfit <- glm(formula = as.formula(model@formula),
                 data = data,
                 family = "binomial"
             )
             model@aic <- lmfit$aic
-            model@aic.change.pct <- 
+            model@aic.change.pct <-
                 (
                     (modeling.result@control@aic - model@aic) /
                     modeling.result@control@aic
@@ -180,20 +185,20 @@ regression.predict <- function(model, data, switch){
 
     # Test the model using know test data
     prediction.model <- predict(model, newdata = data, type = "response")
-    
+
     # Evaluate performance
     prediction <- prediction(prediction.model, data$switch)
     performance <- performance(prediction, "prec", "rec")
-    
+
     # Select the relevant values
     precision <- unlist(slot(performance, "y.values"))
     recall <- unlist(slot(performance, "x.values"))
     fscore = 2 * ((precision * recall)/(precision + recall))
-    
+
     prediction.result@precision= mean(precision, na.rm=TRUE)
     prediction.result@recall = mean(recall, na.rm=TRUE)
     prediction.result@fscore = mean(fscore, na.rm=TRUE)
-    
+
     return(prediction.result)
 }
 
@@ -201,22 +206,22 @@ tracking.test <- function(data, metric, a.keys, b.keys){
     column <- paste("delta_", metric, sep="")
     population.a <- data[[column]][data$transition %in% a.keys]
     population.b <- data[[column]][data$transition %in% b.keys]
-    
+
     a.mean = mean(population.a)
     a.median = median(population.a)
     b.mean = mean(population.b)
     b.median = median(population.b)
-    
+
     delta.median <- (a.median - b.median)
     if(delta.median > 0){
         alt <- "greater"
-    } else { 
+    } else {
         alt <- "less"
     }
-    
+
     # Mann-Whitney-Wilcoxon Test
     htest <- wilcox.test(population.a, population.b, alternative=alt)
-    
+
     tracking.result <- new("TrackingResult",
         p = htest$p.value,
         a.mean = a.mean,

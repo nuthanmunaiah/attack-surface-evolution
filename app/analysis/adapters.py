@@ -1,5 +1,6 @@
 from django.utils.safestring import mark_safe
 
+
 class AssociationResult(object):
     def __init__(self):
         self.p = 0.0
@@ -12,6 +13,8 @@ class AssociationResult(object):
         self.vmedian = 0.0
         self.nmedian = 0.0
         self._rel_median = '='
+
+        self.effect = 'NA'
 
     @property
     def is_significant(self):
@@ -47,7 +50,9 @@ class AssociationResult(object):
             elif _instance.vmedian < _instance.nmedian:
                 _instance._rel_median = '<'
 
+            _instance.effect = robject.do_slot('effect')[0].upper()
         return _instance
+
 
 class Model(object):
     def __init__(self):
