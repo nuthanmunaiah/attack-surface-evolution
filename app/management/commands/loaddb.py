@@ -2,20 +2,19 @@ from optparse import make_option, OptionValueError
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
+from app import helpers, subjects, utilities
 from app.errors import InvalidVersionError
-from app.helpers import get_version_components
-from app.models import Revision
-from app.subjects import curl, ffmpeg, wireshark
-from app.utilities import load
+from app.models import *
 
 
 def check_revision(option, opt_str, value, parser, *args, **kwargs):
     setattr(parser.values, option.dest, value)
     if value:
         try:
-            (ma, mi, bu) = get_version_components(value)
+            ma, mi, pa = helpers.get_version_components(value)
+            releases = Release.objects.filter(major=ma, minor=mi, patch=pa)
 
-            if not Revision.objects.filter(number=value).exists():
+            if not releases.exists():
                 raise OptionValueError(
                     'Revision %s does not exist in the database.' % value
                 )
@@ -57,24 +56,16 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         subject = options['subject']
-        revision = options['revision']
+        release = options['revision']
         processes = options['processes']
 
-        revisions = Revision.objects.filter(
-            subject__name=subject, is_loaded=False
-        )
-        if 'ffmpeg' in subject:
-            revisions = revisions.filter(type='b')
-            subject_cls = ffmpeg.FFmpeg
-        elif 'curl' in subject:
-            revisions = revisions.filter(type='t')
-            subject_cls = curl.cURL
-        elif 'wireshark' in subject:
-            revisions = revisions.filter(type='b')
-            subject_cls = wireshark.Wireshark
+        subject = Subject.objects.get(name=subject)
+        releases = Release.objects.filter(subject=subject, is_loaded=False)
+        subject = subjects.SubjectCreator.from_subject(subject)
 
-        if revision:
-            revisions = revisions.filter(number=revision)
+        if release:
+            ma, mi, pa = helpers.get_version_components(release)
+            releases = Release.objects.filter(major=ma, minor=mi, patch=pa)
 
-        for revision in revisions:
-            load(revision, subject_cls, processes)
+        for release in releases:
+            utilities.load(release, subject, processes)
