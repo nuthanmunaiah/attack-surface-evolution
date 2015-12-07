@@ -7,10 +7,10 @@ import shutil
 
 from optparse import make_option, OptionValueError
 from django.core.management.base import BaseCommand
-from django.conf import settings
 
 import networkx as nx
 
+from app import contants
 from app.errors import InvalidVersionError
 from app.helpers import get_version_components
 from app.models import Function, Revision
@@ -63,7 +63,7 @@ def check_revision(option, opt_str, value, parser, *args, **kwargs):
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option(
-            '-s', choices=settings.SUBJECTS, dest='subject',
+            '-s', choices=list(constants.SUBJECTS.keys()), dest='subject',
             help='Name of the subject to load the database with.'
         ),
         make_option(
