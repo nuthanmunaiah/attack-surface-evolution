@@ -128,7 +128,7 @@ class Command(BaseCommand):
                     )
                     cve_release.save()
 
-            _subject = subjects.SubjectCreator.from_subject(subject, '/tmp/')
+            _subject = subjects.SubjectCreator.from_subject(subject)
             _subject.clone()
             for branch in branches:
                 _subject.checkout(branch.reference)
