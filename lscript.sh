@@ -22,6 +22,7 @@ elif [ $subject == "wireshark" ]; then
     )
 fi
 
+module load gcc/4.6.4
 module load python/3.4.3
 module load cflow/1.4
 source venv/bin/activate
