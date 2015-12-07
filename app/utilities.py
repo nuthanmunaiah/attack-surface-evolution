@@ -182,11 +182,6 @@ def _save(subject, queue):
             functions.clear()
 
 
-def profile(release, subject, index):
-    subject.initialize(release)
-    subject.gprof(index)
-
-
 def debug(message, line=False):
     if 'DEBUG' in os.environ:
         if line:

@@ -58,4 +58,5 @@ class Command(BaseCommand):
                 subject=subject, major=ma, minor=mi, patch=pa
             )
         subject = subjects.SubjectCreator.from_subject(subject)
-        utilities.profile(release, subject, index)
+        subject.initialize(release)
+        subject.gprof(index)
