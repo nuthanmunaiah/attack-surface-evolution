@@ -42,4 +42,4 @@ fi
 module load python/3.4.3
 . venv/bin/activate
 
-python3 manage.py profile -r ${release} -i ${SLURM_ARRAY_TASK_ID}
+python3 manage.py profile -s ffmpeg -r ${release} -i ${SLURM_ARRAY_TASK_ID}
