@@ -13,9 +13,7 @@ def check_revision(option, opt_str, value, parser, *args, **kwargs):
     if value:
         try:
             ma, mi, pa = helpers.get_version_components(value)
-            releases = Release.objects.filter(
-                version__major=ma, version__minor=mi, version__patch=pa
-            )
+            releases = Release.objects.filter(major=ma, minor=mi, patch=pa)
 
             if not releases.exists():
                 raise OptionValueError(
@@ -53,8 +51,7 @@ class Command(BaseCommand):
         subject = Subject.objects.get(name=subject)
         ma, mi, pa = helpers.get_version_components(release)
         release = Release.objects.get(
-                subject=subject,
-                version__major=ma, version__minor=mi, version__patch=pa
+                subject=subject, major=ma, minor=mi, patch=pa
             )
         subject = subjects.SubjectCreator.from_subject(subject)
         utilities.profile(release, subject, index)
