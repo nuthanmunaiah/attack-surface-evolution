@@ -154,13 +154,13 @@ class Subject(object):
                     gprof_loader, fragmentize=True
                 )
 
-            self.debug('Assigning edge weights and page ranks')
-
-            # Default: Use all weights
-            self.call_graph.assign_weights()
-            self.call_graph.assign_page_rank(name='page_rank')
-
             self._pickle_call_graph()
+
+        self.debug('Assigning edge weights and page ranks')
+
+        # Default: Use all weights
+        self.call_graph.assign_weights()
+        self.call_graph.assign_page_rank(name='page_rank')
 
     def _pickle_call_graph(self):
         self.debug(
