@@ -44,7 +44,7 @@ case $subject in
     
         # SLURM: FFmpeg-specific arguments
         cpus=10
-        memory=12288    # 12 GiB
+        memory=10240    # 10 GiB
         duration=12:0:0
         ;;
     "wireshark")
@@ -69,8 +69,12 @@ fi
 if [ ! -d "slurm/$subject" ]; then
     mkdir slurm/$subject
 fi
-stdout="slurm/${subject}/%a.lscript.out"
-stderr="slurm/${subject}/%a.lscript.err"
+
+timestamp="$(date +"%m.%d.%y.%H.%M.%S")"
+mkdir "slurm/${subject}/${timestamp}"
+
+stdout="slurm/${subject}/${timestamp}/%a.lscript.out"
+stderr="slurm/${subject}/${timestamp}/%a.lscript.err"
 
 sbatch --job-name="ASEL-$subject" \
     --output=$stdout \
