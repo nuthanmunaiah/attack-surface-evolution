@@ -1,210 +1,200 @@
-t,refs/tags/n2.2.16,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.0.7,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.7,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.4.10,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.5.7,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.6.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.1.8,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.4.9,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.5.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.2.15,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.6.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.4.8,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.5.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.6.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.2.14,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1.16,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10.16,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.17,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.2.13,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.4.7,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.5.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.2.12,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.2.12,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.4.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.5.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.3.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.1.7,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.5.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1.15,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.4.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.2.11,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.5.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.2.11,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.4.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.5.15,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.1.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.0.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.2.10,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.4.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.2.10,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.3.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.2.9,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.2.9,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.4.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.3.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.4.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.2.8,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1.14,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.2.8,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.3.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10.15,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.2.7,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.3.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1.13,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.2.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.3.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.0.10,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.5.14,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.2.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10.14,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1.12,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.0.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.2.7,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.1.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.2.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10.13,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.2.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1.11,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.2.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1.10,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.2.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.9.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10.12,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.11.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.0.9,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1.9,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.2.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.0.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.1.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10.11,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.2.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.1.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.1.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1.8,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.0.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.1.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10.10,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1.7,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.0.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.16,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.8.15,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.2.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10.9,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.5.13,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.6.7,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.9.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.0.8,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.11.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.2.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.0.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10.8,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.2.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n2.0,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.0.7,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.2.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10.7,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.11.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.0.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.0.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.5.12,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.15,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.8.14,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.14,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.8.13,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.5.11,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.0.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.0.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.0.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.0.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n1.0,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.11.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.8.12,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.13,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.6.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.5.10,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.11.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.11,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.5.9,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.9.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.12,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.8.11,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.10,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.8.10,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.11,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.6.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.5.8,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.9.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.10,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.8.9,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.8.8,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.9,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.6.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,not/a/tag/n0.6.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.5.7,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.9,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.5.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.8,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.8.7,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.5.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.7,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.8.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.8.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.8.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.8.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.8.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.8.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.7.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,not/a/tag/n0.7.0,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/n0.8,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/ffmpeg-0.6.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/v0.5.3,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/v0.6.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/v0.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,not/a/tag/v0.5.4,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/v0.5.2,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/v0.5.1,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-t,refs/tags/v0.5,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-b,refs/remotes/origin/release/0.5,"--extra-cflags='-g -pg -I$HOME/include' --extra-ldflags='-g -pg -L$HOME/lib -L$HOME/lib64 -lm' --enable-gpl --enable-version3 --enable-nonfree --enable-postproc --enable-swscale --enable-avfilter --enable-avfilter-lavf --enable-pthreads --enable-x11grab --enable-gray --enable-bzlib --enable-libamr-nb --enable-libamr-wb --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libdc1394 --enable-libfaac --enable-libfaad --enable-libfaadbin --enable-libgsm --enable-libmp3lame --enable-libnut --enable-libopenjpeg --enable-libschroedinger --enable-libspeex --enable-libtheora --enable-libvorbis --enable-libx264 --enable-libxvid --enable-zlib --disable-altivec --disable-amd3dnow --disable-amd3dnowext --disable-mmx --disable-mmx2 --disable-sse --disable-ssse3 --disable-armv5te --disable-armv6 --disable-armv6t2 --disable-armvfp --disable-iwmmxt --disable-mmi --disable-neon --disable-vis --disable-yasm"
-b,refs/remotes/origin/release/0.6,"--samples=fate-suite/ --extra-cflags='-g -pg -I$HOME/include' --extra-ldflags='-g -pg -L$HOME/lib -L$HOME/lib64 -lm' --enable-gpl --enable-version3 --enable-nonfree --disable-doc --enable-postproc --enable-avfilter --enable-avfilter-lavf --enable-pthreads --enable-x11grab --enable-gray --enable-bzlib --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libdc1394 --enable-libfaac --enable-libfaad --enable-libfaadbin --enable-libmp3lame --enable-libnut --enable-libopenjpeg --enable-librtmp --enable-libschroedinger --enable-libspeex --enable-libtheora --enable-libvo-aacenc --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libxvid --enable-zlib --disable-asm --disable-altivec --disable-amd3dnow --disable-amd3dnowext --disable-mmx --disable-mmx2 --disable-sse --disable-ssse3 --disable-armv5te --disable-armv6 --disable-armv6t2 --disable-armvfp --disable-iwmmxt --disable-mmi --disable-neon --disable-vis --disable-yasm"
-b,refs/remotes/origin/release/0.7,"--samples=fate-suite/ --extra-cflags='-g -pg -I$HOME/include' --extra-ldflags='-g -pg -L$HOME/lib -L$HOME/lib64 -lm' --enable-gpl --enable-version3 --enable-nonfree --disable-doc --enable-x11grab --enable-gray --enable-bzlib --enable-libcelt --enable-frei0r --enable-libaacplus --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libdc1394 --enable-libfaac --enable-libfreetype --enable-libmp3lame --enable-libnut --enable-libopenjpeg --enable-librtmp --enable-libschroedinger --enable-libspeex --enable-libtheora --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libxavs --enable-libxvid --enable-zlib --disable-asm --disable-altivec --disable-amd3dnow --disable-amd3dnowext --disable-mmx --disable-mmx2 --disable-sse --disable-ssse3 --disable-avx --disable-armv5te --disable-armv6 --disable-armv6t2 --disable-armvfp --disable-iwmmxt --disable-mmi --disable-neon --disable-vis --disable-yasm"
-b,refs/remotes/origin/release/0.8,"--samples=fate-suite/ --extra-cflags='-g -pg -I$HOME/include' --extra-ldflags='-g -pg -L$HOME/lib -L$HOME/lib64 -lm' --enable-gpl --enable-version3 --enable-nonfree --disable-doc --enable-x11grab --enable-gray --enable-bzlib --enable-libcelt --enable-frei0r --enable-libaacplus --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libdc1394 --enable-libfaac --enable-libfreetype --enable-libmp3lame --enable-libnut --enable-libopenjpeg --enable-librtmp --enable-libschroedinger --enable-libspeex --enable-libtheora --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libxavs --enable-libxvid --enable-zlib --disable-asm --disable-altivec --disable-amd3dnow --disable-amd3dnowext --disable-mmx --disable-mmx2 --disable-sse --disable-ssse3 --disable-avx --disable-armv5te --disable-armv6 --disable-armv6t2 --disable-armvfp --disable-iwmmxt --disable-mmi --disable-neon --disable-vis --disable-yasm"
-b,refs/remotes/origin/release/0.9,"--samples=fate-suite/ --extra-cflags='-g -pg -I$HOME/include' --extra-ldflags='-g -pg -L$HOME/lib -L$HOME/lib64 -lm' --enable-gpl --enable-version3 --enable-nonfree --disable-doc --enable-avconv --enable-x11grab --enable-gray --enable-bzlib --enable-frei0r --enable-gnutls --enable-libaacplus --enable-libass --enable-libcelt --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libcdio --enable-libdc1394 --enable-libfaac --enable-libfreetype --enable-libmodplug --enable-libmp3lame --enable-libnut --enable-libopenjpeg --enable-libpulse --enable-librtmp --enable-libschroedinger --enable-libspeex --enable-libtheora --enable-libutvideo --enable-libv4l2 --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libxavs --enable-libxvid --enable-openal --enable-openssl --enable-zlib --disable-asm --disable-altivec --disable-amd3dnow --disable-amd3dnowext --disable-mmx --disable-mmx2 --disable-sse --disable-ssse3 --disable-avx --disable-armv5te --disable-armv6 --disable-armv6t2 --disable-armvfp --disable-iwmmxt --disable-mmi --disable-neon --disable-vis --disable-yasm"
-b,refs/remotes/origin/release/0.10,"--samples=fate-suite/ --extra-cflags='-g -pg -I$HOME/include' --extra-ldflags='-g -pg -L$HOME/lib -L$HOME/lib64 -lm' --enable-gpl --enable-version3 --enable-nonfree --disable-doc --enable-x11grab --enable-gray --enable-bzlib --enable-frei0r --enable-gnutls --enable-libaacplus --enable-libass --enable-libcelt --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libcdio --enable-libdc1394 --enable-libfaac --enable-libfreetype --enable-libmodplug --enable-libmp3lame --enable-libnut --enable-libopenjpeg --enable-libpulse --enable-librtmp --enable-libschroedinger --enable-libspeex --enable-libtheora --enable-libutvideo --enable-libv4l2 --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libxavs --enable-libxvid --enable-openal --enable-openssl --enable-zlib --disable-asm --disable-altivec --disable-amd3dnow --disable-amd3dnowext --disable-mmx --disable-mmx2 --disable-sse --disable-ssse3 --disable-avx --disable-armv5te --disable-armv6 --disable-armv6t2 --disable-armvfp --disable-iwmmxt --disable-mmi --disable-neon --disable-vis --disable-yasm"
-b,refs/remotes/origin/release/0.11,"--samples=fate-suite/ --extra-cflags='-g -pg -I$HOME/include' --extra-ldflags='-g -pg -L$HOME/lib -L$HOME/lib64 -lm' --enable-gpl --enable-version3 --enable-nonfree --enable-gray --disable-doc --enable-avresample --enable-x11grab --enable-bzlib --enable-fontconfig --enable-frei0r --enable-gnutls --enable-libaacplus --enable-libass --enable-libbluray --enable-libcelt --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libcdio --enable-libdc1394 --enable-libfaac --enable-libfreetype --enable-libmodplug --enable-libmp3lame --enable-libnut --enable-libopenjpeg --enable-libpulse --enable-librtmp --enable-libschroedinger --enable-libspeex --enable-libtheora --enable-libutvideo --enable-libv4l2 --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libxavs --enable-libxvid --enable-openal --enable-openssl --enable-zlib --disable-asm --disable-altivec --disable-amd3dnow --disable-amd3dnowext --disable-mmx --disable-mmx2 --disable-sse --disable-ssse3 --disable-avx --disable-armv5te --disable-armv6 --disable-armv6t2 --disable-armvfp --disable-mmi --disable-neon --disable-vis --disable-yasm"
-b,refs/remotes/origin/release/1.0,"--samples=fate-suite/ --extra-cflags='-g -pg -I$HOME/include' --extra-ldflags='-g -pg -L$HOME/lib -L$HOME/lib64 -lm' --enable-gpl --enable-version3 --enable-nonfree --enable-gray --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --enable-avresample --enable-x11grab --enable-bzlib --enable-fontconfig --enable-frei0r --enable-gnutls --enable-libaacplus --enable-libass --enable-libbluray --enable-libcaca --enable-libcelt --enable-libcdio --enable-libdc1394 --enable-libfaac --enable-libfdk-aac --enable-libflite --enable-libfreetype --enable-libiec61883 --enable-libmodplug --enable-libmp3lame --enable-libnut --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-libpulse --enable-librtmp --enable-libschroedinger --enable-libspeex --enable-libtheora --enable-libtwolame --enable-libutvideo --enable-libv4l2 --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libxavs --enable-libxvid --enable-openal --enable-openssl --enable-zlib --disable-asm --disable-altivec --disable-amd3dnow --disable-amd3dnowext --disable-mmx --disable-mmxext --disable-sse --disable-sse2 --disable-sse3 --disable-ssse3 --disable-sse4 --disable-sse42 --disable-avx --disable-fma4 --disable-armv5te --disable-armv6 --disable-armv6t2 --disable-armvfp --disable-mmi --disable-neon --disable-vis --disable-inline-asm --disable-yasm --disable-mips32r2 --disable-mipsdspr1 --disable-mipsdspr2 --disable-mipsfpu --disable-fast-unaligned"
-b,refs/remotes/origin/release/1.1,"--samples=fate-suite/ --extra-cflags='-g -pg -I$HOME/include' --extra-ldflags='-g -pg -L$HOME/lib -L$HOME/lib64 -lm' --enable-gpl --enable-version3 --enable-nonfree --enable-gray --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --enable-avresample --enable-x11grab --enable-bzlib --enable-fontconfig --enable-frei0r --enable-gnutls --enable-libaacplus --enable-libass --enable-libbluray --enable-libcaca --enable-libcelt --enable-libcdio --enable-libdc1394 --enable-libfaac --enable-libfdk-aac --enable-libflite --enable-libfreetype --enable-libiec61883 --enable-libmodplug --enable-libmp3lame --enable-libnut --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-libpulse --enable-librtmp --enable-libschroedinger --enable-libspeex --enable-libtheora --enable-libtwolame --enable-libutvideo --enable-libv4l2 --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libxavs --enable-libxvid --enable-openal --enable-openssl --enable-zlib --disable-asm --disable-altivec --disable-amd3dnow --disable-amd3dnowext --disable-mmx --disable-mmxext --disable-sse --disable-sse2 --disable-sse3 --disable-ssse3 --disable-sse4 --disable-sse42 --disable-avx --disable-fma4 --disable-armv5te --disable-armv6 --disable-armv6t2 --disable-vfp --disable-neon --disable-vis --disable-inline-asm --disable-yasm --disable-mips32r2 --disable-mipsdspr1 --disable-mipsdspr2 --disable-mipsfpu --disable-fast-unaligned"
-b,refs/remotes/origin/release/1.2,"--samples=fate-suite/ --extra-cflags='-g -pg -I$HOME/include' --extra-ldflags='-g -pg -L$HOME/lib -L$HOME/lib64 -lm' --enable-gpl --enable-version3 --enable-nonfree --enable-gray --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --enable-avresample --enable-fontconfig --enable-frei0r --enable-gnutls --enable-libaacplus --enable-libass --enable-libbluray --enable-libcaca --enable-libcelt --enable-libcdio --enable-libdc1394 --enable-libfaac --enable-libfdk-aac --enable-libflite --enable-libfreetype --enable-libiec61883 --enable-libilbc --enable-libmodplug --enable-libmp3lame --enable-libnut --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-libpulse --enable-librtmp --enable-libschroedinger --enable-libsoxr --enable-libspeex --enable-libtheora --enable-libtwolame --enable-libutvideo --enable-libv4l2 --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libxavs --enable-libxvid --enable-openal --enable-openssl --enable-x11grab --disable-asm --disable-altivec --disable-amd3dnow --disable-amd3dnowext --disable-mmx --disable-mmxext --disable-sse --disable-sse2 --disable-sse3 --disable-ssse3 --disable-sse4 --disable-sse42 --disable-avx --disable-fma4 --disable-armv5te --disable-armv6 --disable-armv6t2 --disable-vfp --disable-neon --disable-vis --disable-inline-asm --disable-yasm --disable-mips32r2 --disable-mipsdspr1 --disable-mipsdspr2 --disable-mipsfpu --disable-fast-unaligned"
-b,refs/remotes/origin/release/2.0,"--samples=fate-suite/ --extra-cflags='-g -pg -I$HOME/include' --extra-ldflags='-g -pg -L$HOME/lib -L$HOME/lib64 -lm' --enable-gpl --enable-version3 --enable-nonfree --enable-gray --enable-incompatible-libav-abi --enable-incompatible-fork-abi --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --enable-avresample --enable-avisynth --enable-fontconfig --enable-frei0r --enable-gnutls --enable-libaacplus --enable-libass --enable-libbluray --enable-libcaca --enable-libcelt --enable-libcdio --enable-libdc1394 --enable-libfaac --enable-libfdk-aac --enable-libflite --enable-libfreetype --enable-libgme --enable-libiec61883 --enable-libilbc --enable-libmodplug --enable-libmp3lame --enable-libnut --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-libpulse --enable-libquvi --enable-librtmp --enable-libschroedinger --enable-libsoxr --enable-libspeex --enable-libtheora --enable-libtwolame --enable-libutvideo --enable-libv4l2 --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libwavpack --enable-libx264 --enable-libxavs --enable-libxvid --enable-libzmq --enable-openal --enable-openssl --enable-x11grab --disable-asm --disable-altivec --disable-amd3dnow --disable-amd3dnowext --disable-mmx --disable-mmxext --disable-sse --disable-sse2 --disable-sse3 --disable-ssse3 --disable-sse4 --disable-sse42 --disable-avx --disable-fma4 --disable-armv5te --disable-armv6 --disable-armv6t2 --disable-vfp --disable-neon --disable-vis --disable-inline-asm --disable-yasm --disable-mips32r2 --disable-mipsdspr1 --disable-mipsdspr2 --disable-mipsfpu --disable-fast-unaligned"
-b,refs/remotes/origin/release/2.1,"--samples=fate-suite/ --extra-cflags='-g -pg -I$HOME/include' --extra-ldflags='-g -pg -L$HOME/lib -L$HOME/lib64 -lm' --enable-gpl --enable-version3 --enable-nonfree --enable-gray --enable-incompatible-libav-abi --enable-incompatible-fork-abi --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --enable-avresample --enable-avisynth --enable-fontconfig --enable-frei0r --enable-gnutls --enable-ladspa --enable-libaacplus --enable-libass --enable-libbluray --enable-libcaca --enable-libcelt --enable-libcdio --enable-libdc1394 --enable-libfaac --enable-libfdk-aac --enable-libflite --enable-libfreetype --enable-libgme --enable-libiec61883 --enable-libilbc --enable-libmodplug --enable-libmp3lame --enable-libnut --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-libpulse --enable-libquvi --enable-librtmp --enable-libschroedinger --enable-libsoxr --enable-libspeex --enable-libssh --enable-libtheora --enable-libtwolame --enable-libutvideo --enable-libv4l2 --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libwavpack --enable-libx264 --enable-libxavs --enable-libxvid --enable-libzmq --enable-libzvbi --enable-openal --enable-openssl --enable-x11grab --disable-asm --disable-altivec --disable-amd3dnow --disable-amd3dnowext --disable-mmx --disable-mmxext --disable-sse --disable-sse2 --disable-sse3 --disable-ssse3 --disable-sse4 --disable-sse42 --disable-avx --disable-fma4 --disable-avx2 --disable-armv5te --disable-armv6 --disable-armv6t2 --disable-vfp --disable-neon --disable-vis --disable-inline-asm --disable-yasm --disable-mips32r2 --disable-mipsdspr1 --disable-mipsdspr2 --disable-mipsfpu --disable-fast-unaligned"
-b,refs/remotes/origin/release/2.2,"--samples=fate-suite/ --extra-cflags='-g -pg -I$HOME/include' --extra-ldflags='-g -pg -L$HOME/lib -L$HOME/lib64 -lm' --enable-gpl --enable-version3 --enable-nonfree --enable-gray --enable-incompatible-libav-abi --enable-incompatible-fork-abi --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --enable-avresample --enable-avisynth --enable-fontconfig --enable-frei0r --enable-gnutls --enable-ladspa --enable-libaacplus --enable-libass --enable-libbluray --enable-libcaca --enable-libcelt --enable-libcdio --enable-libdc1394 --enable-libfaac --enable-libfdk-aac --enable-libflite --enable-libfreetype --enable-libgme --enable-libiec61883 --enable-libilbc --enable-libmodplug --enable-libmp3lame --enable-libnut --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-libpulse --enable-libquvi --enable-librtmp --enable-libschroedinger --enable-libsoxr --enable-libspeex --enable-libssh --enable-libtheora --enable-libtwolame --enable-libutvideo --enable-libv4l2 --enable-libvidstab --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxavs --enable-libxvid --enable-libzmq --enable-libzvbi --enable-decklink --enable-openal --enable-opengl --enable-openssl --enable-x11grab --disable-asm --disable-altivec --disable-amd3dnow --disable-amd3dnowext --disable-mmx --disable-mmxext --disable-sse --disable-sse2 --disable-sse3 --disable-ssse3 --disable-sse4 --disable-sse42 --disable-avx --disable-xop --disable-fma3 --disable-fma4 --disable-avx2 --disable-armv5te --disable-armv6 --disable-armv6t2 --disable-vfp --disable-neon --disable-vis --disable-inline-asm --disable-yasm --disable-mips32r2 --disable-mipsdspr1 --disable-mipsdspr2 --disable-mipsfpu --disable-fast-unaligned"
-b,refs/remotes/origin/release/2.3,"--samples=fate-suite/ --extra-cflags='-g -pg -I$HOME/include' --extra-ldflags='-g -pg -L$HOME/lib -L$HOME/lib64 -lm' --enable-gpl --enable-version3 --enable-nonfree --enable-gray --enable-incompatible-libav-abi --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --enable-avresample --enable-avisynth --enable-fontconfig --enable-frei0r --enable-gnutls --enable-ladspa --enable-libaacplus --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcelt --enable-libcdio --enable-libdc1394 --enable-libfaac --enable-libfdk-aac --enable-libflite --enable-libfreetype --enable-libfribidi --enable-libgme --enable-libiec61883 --enable-libilbc --enable-libmodplug --enable-libmp3lame --enable-libnut --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-libpulse --enable-libquvi --enable-librtmp --enable-libschroedinger --enable-libsmbclient --enable-libsoxr --enable-libspeex --enable-libssh --enable-libtheora --enable-libtwolame --enable-libutvideo --enable-libv4l2 --enable-libvidstab --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxavs --enable-libxvid --enable-libzmq --enable-libzvbi --enable-decklink --enable-openal --enable-opengl --enable-openssl --enable-x11grab --disable-asm --disable-altivec --disable-amd3dnow --disable-amd3dnowext --disable-mmx --disable-mmxext --disable-sse --disable-sse2 --disable-sse3 --disable-ssse3 --disable-sse4 --disable-sse42 --disable-avx --disable-xop --disable-fma3 --disable-fma4 --disable-avx2 --disable-armv5te --disable-armv6 --disable-armv6t2 --disable-vfp --disable-neon --disable-inline-asm --disable-yasm --disable-mips32r2 --disable-mipsdspr1 --disable-mipsdspr2 --disable-mipsfpu --disable-fast-unaligned"
-b,refs/remotes/origin/release/2.4,"--samples=fate-suite/ --extra-cflags='-g -pg -I$HOME/include' --extra-ldflags='-g -pg -L$HOME/lib -L$HOME/lib64 -lm' --enable-gpl --enable-version3 --enable-nonfree --enable-gray --enable-incompatible-libav-abi --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --enable-avresample --enable-avisynth --enable-fontconfig --enable-frei0r --enable-gnutls --enable-ladspa --enable-libaacplus --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcelt --enable-libcdio --enable-libdc1394 --enable-libfaac --enable-libfdk-aac --enable-libflite --enable-libfreetype --enable-libfribidi --enable-libgme --enable-libiec61883 --enable-libilbc --enable-libmodplug --enable-libmp3lame --enable-libnut --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-libpulse --enable-libquvi --enable-librtmp --enable-libschroedinger --enable-libsmbclient --enable-libsoxr --enable-libspeex --enable-libssh --enable-libtheora --enable-libtwolame --enable-libutvideo --enable-libv4l2 --enable-libvidstab --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxavs --enable-libxvid --enable-libzmq --enable-libzvbi --disable-lzma --enable-decklink --enable-openal --enable-opengl --enable-openssl --enable-x11grab --disable-asm --disable-altivec --disable-amd3dnow --disable-amd3dnowext --disable-mmx --disable-mmxext --disable-sse --disable-sse2 --disable-sse3 --disable-ssse3 --disable-sse4 --disable-sse42 --disable-avx --disable-xop --disable-fma3 --disable-fma4 --disable-avx2 --disable-armv5te --disable-armv6 --disable-armv6t2 --disable-vfp --disable-neon --disable-inline-asm --disable-yasm --disable-mips32r2 --disable-mipsdspr1 --disable-mipsdspr2 --disable-mipsfpu --disable-fast-unaligned"
-b,refs/remotes/origin/release/2.5,"--samples=fate-suite/ --extra-cflags='-g -pg -I$HOME/include' --extra-ldflags='-g -pg -L$HOME/lib -L$HOME/lib64 -lm' --enable-gpl --enable-version3 --enable-nonfree --enable-gray --enable-incompatible-libav-abi --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --enable-avresample --enable-avisynth --enable-fontconfig --enable-frei0r --enable-gnutls --enable-ladspa --enable-libaacplus --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcelt --enable-libcdio --enable-libdc1394 --enable-libfaac --enable-libfdk-aac --enable-libflite --enable-libfreetype --enable-libfribidi --enable-libgme --enable-libiec61883 --enable-libilbc --enable-libmodplug --enable-libmp3lame --enable-libnut --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-libpulse --enable-libquvi --enable-librtmp --enable-libschroedinger --enable-libsmbclient --enable-libsoxr --enable-libspeex --enable-libssh --enable-libtheora --enable-libtwolame --enable-libutvideo --enable-libv4l2 --enable-libvidstab --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxavs --enable-libxcb --enable-libxcb-shm --enable-libxcb-xfixes --enable-libxcb-shape --enable-libxvid --enable-libzmq --enable-libzvbi --enable-decklink --enable-openal --enable-opengl --enable-openssl --enable-x11grab --disable-asm --disable-altivec --disable-amd3dnow --disable-amd3dnowext --disable-mmx --disable-mmxext --disable-sse --disable-sse2 --disable-sse3 --disable-ssse3 --disable-sse4 --disable-sse42 --disable-avx --disable-xop --disable-fma3 --disable-fma4 --disable-avx2 --disable-armv5te --disable-armv6 --disable-armv6t2 --disable-vfp --disable-neon --disable-inline-asm --disable-yasm --disable-mips32r2 --disable-mipsdspr1 --disable-mipsdspr2 --disable-mipsfpu --disable-fast-unaligned"
-b,refs/remotes/origin/release/2.6,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
-b,refs/remotes/origin/release/2.7,"--extra-cflags='-g -pg' --extra-ldflags='-g -pg'"
+refs/tags/n2.8.2,,2015-11-12
+refs/tags/n2.8.1,,2015-10-14
+refs/tags/n2.8,,2015-09-09
+refs/tags/n2.4.11,,2015-08-25
+refs/tags/n2.5.8,,2015-07-31
+refs/tags/n2.6.4,,2015-07-25
+refs/tags/n2.7.2,,2015-07-20
+refs/tags/n2.7.1,,2015-06-19
+refs/tags/n2.2.16,,2015-06-18
+refs/tags/n2.0.7,,2015-06-10
+refs/tags/n2.7,,2015-06-10
+refs/tags/n2.4.10,,2015-06-03
+refs/tags/n2.5.7,,2015-05-23
+refs/tags/n2.6.3,,2015-05-17
+refs/tags/n2.1.8,,2015-04-30
+refs/tags/n2.4.9,,2015-04-26
+refs/tags/n2.5.6,,2015-04-19
+refs/tags/n2.2.15,,2015-04-17
+refs/tags/n2.6.2,,2015-04-12
+refs/tags/n2.4.8,,2015-03-30
+refs/tags/n2.5.5,,2015-03-22
+refs/tags/n2.6.1,,2015-03-16
+refs/tags/n2.2.14,,2015-03-15
+refs/tags/n1.1.16,,2015-03-13
+refs/tags/n0.10.16,,2015-03-12
+refs/tags/n0.7.17,,2015-03-12
+refs/tags/n2.6,,2015-03-07
+refs/tags/n2.2.13,,2015-02-19
+refs/tags/n2.4.7,,2015-02-15
+refs/tags/n2.5.4,,2015-02-13
+refs/tags/n1.2.12,,2015-02-12
+refs/tags/n2.2.12,,2015-01-20
+refs/tags/n2.4.6,,2015-01-13
+refs/tags/n2.5.3,,2015-01-10
+refs/tags/n2.3.6,,2015-01-06
+refs/tags/n2.1.7,,2014-12-31
+refs/tags/n2.5.2,,2014-12-23
+refs/tags/n1.1.15,,2014-12-21
+refs/tags/n2.4.5,,2014-12-20
+refs/tags/n1.2.11,,2014-12-19
+refs/tags/n2.5.1,,2014-12-16
+refs/tags/n2.2.11,,2014-12-09
+refs/tags/n2.5,,2014-12-04
+refs/tags/n2.4.4,,2014-12-01
+refs/tags/n0.5.15,,2014-11-29
+refs/tags/n2.1.6,,2014-11-28
+refs/tags/n2.0.6,,2014-11-14
+refs/tags/n1.2.10,,2014-11-03
+refs/tags/n2.4.3,,2014-11-02
+refs/tags/n2.2.10,,2014-11-01
+refs/tags/n2.3.5,,2014-11-01
+refs/tags/n1.2.9,,2014-10-07
+refs/tags/n2.2.9,,2014-10-06
+refs/tags/n2.4.2,,2014-10-05
+refs/tags/n2.3.4,,2014-10-03
+refs/tags/n2.4.1,,2014-09-22
+refs/tags/n2.2.8,,2014-09-21
+refs/tags/n2.4,,2014-09-14
+refs/tags/n1.1.14,,2014-08-30
+refs/tags/n1.2.8,,2014-08-19
+refs/tags/n2.3.3,,2014-08-17
+refs/tags/n0.10.15,,2014-08-13
+refs/tags/n2.2.7,,2014-08-12
+refs/tags/n2.3.2,,2014-08-11
+refs/tags/n1.1.13,,2014-08-08
+refs/tags/n2.2.6,,2014-08-05
+refs/tags/n2.3.1,,2014-07-31
+refs/tags/n1.0.10,,2014-07-20
+refs/tags/n0.5.14,,2014-07-20
+refs/tags/n2.3,,2014-07-16
+refs/tags/n2.2.5,,2014-07-15
+refs/tags/n0.10.14,,2014-06-29
+refs/tags/n1.1.12,,2014-06-26
+refs/tags/n2.0.5,,2014-06-25
+refs/tags/n1.2.7,,2014-06-23
+refs/tags/n2.1.5,,2014-06-23
+refs/tags/n2.2.4,,2014-06-23
+refs/tags/n0.10.13,,2014-06-09
+refs/tags/n2.2.3,,2014-06-02
+refs/tags/n1.1.11,,2014-05-10
+refs/tags/n2.2.2,,2014-05-05
+refs/tags/n1.1.10,,2014-04-22
+refs/tags/n2.2.1,,2014-04-10
+refs/tags/n2.2,,2014-03-23
+refs/tags/n0.9.4,,2014-03-21
+refs/tags/n0.10.12,,2014-03-10
+refs/tags/n0.11.5,,2014-03-10
+refs/tags/n1.0.9,,2014-03-10
+refs/tags/n1.1.9,,2014-03-07
+refs/tags/n1.2.6,,2014-03-05
+refs/tags/n2.0.4,,2014-03-04
+refs/tags/n2.1.4,,2014-02-23
+refs/tags/n0.10.11,,2014-01-17
+refs/tags/n1.2.5,,2014-01-16
+refs/tags/n2.1.3,,2014-01-15
+refs/tags/n2.1.2,,2014-01-13
+refs/tags/n1.1.8,,2014-01-13
+refs/tags/n2.0.3,,2013-12-24
+refs/tags/n2.1.1,,2013-11-20
+refs/tags/n0.10.10,,2013-11-06
+refs/tags/n2.1,,2013-10-28
+refs/tags/n1.1.7,,2013-10-11
+refs/tags/n2.0.2,,2013-10-08
+refs/tags/n0.7.16,,2013-10-06
+refs/tags/n0.8.15,,2013-10-06
+refs/tags/n1.2.4,,2013-10-03
+refs/tags/n0.10.9,,2013-09-27
+refs/tags/n0.5.13,,2013-09-25
+refs/tags/n0.6.7,,2013-09-23
+refs/tags/n0.9.3,,2013-09-23
+refs/tags/n1.0.8,,2013-09-06
+refs/tags/n1.1.6,,2013-08-31
+refs/tags/n0.11.4,,2013-08-28
+refs/tags/n1.2.3,,2013-08-27
+refs/tags/n2.0.1,,2013-08-11
+refs/tags/n0.10.8,,2013-07-31
+refs/tags/n1.2.2,,2013-07-28
+refs/tags/n2.0,,2013-07-10
+refs/tags/n1.0.7,,2013-05-14
+refs/tags/n1.1.5,,2013-05-13
+refs/tags/n1.2.1,,2013-05-10
+refs/tags/n0.10.7,,2013-04-10
+refs/tags/n0.11.3,,2013-03-22
+refs/tags/n1.0.6,,2013-03-21
+refs/tags/n1.1.4,,2013-03-18
+refs/tags/n1.2,,2013-03-15
+refs/tags/n1.0.5,,2013-03-04
+refs/tags/n0.5.12,,2013-02-28
+refs/tags/n1.1.3,,2013-02-23
+refs/tags/n0.7.15,,2013-02-21
+refs/tags/n0.8.14,,2013-02-21
+refs/tags/n0.7.14,,2013-02-18
+refs/tags/n0.8.13,,2013-02-18
+refs/tags/n0.5.11,,2013-02-17
+refs/tags/n1.0.4,,2013-02-07
+refs/tags/n1.1.2,,2013-02-06
+refs/tags/n1.0.3,,2013-01-22
+refs/tags/n1.0.2,,2013-01-20
+refs/tags/n1.1.1,,2013-01-20
+refs/tags/n1.1,,2013-01-06
+refs/tags/n1.0.1,,2012-12-03
+refs/tags/n0.10.6,,2012-10-26
+refs/tags/n1.0,,2012-09-28
+refs/tags/n0.10.5,,2012-09-19
+refs/tags/n0.11.2,,2012-09-19
+refs/tags/n0.10.4,,2012-06-09
+refs/tags/n0.8.12,,2012-06-09
+refs/tags/n0.7.13,,2012-06-09
+refs/tags/n0.6.6,,2012-06-09
+refs/tags/n0.5.10,,2012-06-09
+refs/tags/n0.11.1,,2012-06-07
+refs/tags/n0.11,,2012-05-25
+refs/tags/n0.5.9,,2012-05-11
+refs/tags/n0.10.3,,2012-05-06
+refs/tags/n0.9.2,,2012-05-03
+refs/tags/n0.7.12,,2012-04-09
+refs/tags/n0.8.11,,2012-04-09
+refs/tags/n0.10.2,,2012-03-17
+refs/tags/n0.10.1,,2012-03-17
+refs/tags/n0.10,,2012-01-26
+refs/tags/n0.8.10,,2012-01-12
+refs/tags/n0.7.11,,2012-01-12
+refs/tags/n0.6.5,,2012-01-12
+refs/tags/n0.5.8,,2012-01-12
+refs/tags/n0.9.1,,2012-01-05
+refs/tags/n0.7.10,,2012-01-02
+refs/tags/n0.8.9,,2012-01-02
+refs/tags/n0.8.8,,2011-12-25
+refs/tags/n0.7.9,,2011-12-25
+refs/tags/n0.6.4,,2011-12-25
+refs/tags/n0.5.7,,2011-12-25
+refs/tags/n0.9,,2011-12-11
+refs/tags/n0.5.6,,2011-11-21
+refs/tags/n0.7.8,,2011-11-21
+refs/tags/n0.8.7,,2011-11-21
+refs/tags/n0.5.5,,2011-11-06
+refs/tags/n0.7.7,,2011-11-04
+refs/tags/n0.8.6,,2011-11-04
+refs/tags/n0.7.6,,2011-10-02
+refs/tags/n0.8.5,,2011-10-02
+refs/tags/n0.7.5,,2011-09-27
+refs/tags/n0.8.4,,2011-09-27
+refs/tags/n0.8.3,,2011-09-08
+refs/tags/n0.7.4,,2011-09-08
+refs/tags/n0.7.3,,2011-08-10
+refs/tags/n0.8.2,,2011-08-10
+refs/tags/n0.8.1,,2011-07-28
+refs/tags/n0.7.2,,2011-07-28
+refs/tags/n0.7.1,,2011-06-23
+refs/tags/n0.8,,2011-06-21
+not/a/tag/n0.7,1986380df2caaa663f63d0a3b9f0413a3d862757,2011-06-21
+refs/tags/ffmpeg-0.6.3,,2011-04-27
+not/a/tag/n0.6.2,99d3772ef464b276d50faa2dde6dd14fda40b237,2011-03-23
+not/a/tag/n0.5.4,52ee20f2aa2936e0fb0a90e81c39135a8f2394e9,2011-03-17
+refs/tags/v0.5.3,,2010-10-18
+refs/tags/v0.6.1,,2010-10-18
+refs/tags/v0.6,,2010-06-15
+refs/tags/v0.5.2,,2010-05-25
+refs/tags/v0.5.1,,2010-03-02
+refs/tags/v0.5,beb93f987cef2f3a629caac29d143b2a1b901c6f,2009-03-09

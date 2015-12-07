@@ -12,154 +12,45 @@ from django.conf import settings
 from django.db import connection, transaction
 
 from app import constants, helpers
-from app.models import Subject, Revision, Cve, CveRevision, Function
+from app.models import *
+from attacksurfacemeter.call import Call
+from attacksurfacemeter.environments import Environments
 
 
-def load_subjects():
-    for item in settings.SUBJECTS:
-        print('Loading subject {0}'.format(item))
-        subject = Subject()
-        subject.name = item
-        subject.save()
-
-
-def load_revisions():
-    for item in settings.SUBJECTS:
-        subject = Subject.objects.get(name=item)
-        revisions_file = helpers.get_absolute_path(
-            'app/assets/data/{0}/revisions.csv'.format(subject.name)
-        )
-        with open(revisions_file, 'r') as _revisions_file:
-            reader = csv.reader(_revisions_file)
-            for row in reader:
-                print('Loading revision {0} of {1}'.format(
-                    row[1], subject.name)
-                )
-                revision = Revision()
-                revision.subject = subject
-                revision.type = row[0]
-                revision.number = (
-                    '%d.%d.%d' %
-                    helpers.get_version_components(row[1])
-                )
-                revision.ref = row[1]
-                revision.configure_options = row[2]
-                revision.save()
-
-
-def load_cves():
-    for item in settings.SUBJECTS:
-        subject = Subject.objects.get(name=item)
-        cves_file = helpers.get_absolute_path(
-            'app/assets/data/{0}/cves.csv'.format(subject.name)
-        )
-        with open(cves_file, 'r') as _cve_file:
-            reader = csv.reader(_cve_file)
-            for row in reader:
-                print('Loading CVE {0} of {1}'.format(
-                    row[0], subject.name
-                ))
-                cve = Cve()
-                cve.subject = subject
-                cve.cve_id = row[0]
-                cve.publish_dt = datetime.datetime.strptime(
-                    row[1], '%m/%d/%Y'
-                )
-                cve.save()
-
-
-def map_cve_to_revision():
-    for item in settings.SUBJECTS:
-        subject = Subject.objects.get(name=item)
-        cves_fixed_file = helpers.get_absolute_path(
-            'app/assets/data/{0}/cves_fixed.csv'.format(subject.name)
-        )
-
-        fixed_cves = dict()
-        with open(cves_fixed_file, 'r') as _cves_fixed_file:
-            reader = csv.reader(_cves_fixed_file)
-            for row in reader:
-                if row[1] in fixed_cves:
-                    fixed_cves[row[1]].append({
-                        'revision': row[0], 'commit_hash': row[2]
-                    })
-                else:
-                    fixed_cves[row[1]] = [{
-                        'revision': row[0], 'commit_hash': row[2]
-                    }]
-
-        for cve in Cve.objects.filter(subject=subject):
-            if cve.cve_id in fixed_cves:
-                print('Mapping fix for {0} of {1}'.format(
-                    cve.cve_id, subject.name
-                ))
-                with transaction.atomic():
-                    cve.is_fixed = True
-                    cve.save()
-
-                    for cve_fix in fixed_cves[cve.cve_id]:
-                        print(' to revision {0}'.format(
-                            cve_fix['revision']
-                        ))
-                        rev_num = cve_fix['revision']
-                        cve_revision = CveRevision()
-                        cve_revision.cve = cve
-                        cve_revision.revision = Revision.objects.get(
-                            subject=subject, number=rev_num,
-                            type=constants.RT_TAG
-                        )
-                        cve_revision.commit_hash = cve_fix['commit_hash']
-                        cve_revision.save()
-
-
-def load(revision, subject_cls, processes):
+def load(release, subject, processes):
     begin = datetime.datetime.now()
 
-    debug('Loading {0}'.format(revision.number))
-    subject = subject_cls(
-        configure_options=revision.configure_options,
-        processes=processes,
-        git_reference=revision.ref
-    )
-    subject.initialize()
-    subject.prepare()
+    debug('Loading {0}'.format(release))
+    subject.prepare(release, processes)
 
-    # load_function_sloc, load_vulnerable_functions, and load_designed_defenses
-    # are independent of one another, so run them in parallel
-    function_sloc_thread = threading.Thread(
-        target=subject.load_function_sloc,
-        name='subject.load_function_sloc'
-    )
-    vulnerable_functions_thread = threading.Thread(
-        target=subject.load_vulnerable_functions,
-        name='subject.load_vulnerable_functions',
-        args=(get_commit_hashes(revision),)
-    )
-    designed_defenses_thread = threading.Thread(
-        target=subject.load_designed_defenses,
-        name='subject.load_designed_defenses'
-    )
+    fixes = VulnerabilityFix.objects.filter(
+            cve_release__cve__subject=release.subject
+        )
+    were_vuln = list()
+    become_vuln = list()
+    for _release in Release.objects.filter(subject=release.subject):
+        if _release <= release:
+            were_vuln += [
+                    Call(fix.name, fix.file, Environments.C)
+                    for fix in fixes.filter(cve_release__release=_release)
+                ]
+        else:
+            become_vuln += [
+                    Call(fix.name, fix.file, Environments.C)
+                    for fix in fixes.filter(cve_release__release=_release)
+                ]
+    subject.load_call_graph(were_vuln, processes)
 
-    function_sloc_thread.start()
-    vulnerable_functions_thread.start()
-    designed_defenses_thread.start()
-
-    function_sloc_thread.join()
-    vulnerable_functions_thread.join()
-    designed_defenses_thread.join()
-
-    subject.load_call_graph()
-
-    process(revision, subject, processes)
+    process(subject, were_vuln, become_vuln, processes)
 
     end = datetime.datetime.now()
     debug('Loading {0} completed in {1:.2f} minutes'.format(
-        revision.number, ((end - begin).total_seconds() / 60)
+        release, ((end - begin).total_seconds() / 60)
     ))
 
 
-def process(revision, subject, processes):
-    debug('Processing {0}'.format(revision.number))
+def process(subject, were_vuln, become_vuln, processes):
+    debug('Processing {0}'.format(subject.release))
 
     manager = multiprocessing.Manager()
 
@@ -175,7 +66,7 @@ def process(revision, subject, processes):
         pool.starmap(
             _process,
             [
-                (node, attrs, revision, subject, queue)
+                (node, attrs, subject, were_vuln, become_vuln, queue)
                 for (node, attrs) in subject.call_graph.nodes
             ],
             chunksize=1
@@ -186,26 +77,29 @@ def process(revision, subject, processes):
     # TODO: Review hack
     connection.close()
 
-    revision.monolithicity = subject.call_graph.monolithicity
+    release = subject.release
 
-    revision.num_entry_points = len(subject.call_graph.entry_points)
-    revision.num_exit_points = len(subject.call_graph.exit_points)
-    revision.num_functions = len(subject.call_graph.nodes)
-    revision.num_fragments = subject.call_graph.num_fragments
+    release.monolithicity = subject.call_graph.monolithicity
 
-    revision.is_loaded = True
-    revision.save()
+    release.num_entry_points = len(subject.call_graph.entry_points)
+    release.num_exit_points = len(subject.call_graph.exit_points)
+    release.num_functions = len(subject.call_graph.nodes)
+    release.num_fragments = subject.call_graph.num_fragments
+
+    release.is_loaded = True
+    release.save()
 
 
-def _process(node, attrs, revision, subject, queue):
+def _process(node, attrs, subject, were_vuln, become_vuln, queue):
     function = Function()
 
     function.name = node.function_name
     function.file = node.function_signature
-    function.revision = revision
+    function.release = subject.release
     function.is_entry = node in subject.call_graph.entry_points
     function.is_exit = node in subject.call_graph.exit_points
-    function.is_vulnerable = 'vulnerable' in attrs
+    function.was_vulnerable = node in were_vuln
+    function.becomes_vulnerable = node in become_vuln
     function.is_tested = 'tested' in attrs
     function.calls_dangerous = 'dangerous' in attrs
     function.is_defense = 'defense' in attrs
@@ -267,7 +161,7 @@ def _save(subject, queue):
     index = 1
     count = len(subject.call_graph.nodes)
 
-    size = 999
+    size = 500
     functions = list()
     with transaction.atomic():
         while index <= count:
@@ -280,7 +174,7 @@ def _save(subject, queue):
                 line=True
             )
             functions.append(function)
-            if (index % 999) == 0:
+            if (index % size) == 0:
                 print('')
                 debug(
                     'Inserting {0} functions into the database.'.format(
@@ -303,33 +197,8 @@ def _save(subject, queue):
             functions.clear()
 
 
-def get_commit_hashes(revision):
-    commit_hashes = None
-    if revision.type == constants.RT_TAG:
-        queryset = CveRevision.objects.filter(revision=revision)
-    elif revision.type == constants.RT_BRANCH:
-        version_components = helpers.get_version_components(revision.number)
-        revisions = Revision.objects.filter(
-            subject=revision.subject, type='t',
-            number__startswith='%d.%d' % (
-                version_components[0], version_components[1]
-            )
-        )
-        queryset = CveRevision.objects.filter(revision=revisions)
-
-    commit_hashes = [
-        item.commit_hash for item in queryset if item.commit_hash != 'NA'
-    ]
-
-    return set(commit_hashes)
-
-
-def profile(revision, subject_cls, index):
-    subject = subject_cls(
-        configure_options=revision.configure_options,
-        processes=settings.PARALLEL['SUBPROCESSES'],
-        git_reference=revision.ref
-    )
+def profile(release, subject, index):
+    subject.initialize(release)
     subject.gprof(index)
 
 
