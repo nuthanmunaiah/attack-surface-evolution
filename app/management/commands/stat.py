@@ -6,14 +6,15 @@ import sys
 import shutil
 
 from optparse import make_option, OptionValueError
-from django.core.management.base import BaseCommand
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
 
 import networkx as nx
 
-from app import contants
+from app import constants
 from app.errors import InvalidVersionError
 from app.helpers import get_version_components
-from app.models import Function, Revision
+from app.models import *
 from attacksurfacemeter.call import Call
 from attacksurfacemeter.call_graph import CallGraph
 from attacksurfacemeter.loaders.cflow_loader import CflowLoader
@@ -131,6 +132,9 @@ def stat(**options):
     threshold = options.get('threshold', None)
     subject = options.get('subject', None)
     revision = options.get('revision', None)
+    
+    if subject not in settings.ENABLED_SUBJECTS:
+        raise CommandError('Subject {0} is not enabled'.format(subject))
 
     cflow_loader = None
     gprof_loader = None

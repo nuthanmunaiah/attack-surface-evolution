@@ -1,10 +1,11 @@
 from optparse import make_option, OptionValueError
-from django.core.management.base import BaseCommand
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 
 from app import constants, helpers, utilities, subjects
 from app.errors import InvalidVersionError
-from app.models import Release, Subject
+from app.models import *
 from app.subjects import curl, ffmpeg
 
 
@@ -47,6 +48,9 @@ class Command(BaseCommand):
         subject = options['subject']
         release = options['revision']
         index = options['index']
+
+        if subject not in settings.ENABLED_SUBJECTS:
+            raise CommandError('Subject {0} is not enabled'.format(subject))
 
         subject = Subject.objects.get(name=subject)
         ma, mi, pa = helpers.get_version_components(release)

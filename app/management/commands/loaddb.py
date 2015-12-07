@@ -1,6 +1,6 @@
 from optparse import make_option, OptionValueError
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from app import constants, helpers, subjects, utilities
 from app.errors import InvalidVersionError
@@ -58,6 +58,9 @@ class Command(BaseCommand):
         subject = options['subject']
         release = options['revision']
         processes = options['processes']
+        
+        if subject not in settings.ENABLED_SUBJECTS:
+            raise CommandError('Subject {0} is not enabled'.format(subject))
 
         subject = Subject.objects.get(name=subject)
         releases = Release.objects.filter(subject=subject, is_loaded=False)

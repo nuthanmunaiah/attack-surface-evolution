@@ -3,11 +3,13 @@ import sys
 import traceback
 
 from datetime import datetime
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from app import constants, helpers, subjects
+from app import constants, helpers
 from app.models import *
+from app.subjects import SubjectCreator
 
 
 class Command(BaseCommand):
@@ -16,11 +18,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
             with transaction.atomic():
-                self._load_subjects()
-                self._load_branches()
-                self._load_releases()
-                self._load_cves()
-                self._map_cve_to_release()
+                subjects = self._load_subjects()
+                self._load_branches(subjects)
+                self._load_releases(subjects)
+                self._load_cves(subjects)
+                self._map_cve_to_release(subjects)
         except Exception as e:
             sys.stderr.write(
                 'ERROR: initdb failed. All database changes aborted.\n'
@@ -29,15 +31,22 @@ class Command(BaseCommand):
             traceback.print_exception(extype, exvalue, extrace)
 
     def _load_subjects(self):
+        subjects = list()
+
         for (name, remote) in constants.SUBJECTS.items():
+            if name not in settings.ENABLED_SUBJECTS:
+                print('Subject {0} not enabled'.format(name))
+                continue
             print('Loading subject {0}'.format(name))
 
             subject = Subject(name=name, remote=remote)
             subject.save()
+            subjects.append(subject)
 
-    def _load_branches(self):
-        for name in constants.SUBJECTS:
-            subject = Subject.objects.get(name=name)
+        return subjects
+
+    def _load_branches(self, subjects):
+        for subject in subjects:
             branches_file = helpers.get_absolute_path(
                 'app/assets/data/{0}/branches.csv'.format(subject.name)
             )
@@ -56,9 +65,8 @@ class Command(BaseCommand):
                     )
                     branch.save()
 
-    def _load_releases(self):
-        for name in constants.SUBJECTS:
-            subject = Subject.objects.get(name=name)
+    def _load_releases(self, subjects):
+        for subject in subjects:
             branches = Branch.objects.filter(subject=subject)
 
             releases_file = helpers.get_absolute_path(
@@ -83,9 +91,8 @@ class Command(BaseCommand):
                     )
                     release.save()
 
-    def _load_cves(self):
-        for name in constants.SUBJECTS:
-            subject = Subject.objects.get(name=name)
+    def _load_cves(self, subjects):
+        for subject in subjects:
             cves_file = helpers.get_absolute_path(
                 'app/assets/data/{0}/cves.csv'.format(subject.name)
             )
@@ -102,10 +109,8 @@ class Command(BaseCommand):
                     )
                     cve.save()
 
-    def _map_cve_to_release(self):
-        for name in constants.SUBJECTS:
-            subject = Subject.objects.get(name=name)
-
+    def _map_cve_to_release(self, subjects):
+        for subject in subjects:
             releases = Release.objects.filter(subject=subject)
             branches = Branch.objects.filter(subject=subject)
             cves = Cve.objects.filter(subject=subject)
@@ -128,7 +133,7 @@ class Command(BaseCommand):
                     )
                     cve_release.save()
 
-            _subject = subjects.SubjectCreator.from_subject(subject)
+            _subject = SubjectCreator.from_subject(subject)
             _subject.clone()
             for branch in branches:
                 _subject.checkout(branch.reference)
