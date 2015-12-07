@@ -2,8 +2,6 @@ from django.db import models
 
 from app import constants
 
-# TODO: Figure out a model to tie-up CVE fix to functions affected.
-
 
 class Subject(models.Model):
     name = models.CharField(max_length=10)
@@ -121,24 +119,8 @@ class Function(models.Model):
     proximity_to_exit = models.FloatField(default=None, null=True)
     proximity_to_defense = models.FloatField(default=None, null=True)
     proximity_to_dangerous = models.FloatField(default=None, null=True)
-
-    # Page Ranks with edges weighted differently
+    
     page_rank = models.FloatField(default=None, null=True)
-    page_rank_b = models.FloatField(default=None, null=True)
-    page_rank_bv = models.FloatField(default=None, null=True)
-    page_rank_bvt = models.FloatField(default=None, null=True)
-    page_rank_bvtda = models.FloatField(default=None, null=True)
-    page_rank_bvtde = models.FloatField(default=None, null=True)
-    page_rank_bvda = models.FloatField(default=None, null=True)
-    page_rank_bvdade = models.FloatField(default=None, null=True)
-    page_rank_bvde = models.FloatField(default=None, null=True)
-    page_rank_bt = models.FloatField(default=None, null=True)
-    page_rank_btda = models.FloatField(default=None, null=True)
-    page_rank_btdade = models.FloatField(default=None, null=True)
-    page_rank_btde = models.FloatField(default=None, null=True)
-    page_rank_bda = models.FloatField(default=None, null=True)
-    page_rank_bde = models.FloatField(default=None, null=True)
-    page_rank_bdade = models.FloatField(default=None, null=True)
 
     def __str__(self):
         return '{0}@{1}'.format(self.name, self.file)

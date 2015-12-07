@@ -160,25 +160,6 @@ class Subject(object):
             self.call_graph.assign_weights()
             self.call_graph.assign_page_rank(name='page_rank')
 
-            # Various combination of weights
-            # Legend
-            #   b - Base, v - Vulnerable, da - Dangerous, de - Defense
-            self._assign_page_rank('page_rank_b')
-            self._assign_page_rank('page_rank_bv')
-            self._assign_page_rank('page_rank_bvt')
-            self._assign_page_rank('page_rank_bvtda')
-            self._assign_page_rank('page_rank_bvtde')
-            self._assign_page_rank('page_rank_bvda')
-            self._assign_page_rank('page_rank_bvdade')
-            self._assign_page_rank('page_rank_bvde')
-            self._assign_page_rank('page_rank_bt')
-            self._assign_page_rank('page_rank_btda')
-            self._assign_page_rank('page_rank_tdade')
-            self._assign_page_rank('page_rank_btde')
-            self._assign_page_rank('page_rank_bda')
-            self._assign_page_rank('page_rank_bde')
-            self._assign_page_rank('page_rank_bdade')
-
             self._pickle_call_graph()
 
     def _pickle_call_graph(self):
@@ -195,32 +176,6 @@ class Subject(object):
         if self._pickle_exists:
             with open(self._pickle_path, 'rb') as file_:
                 self.call_graph = pickle.load(file_)
-
-    def _assign_page_rank(self, name):
-        # Initialize weights dictionary
-        vulnerable = 0
-        if 'v' in name:
-            vulnerable = 25
-        dangerous = 0
-        if 'da' in name:
-            dangerous = 25
-        defense = 0
-        if 'de' in name:
-            defense = -25
-        tested = 0
-        if 't' in name:
-            tested = -25
-        weights = {
-            'base': {'call': 100, 'return': 50},
-            'vulnerable': vulnerable, 'dangerous': dangerous,
-            'tested': tested, 'defense': defense
-        }
-
-        # Weight the edges
-        self.call_graph.assign_weights(weights)
-
-        # Assign page rank
-        self.call_graph.assign_page_rank(name=name)
 
     def get_absolute_path(self, name):
         return os.path.join(self.source_dir, name)

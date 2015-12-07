@@ -110,21 +110,6 @@ def _process(node, attrs, subject, were_vuln, become_vuln, queue):
     (function.fan_in, function.fan_out) = subject.call_graph.get_fan(node)
 
     function.page_rank = attrs['page_rank']
-    function.page_rank_b = attrs['page_rank_b']
-    function.page_rank_bv = attrs['page_rank_bv']
-    function.page_rank_bvt = attrs['page_rank_bvt']
-    function.page_rank_bvtda = attrs['page_rank_bvtda']
-    function.page_rank_bvtde = attrs['page_rank_bvtde']
-    function.page_rank_bvda = attrs['page_rank_bvda']
-    function.page_rank_bvdade = attrs['page_rank_bvdade']
-    function.page_rank_bvde = attrs['page_rank_bvde']
-    function.page_rank_bt = attrs['page_rank_bt']
-    function.page_rank_btda = attrs['page_rank_btda']
-    function.page_rank_btdade = attrs['page_rank_tdade']
-    function.page_rank_btde = attrs['page_rank_btde']
-    function.page_rank_bda = attrs['page_rank_bda']
-    function.page_rank_bde = attrs['page_rank_bde']
-    function.page_rank_bdade = attrs['page_rank_bdade']
 
     # Entry points
     metrics = subject.call_graph.get_shortest_path_length(node, 'entry')
