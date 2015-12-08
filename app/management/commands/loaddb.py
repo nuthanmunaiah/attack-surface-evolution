@@ -68,7 +68,7 @@ class Command(BaseCommand):
 
         if release:
             ma, mi, pa = helpers.get_version_components(release)
-            releases = Release.objects.filter(major=ma, minor=mi, patch=pa)
+            releases = releases.filter(major=ma, minor=mi, patch=pa)
 
         for release in releases:
             utilities.load(release, subject, processes)
