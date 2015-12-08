@@ -14,7 +14,8 @@ from django.conf import settings
 from django.db import connection, transaction
 from scipy import stats
 
-from app import constants, helpers
+from app import constants
+from app.helpers import debug
 from app.models import *
 from attacksurfacemeter.call import Call
 from attacksurfacemeter.environments import Environments
@@ -272,13 +273,3 @@ def _save(model, count, queue):
                     line=True
                 )
             model.objects.bulk_create(instances)
-
-
-def debug(message, line=False):
-    if 'DEBUG' in os.environ:
-        if line:
-            sys.stdout.write('\r\033[K')
-            sys.stdout.write('[DEBUG] {0}'.format(message))
-            sys.stdout.flush()
-        else:
-            print('[DEBUG] {0}'.format(message))

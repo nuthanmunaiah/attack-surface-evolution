@@ -12,7 +12,7 @@ from attacksurfacemeter.environments import Environments
 from attacksurfacemeter.loaders.cflow_loader import CflowLoader
 from attacksurfacemeter.loaders.gprof_loader import GprofLoader
 from attacksurfacemeter.loaders.multigprof_loader import MultigprofLoader
-from app import constants, errors, helpers, utilities
+from app import constants, errors, helpers
 from app.gitapi import Repo
 
 
@@ -256,7 +256,7 @@ class Subject(object):
         return process.wait()
 
     def debug(self, message, line=False):
-        utilities.debug(message, line)
+        helpers.debug(message, line)
 
     @property
     def source_dir(self):

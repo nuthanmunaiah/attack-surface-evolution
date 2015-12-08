@@ -1,4 +1,5 @@
 import os
+import sys
 
 from django.conf import settings
 
@@ -25,3 +26,13 @@ def get_version_components(string):
 
 def get_absolute_path(dir_name):
     return os.path.join(settings.BASE_DIR, dir_name)
+
+
+def debug(message, line=False):
+    if 'DEBUG' in os.environ:
+        if line:
+            sys.stdout.write('\r\033[K')
+            sys.stdout.write('[DEBUG] {0}'.format(message))
+            sys.stdout.flush()
+        else:
+            print('[DEBUG] {0}'.format(message))
