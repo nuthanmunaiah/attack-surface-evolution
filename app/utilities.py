@@ -249,7 +249,7 @@ def _analyze_sensitivity(subject, become_vuln, parameters, queue):
 def _save(model, count, queue):
     index = 1
 
-    size = 50
+    size = settings.DATABASES['default']['BULK']
     instances = list()
     with transaction.atomic():
         while index <= count:
