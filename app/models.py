@@ -176,3 +176,49 @@ class VulnerabilityFix(models.Model):
         unique_together = ('cve_release', 'name', 'file')
         app_label = 'app'
         db_table = 'vulnerability_fix'
+
+
+class Sensitivity(models.Model):
+    release = models.ForeignKey(Release)
+
+    damping = models.FloatField()
+
+    personalization_entry = models.PositiveIntegerField()
+    personalization_exit = models.PositiveIntegerField()
+    personalization_other = models.PositiveIntegerField()
+
+    weight_call = models.IntegerField()
+    weight_return = models.IntegerField()
+    weight_dangerous = models.IntegerField()
+    weight_defense = models.IntegerField()
+    weight_tested = models.IntegerField()
+    weight_vulnerable = models.IntegerField()
+
+    p = models.FloatField()
+    d = models.FloatField()
+
+    def __str__(self):
+        self_str = (
+                'd:{0}|en:{1} ex:{2} oth:{3}|'
+                'ca:{4} re:{5} da:{6} de:{7} ts:{8} vu:{9}'
+            ).format(
+                    self.damping,
+                    self.personalization_entry,
+                    self.personalization_exit,
+                    self.personalization_other,
+                    self.weight_call,
+                    self.weight_return,
+                    self.weight_dangerous,
+                    self.weight_defense,
+                    self.weight_tested,
+                    self.weight_vulnerable
+                )
+
+        return self_str
+    
+    def __repr__(self):
+        return str(self)
+
+    class Meta:
+        app_label = 'app'
+        db_table = 'sensitivity'
