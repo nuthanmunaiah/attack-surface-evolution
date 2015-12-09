@@ -36,6 +36,8 @@ def load(subject, processes):
             for fix in subject.release.future_vulnerability_fixes
         ]
     subject.load_call_graph(were_vuln, processes)
+    subject.call_graph.assign_weights()
+    subject.call_graph.assign_page_rank(name='page_rank')
 
     analyze(subject, were_vuln, become_vuln, processes)
     analyze_sensitivity(subject, become_vuln, processes)
