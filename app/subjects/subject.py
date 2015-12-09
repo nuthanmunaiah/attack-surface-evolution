@@ -125,7 +125,7 @@ class Subject(object):
             return_code = self.test(processes)
             if return_code != 0:
                 raise Exception('test() returned {0}'.format(return_code))
-            
+
             self.is_prepared = True
 
     def load_call_graph(self, were_vulnerable, processes=1):
@@ -172,12 +172,6 @@ class Subject(object):
                 )
 
             self._pickle_call_graph()
-
-        self.debug('Assigning edge weights and page ranks')
-
-        # Default: Use all weights
-        self.call_graph.assign_weights()
-        self.call_graph.assign_page_rank(name='page_rank')
 
     def _pickle_call_graph(self):
         self.debug(
