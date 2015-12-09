@@ -147,7 +147,7 @@ class Function(models.Model):
     proximity_to_exit = models.FloatField(default=None, null=True)
     proximity_to_defense = models.FloatField(default=None, null=True)
     proximity_to_dangerous = models.FloatField(default=None, null=True)
-    
+
     page_rank = models.FloatField(default=None, null=True)
 
     def __str__(self):
@@ -235,6 +235,8 @@ class Sensitivity(models.Model):
     p = models.FloatField()
     d = models.FloatField()
 
+    created_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
         self_str = (
                 'd:{0}|en:{1} ex:{2} oth:{3}|'
@@ -253,7 +255,7 @@ class Sensitivity(models.Model):
                 )
 
         return self_str
-    
+
     def __repr__(self):
         return str(self)
 
