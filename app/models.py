@@ -63,6 +63,34 @@ class Release(models.Model):
     num_fragments = models.PositiveIntegerField(default=None, null=True)
 
     @property
+    def past_vulnerability_fixes(self):
+        if not hasattr(self, '_past_fixes'):
+            self._past_fixes = set()
+
+            for release in Release.objects.filter(subject=self.subject):
+                if release <= self:
+                    for cve_release in release.cverelease_set.all():
+                        self._past_fixes.update(set(
+                                cve_release.vulnerabilityfix_set.all()
+                            ))
+
+        return self._past_fixes
+
+    @property
+    def future_vulnerability_fixes(self):
+        if not hasattr(self, '_future_fixes'):
+            self._future_fixes = set()
+
+            for release in Release.objects.filter(subject=self.subject):
+                if release > self:
+                    for cve_release in release.cverelease_set.all():
+                        self._future_fixes.update(set(
+                                cve_release.vulnerabilityfix_set.all()
+                            ))
+
+        return self._future_fixes
+
+    @property
     def version(self):
         return '{0}.{1}.{2}'.format(self.major, self.minor, self.patch)
 
@@ -166,11 +194,21 @@ class VulnerabilityFix(models.Model):
     name = models.CharField(max_length=125)
     file = models.CharField(max_length=100)
 
-    def __str__(self):
+    @property
+    def identity(self):
         return '{0}@{1}'.format(self.name, self.file)
+
+    def __str__(self):
+        return self.identity
 
     def __repr__(self):
         return str(self)
+
+    def __hash__(self):
+        return hash(self.identity)
+
+    def __eq__(self, other):
+        return hash(self.identity) == hash(other.identity)
 
     class Meta:
         unique_together = ('cve_release', 'name', 'file')
