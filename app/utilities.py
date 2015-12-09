@@ -21,28 +21,20 @@ from attacksurfacemeter.call import Call
 from attacksurfacemeter.environments import Environments
 
 
-def load(release, subject, processes):
+def load(subject, processes):
     begin = datetime.datetime.now()
 
-    debug('Loading {0}'.format(release))
-    subject.prepare(release, processes)
+    debug('Loading {0}'.format(subject.release))
+    subject.prepare(processes)
 
-    fixes = VulnerabilityFix.objects.filter(
-            cve_release__cve__subject=release.subject
-        )
-    were_vuln = list()
-    become_vuln = list()
-    for _release in Release.objects.filter(subject=release.subject):
-        if _release <= release:
-            were_vuln += [
-                    Call(fix.name, fix.file, Environments.C)
-                    for fix in fixes.filter(cve_release__release=_release)
-                ]
-        else:
-            become_vuln += [
-                    Call(fix.name, fix.file, Environments.C)
-                    for fix in fixes.filter(cve_release__release=_release)
-                ]
+    were_vuln = [
+            Call(fix.name, fix.file, Environments.C)
+            for fix in subject.release.past_vulnerability_fixes
+        ]
+    become_vuln = [
+            Call(fix.name, fix.file, Environments.C)
+            for fix in subject.release.future_vulnerability_fixes
+        ]
     subject.load_call_graph(were_vuln, processes)
 
     analyze(subject, were_vuln, become_vuln, processes)
@@ -50,7 +42,7 @@ def load(release, subject, processes):
 
     end = datetime.datetime.now()
     debug('Loading {0} completed in {1:.2f} minutes'.format(
-        release, ((end - begin).total_seconds() / 60)
+        subject.release, ((end - begin).total_seconds() / 60)
     ))
 
 

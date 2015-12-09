@@ -34,6 +34,9 @@ class Subject(object):
         self.designed_defenses = None
         self.call_graph = None
 
+        self.is_initialized = False
+        self.is_prepared = False
+
     def clone(self):
         if not self._clone_exists:
             self.debug('Cloning {0}'.format(self.remote))
@@ -92,16 +95,22 @@ class Subject(object):
                 'v{0}'.format(release.version)
             )
         self.release = release
+        self.is_initialized = True
 
-    def prepare(self, release, processes=1):
-        self.initialize(release)
+        if self._cflow_exists or self._gprofs_exist:
+            self.is_prepared = True
 
-        self.clone()
-        self.checkout(release.reference)
+    def prepare(self, processes=1):
+        if not self.is_initialized:
+            raise Exception('Subject not initialized. Invoke initialize().')
+
         self.load_sloc()
         self.load_defenses()
 
-        if not (self._cflow_exists or self._gprofs_exist):
+        if not self.is_prepared:
+            self.clone()
+            self.checkout(self.release.reference)
+
             return_code = self.configure(
                     options=self.release.branch.configure_options
                 )
@@ -116,9 +125,17 @@ class Subject(object):
             return_code = self.test(processes)
             if return_code != 0:
                 raise Exception('test() returned {0}'.format(return_code))
+            
+            self.is_prepared = True
 
     def load_call_graph(self, were_vulnerable, processes=1):
         self.debug('Loading call graph')
+
+        if not self.is_initialized:
+            raise Exception('Subject not initialized. Invoke initialize().')
+
+        if not self.is_prepared:
+            raise Exception('Subject not prepared. Invoked prepare().')
 
         self._unpickle_call_graph()
         if not self.call_graph:
