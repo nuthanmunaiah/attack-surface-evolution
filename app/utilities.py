@@ -6,13 +6,15 @@ import statistics as stat
 import sys
 import threading
 
-import numpy as np
+import numpy
+import scipy.stats
+
+import app.stats
 
 from queue import Queue
 
 from django.conf import settings
 from django.db import connection, transaction
-from scipy import stats
 
 from app import constants
 from app.helpers import debug
@@ -153,10 +155,10 @@ def analyze_sensitivity(subject, become_vuln, processes):
     # TODO: Implement varying weights
     weights = {
             'base': {'call': 100, 'return': 50},
-            'dangerous': 25,'defense': -25,'tested': -25,'vulnerable': 25
+            'dangerous': 25, 'defense': -25, 'tested': -25, 'vulnerable': 25
         }
     # Damping factor from 10% to 90% with 5% increments
-    for damping in np.arange(0.1, 1.0, 0.05):
+    for damping in numpy.arange(0.1, 1.0, 0.05):
         # Personalization from 1 to 1000000 increasing exponentially
         for power in range(0, 7):
             entry = 10 ** power
@@ -206,7 +208,7 @@ def _analyze_sensitivity(subject, become_vuln, parameters, queue):
             exit=parameters['personalization']['exit'],
             other=parameters['personalization']['other'],
         )
-    
+
     treatment = list()
     control = list()
     for (key, value) in page_rank.items():
@@ -215,7 +217,10 @@ def _analyze_sensitivity(subject, become_vuln, parameters, queue):
         else:
             control.append(value)
 
-    (_, p) = stats.ranksums(np.array(treatment), np.array(control))
+    treatment = numpy.array(treatment)
+    control = numpy.array(control)
+
+    (_, p) = scipy.stats.ranksums(treatment, control)
 
     sensitivity = Sensitivity()
 
@@ -234,8 +239,7 @@ def _analyze_sensitivity(subject, become_vuln, parameters, queue):
     sensitivity.weight_vulnerable = parameters['weights']['vulnerable']
 
     sensitivity.p = p
-    # TODO: Compute Cohen's d
-    sensitivity.d = 0
+    sensitivity.d = app.stats.cohensd(treatment, control)
 
     queue.put(sensitivity, block=True)
 
