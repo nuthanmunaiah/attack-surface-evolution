@@ -28,21 +28,11 @@ def load(subject, processes):
 
     debug('Loading {0}'.format(subject.release))
     subject.prepare(processes)
-
-    were_vuln = [
-            Call(fix.name, fix.file, Environments.C)
-            for fix in subject.release.past_vulnerability_fixes
-        ]
-    become_vuln = [
-            Call(fix.name, fix.file, Environments.C)
-            for fix in subject.release.future_vulnerability_fixes
-        ]
-    subject.load_call_graph(were_vuln, processes)
+    subject.load_call_graph(processes)
     subject.call_graph.assign_weights()
     subject.call_graph.assign_page_rank(name='page_rank')
 
-    analyze(subject, were_vuln, become_vuln, processes)
-    analyze_sensitivity(subject, become_vuln, processes)
+    _load(subject, processes)
 
     end = datetime.datetime.now()
     debug('Loading {0} completed in {1:.2f} minutes'.format(
@@ -50,7 +40,7 @@ def load(subject, processes):
     ))
 
 
-def analyze(subject, were_vuln, become_vuln, processes):
+def _load(subject, processes):
     debug('Processing {0}'.format(subject.release))
 
     manager = multiprocessing.Manager()
@@ -69,7 +59,7 @@ def analyze(subject, were_vuln, become_vuln, processes):
         pool.starmap(
             _analyze,
             [
-                (node, attrs, subject, were_vuln, become_vuln, queue)
+                (node, attrs, subject, queue)
                 for (node, attrs) in subject.call_graph.nodes
             ],
             chunksize=1
@@ -93,7 +83,7 @@ def analyze(subject, were_vuln, become_vuln, processes):
     release.save()
 
 
-def _analyze(node, attrs, subject, were_vuln, become_vuln, queue):
+def _analyze(node, attrs, subject, queue):
     function = Function()
 
     function.name = node.function_name
@@ -101,8 +91,8 @@ def _analyze(node, attrs, subject, were_vuln, become_vuln, queue):
     function.release = subject.release
     function.is_entry = node in subject.call_graph.entry_points
     function.is_exit = node in subject.call_graph.exit_points
-    function.was_vulnerable = node in were_vuln
-    function.becomes_vulnerable = node in become_vuln
+    function.was_vulnerable = node in subject.were_vuln
+    function.becomes_vulnerable = node in subject.become_vuln
     function.is_tested = 'tested' in attrs
     function.calls_dangerous = 'dangerous' in attrs
     function.is_defense = 'defense' in attrs
@@ -145,62 +135,25 @@ def _analyze(node, attrs, subject, were_vuln, become_vuln, queue):
     queue.put(function, block=True)
 
 
-def analyze_sensitivity(subject, become_vuln, processes):
+def analyze_sensitivity(subject, parameters):
     debug('Performing sensitivity analysis on {0}'.format(subject.release))
 
-    # List of dictionaries each containing a set of values for damping,
-    # personalization dictionary, and edge weights
-    parameter_set = list()
+    subject.load_call_graph()
 
-    # TODO: Implement varying weights
-    weights = {
-            'base': {'call': 100, 'return': 50},
-            'dangerous': 25, 'defense': -25, 'tested': -25, 'vulnerable': 25
+    # A dictionary the set of values for damping, personalization dictionary,
+    # and edge weights
+    parameters = {
+            'damping': parameters[0],
+            'personalization': {
+                'entry': parameters[1],
+                'exit': parameters[2],
+                'other': parameters[3]
+            },
+            'weights': {
+                'base': {'call': parameters[4], 'return': parameters[5]}
+            }
         }
-    # Damping factor from 10% to 90% with 5% increments
-    for damping in numpy.arange(0.1, 1.0, 0.05):
-        # Personalization from 1 to 1000000 increasing exponentially
-        for power in range(0, 7):
-            entry = 10 ** power
-            for power in range(0, 7):
-                exit = 10 ** power
 
-                parameter_set.append(
-                        {
-                            'damping': round(damping, 2),
-                            'personalization': {
-                                'entry': entry, 'exit': exit, 'other': 1
-                            },
-                            'weights': weights
-                        }
-                    )
-
-    manager = multiprocessing.Manager()
-
-    # Shared queue for communication between _analyze and _save_functions
-    queue = manager.Queue(500)
-
-    # Consumer: Spawn a process to save function to the database
-    process = multiprocessing.Process(
-            target=_save, args=(Sensitivity, len(parameter_set), queue)
-        )
-    process.start()
-
-    # Producers: Spawn a pool processes to generate Sensitivity objects
-    with multiprocessing.Pool(processes) as pool:
-        pool.starmap(
-            _analyze_sensitivity,
-            [
-                (subject, become_vuln, parameters, queue)
-                for parameters in parameter_set
-            ],
-            chunksize=1
-        )
-
-    process.join()
-
-
-def _analyze_sensitivity(subject, become_vuln, parameters, queue):
     subject.call_graph.assign_weights(parameters['weights'])
     page_rank = subject.call_graph.get_page_rank(
             damping=parameters['damping'],
@@ -212,7 +165,7 @@ def _analyze_sensitivity(subject, become_vuln, parameters, queue):
     treatment = list()
     control = list()
     for (key, value) in page_rank.items():
-        if key in become_vuln:
+        if key in subject.become_vuln:
             treatment.append(value)
         else:
             control.append(value)
@@ -233,15 +186,15 @@ def _analyze_sensitivity(subject, become_vuln, parameters, queue):
 
     sensitivity.weight_call = parameters['weights']['base']['call']
     sensitivity.weight_return = parameters['weights']['base']['return']
-    sensitivity.weight_dangerous = parameters['weights']['dangerous']
-    sensitivity.weight_defense = parameters['weights']['defense']
-    sensitivity.weight_tested = parameters['weights']['tested']
-    sensitivity.weight_vulnerable = parameters['weights']['vulnerable']
+    sensitivity.weight_dangerous = parameters['weights'].get('dangerous', 0)
+    sensitivity.weight_defense = parameters['weights'].get('defense', 0)
+    sensitivity.weight_tested = parameters['weights'].get('tested', 0)
+    sensitivity.weight_vulnerable = parameters['weights'].get('vulnerable', 0)
 
     sensitivity.p = p
     sensitivity.d = app.stats.cohensd(treatment, control)
 
-    queue.put(sensitivity, block=True)
+    sensitivity.save()
 
 
 def _save(model, count, queue):
