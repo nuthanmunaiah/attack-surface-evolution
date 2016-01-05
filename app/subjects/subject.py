@@ -32,6 +32,8 @@ class Subject(object):
         self.repo = None
         self.function_sloc = None
         self.designed_defenses = None
+        self.were_vuln = None
+        self.become_vuln = None
         self.call_graph = None
 
         self.is_initialized = False
@@ -95,6 +97,19 @@ class Subject(object):
                 'v{0}'.format(release.version)
             )
         self.release = release
+
+        # List of functions that were vulnerable (i.e. known to be fixed for
+        # a vulnerability in or before the release being analyzed)
+        self.were_vuln = [
+                Call(fix.name, fix.file, Environments.C)
+                for fix in self.release.past_vulnerability_fixes
+            ]
+        # List of functions that become vulnerable (i.e. known to be fixed for
+        # a vulnerability at a time after the release being analyzed)
+        self.become_vuln = [
+                Call(fix.name, fix.file, Environments.C)
+                for fix in self.release.future_vulnerability_fixes
+            ]
         self.is_initialized = True
 
         if self._cflow_exists or self._gprofs_exist:
@@ -128,7 +143,7 @@ class Subject(object):
 
             self.is_prepared = True
 
-    def load_call_graph(self, were_vulnerable, processes=1):
+    def load_call_graph(self, processes=1):
         self.debug('Loading call graph')
 
         if not self.is_initialized:
@@ -145,14 +160,14 @@ class Subject(object):
                 cflow_loader = CflowLoader(
                     self.cflow_path, reverse=True,
                     defenses=self.designed_defenses,
-                    vulnerabilities=were_vulnerable
+                    vulnerabilities=self.were_vuln
                 )
             if self._gprofs_exist:
                 gprof_loader = MultigprofLoader(
                     self.gprofs_path, processes=processes,
                     reverse=False,
                     defenses=self.designed_defenses,
-                    vulnerabilities=were_vulnerable
+                    vulnerabilities=self.were_vuln
                 )
 
             if cflow_loader and gprof_loader:
