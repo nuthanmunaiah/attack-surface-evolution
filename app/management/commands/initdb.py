@@ -34,14 +34,16 @@ class Command(BaseCommand):
         subjects = list()
 
         for (name, remote) in constants.SUBJECTS.items():
-            if name not in settings.ENABLED_SUBJECTS:
+            if Subject.objects.filter(name=name, remote=remote).exists():
+                print('Subject {0} already loaded'.format(name))
+            elif name not in settings.ENABLED_SUBJECTS:
                 print('Subject {0} not enabled'.format(name))
-                continue
-            print('Loading subject {0}'.format(name))
+            else:
+                print('Loading subject {0}'.format(name))
 
-            subject = Subject(name=name, remote=remote)
-            subject.save()
-            subjects.append(subject)
+                subject = Subject(name=name, remote=remote)
+                subject.save()
+                subjects.append(subject)
 
         return subjects
 
