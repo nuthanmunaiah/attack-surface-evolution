@@ -119,9 +119,6 @@ class Subject(object):
         if not self.is_initialized:
             raise Exception('Subject not initialized. Invoke initialize().')
 
-        self.load_sloc()
-        self.load_defenses()
-
         if not self.is_prepared:
             self.clone()
             self.checkout(self.release.reference)
@@ -142,6 +139,9 @@ class Subject(object):
                 raise Exception('test() returned {0}'.format(return_code))
 
             self.is_prepared = True
+
+        self.load_sloc()
+        self.load_defenses()
 
     def load_call_graph(self, processes=1):
         self.debug('Loading call graph')
