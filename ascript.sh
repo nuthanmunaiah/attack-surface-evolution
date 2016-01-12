@@ -16,5 +16,5 @@ source venv/bin/activate
 DEBUG=1 python3 manage.py analyzesensitivity \
     -s $subject \
     -r $version \
-    -i $(($((offset*10000))+${SLURM}_ARRAY_TASK_ID)) \
+    -i $(($((offset*10000))+${SLURM_ARRAY_TASK_ID})) \
     -f parameters.csv
