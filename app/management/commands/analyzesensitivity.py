@@ -78,26 +78,22 @@ class Command(BaseCommand):
         if subject not in settings.ENABLED_SUBJECTS:
             raise CommandError('Subject {0} is not enabled'.format(subject))
 
-        subject = Subject.objects.get(name=subject)
-        releases = Release.objects.filter(subject=subject, is_loaded=False)
-        subject = subjects.SubjectCreator.from_subject(subject)
-
-        if release:
-            ma, mi, pa = helpers.get_version_components(release)
-            release = releases.get(major=ma, minor=mi, patch=pa)
-
+        parameters = None
         with open(parameters_filepath) as file_:
             for (i, line) in enumerate(file_):
                 if index == i:
                     line = line.strip('\n')
                     parameters = tuple(float(p) for p in line.split(','))
+                    break
+
+        if parameters is None:
+            raise CommandError('{0} is an invalid index'.format(i))
+
+        subject = Subject.objects.get(name=subject)
+        releases = Release.objects.filter(subject=subject)
+        subject = subjects.SubjectCreator.from_subject(subject)
+        ma, mi, pa = helpers.get_version_components(release)
+        release = releases.get(major=ma, minor=mi, patch=pa)
 
         subject.initialize(release)
-        were_vuln = [
-                Call(fix.name, fix.file, Environments.C)
-                for fix in subject.release.past_vulnerability_fixes
-            ]
-        subject.load_call_graph(were_vuln)
-        sensitivity = utilities.analyze_sensitivity(subject, parameters)
-        print(sensitivity.p)
-        print(sensitivity.d)
+        utilities.analyze_sensitivity(subject, parameters)
