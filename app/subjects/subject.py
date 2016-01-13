@@ -210,19 +210,16 @@ class Subject(object):
         self.debug('Loading function SLOC')
         self._download_sloc_file()
         if os.path.getsize(self._sloc_path) > 0:
-            re_function = re.compile('^([^\(]*)')
-
             self.function_sloc = dict()
             with open(self._sloc_path, 'r') as _sloc_file:
                 reader = csv.reader(_sloc_file)
-                next(reader)  # Skipping the header
                 for row in reader:
-                    func = re_function.match(row[1]).group(1)
-                    file_ = row[0]
-                    self.function_sloc['%s@%s' % (func, file_)] = int(row[3])
+                    name = row[0]
+                    file_ = row[1]
+                    self.function_sloc['%s@%s' % (name, file_)] = int(row[2])
 
-    def get_function_sloc(self, name, in_file):
-        key = '%s@%s' % (name, in_file)
+    def get_function_sloc(self, name, file_):
+        key = '%s@%s' % (name, file_)
         if key in self.function_sloc:
             return self.function_sloc[key]
 
