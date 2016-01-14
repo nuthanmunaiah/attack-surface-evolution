@@ -8,6 +8,7 @@
 subject=$1
 version=$2
 offset=$3
+parameters=$4
 
 module load gcc/4.6.4
 module load python/3.4.3
@@ -17,4 +18,4 @@ DEBUG=1 python3 manage.py analyzesensitivity \
     -s $subject \
     -r $version \
     -i $(($((offset*10000))+${SLURM_ARRAY_TASK_ID})) \
-    -f parameters.csv
+    -f $parameters
