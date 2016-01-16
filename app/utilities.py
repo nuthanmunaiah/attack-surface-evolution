@@ -150,7 +150,9 @@ def analyze_sensitivity(subject, parameters):
                 'other': parameters[3]
             },
             'weights': {
-                'base': {'call': parameters[4], 'return': parameters[5]}
+                'base': {'call': parameters[4], 'return': parameters[5]},
+                'dangerous': parameters[6],
+                'vulnerable': parameters[7]
             }
         }
 

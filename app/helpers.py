@@ -36,20 +36,28 @@ def generate_parameters(filepath):
 
     other = 1   # Personalization value for all non-entry/exit functions
 
-    # Damping factor from 10% to 90% with 5% increments
-    for damping in numpy.arange(0.1, 1.0, 0.05):
-        # Personalization from 1 to 1000000 increasing exponentially
-        for power in range(0, 7):
+    # Damping factor from 10% to 90% with 10% increments
+    for damping in numpy.arange(0.1, 1.0, 0.1):
+        # Personalization from 10 to 1000000 increasing exponentially
+        for power in range(1, 7):
             entry = 10 ** power
-            for power in range(0, 7):
+            for power in range(1, 7):
                 exit = 10 ** power
-                for power in range(0, 5):
+                # Edge weights from 10 to 10000 increasing exponentially
+                for power in range(1, 5):
                     call = 10 ** power
-                    for power in range(0, 5):
+                    for power in range(1, 5):
                         retrn = 10 ** power
-                        parameters_collection.append((
-                            round(damping, 2), entry, exit, other, call, retrn
-                        ))
+                        for power in range(1, 4):
+                            dangerous = 10 ** power
+                            for power in range(1, 4):
+                                vulnerable = 10 ** power
+
+                                parameters_collection.append((
+                                    round(damping, 2),
+                                    entry, exit, other,
+                                    call, retrn, dangerous, vulnerable
+                                ))
 
     with open(filepath, 'w') as file_:
         writer = csv.writer(file_)
