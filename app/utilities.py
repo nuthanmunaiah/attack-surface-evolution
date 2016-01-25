@@ -96,10 +96,17 @@ def _analyze(node, attrs, subject, queue):
     function.is_tested = 'tested' in attrs
     function.calls_dangerous = 'dangerous' in attrs
     function.is_defense = 'defense' in attrs
-    function.sloc = subject.get_function_sloc(
-        node.function_name,
-        node.function_signature
-    )
+
+    sloc = subject.get_function_sloc(
+            node.function_name,
+            node.function_signature
+        )
+    if sloc is not None:
+        function.sloc = sloc[2]
+        if not function.file:
+            debug('Guessing file information for {0}'.format(function.name))
+            function.file = sloc[1]
+
     (function.fan_in, function.fan_out) = subject.call_graph.get_fan(node)
 
     function.page_rank = attrs['page_rank']
@@ -255,6 +262,33 @@ def update_pagerank(subject):
             debug('{0}@{1} not found'.format(
                     node.function_name, node.function_signature
                 ))
+
+    end = datetime.datetime.now()
+    debug('Updated {0} records'.format(count))
+    debug('Updating {0} completed in {1:.2f} minutes'.format(
+        subject.release, ((end - begin).total_seconds() / 60)
+    ))
+
+
+def update_sloc(subject):
+    begin = datetime.datetime.now()
+
+    debug('Updating SLOC {0}'.format(subject.release))
+    subject.prepare()
+
+    count = 0
+    functions = Function.objects.filter(release=subject.release)
+    for function in functions:
+        sloc = subject.get_function_sloc(function.name, function.file)
+        if sloc is not None:
+            function.sloc = sloc[2]
+            if not function.file:
+                debug(
+                    'Guessing file information for {0}'.format(function.name)
+                )
+                function.file = sloc[1]
+            function.save()
+            count += 1
 
     end = datetime.datetime.now()
     debug('Updated {0} records'.format(count))

@@ -73,5 +73,7 @@ class Command(BaseCommand):
         subject.initialize(release)
         if 'page_rank' in field:
             utilities.update_pagerank(subject)
+        elif 'sloc' in field:
+            utilities.update_sloc(subject)
         else:
             raise CommandError('Updating {0} is not supported'.format(field))

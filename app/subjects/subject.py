@@ -2,7 +2,9 @@ import csv
 import os
 import pickle
 import re
+import shutil
 import subprocess as sp
+import sqlite3
 from urllib import parse
 
 import requests
@@ -14,6 +16,13 @@ from attacksurfacemeter.loaders.gprof_loader import GprofLoader
 from attacksurfacemeter.loaders.multigprof_loader import MultigprofLoader
 from app import constants, errors, helpers
 from app.gitapi import Repo
+
+SLOC_QUERY_PRIMARY = '''
+    SELECT name, file, sloc FROM function WHERE name = ?
+'''
+SLOC_QUERY_SECONDARY = '''
+    SELECT name, file, sloc FROM function WHERE name = ? AND file = ?
+'''
 
 
 class Subject(object):
@@ -30,7 +39,7 @@ class Subject(object):
 
         self.release = None
         self.repo = None
-        self.function_sloc = None
+        self.sloc_dbconn = None
         self.designed_defenses = None
         self.were_vuln = None
         self.become_vuln = None
@@ -209,19 +218,26 @@ class Subject(object):
     def load_sloc(self):
         self.debug('Loading function SLOC')
         self._download_sloc_file()
-        if os.path.getsize(self._sloc_path) > 0:
-            self.function_sloc = dict()
-            with open(self._sloc_path, 'r') as _sloc_file:
-                reader = csv.reader(_sloc_file)
-                for row in reader:
-                    name = row[0]
-                    file_ = row[1]
-                    self.function_sloc['%s@%s' % (name, file_)] = int(row[2])
+        self.sloc_dbconn = sqlite3.connect(self._sloc_path)
 
     def get_function_sloc(self, name, file_):
-        key = '%s@%s' % (name, file_)
-        if key in self.function_sloc:
-            return self.function_sloc[key]
+        if self.sloc_dbconn is None:
+            raise Exception('No connection to function SLOC database')
+
+        result = None
+
+        _cursor = self.sloc_dbconn.cursor()
+        _cursor.execute(SLOC_QUERY_PRIMARY, (name,))
+        _rows = _cursor.fetchall()
+        if len(_rows) == 1:
+            result = (_rows[0][0], _rows[0][1], _rows[0][2])
+        else:
+            _cursor.execute(SLOC_QUERY_SECONDARY, (name, file_))
+            _rows = _cursor.fetchall()
+            if len(_rows) == 1:
+                result = (_rows[0][0], _rows[0][1], _rows[0][2])
+
+        return result
 
     def load_defenses(self):
         self.debug('Loading designed defenses')
@@ -323,7 +339,7 @@ class Subject(object):
         self.debug('Downloading function SLOC file {0}'.format(
             self._sloc_url
         ))
-        self._download(self._sloc_url, self._sloc_path)
+        self._download(self._sloc_url, self._sloc_path, binary=True)
 
     def _download_defenses_file(self):
         self.debug('Downloading designed defenses file {0}'.format(
@@ -333,17 +349,28 @@ class Subject(object):
             self._defenses_url, self._defenses_path
         )
 
-    def _download(self, url, destination):
-        with open(destination, 'w+') as file_:
-            response = requests.get(url, stream=True)
-            for chunk in response.iter_content(1024, True):
-                file_.write(chunk)
-                file_.flush()
+    def _download(self, url, destination, binary=False):
+        if os.path.isfile(destination):
+            self.debug('{0} already exists'.format(destination))
+            return
 
-    def _get_asset_name(self):
-        if self.release is not None:
-            return '{0}.csv'.format(self.release.version)
-        return '{0}.csv'.format(self.name)
+        response = requests.get(url, stream=True)
+        if response.status_code != 200:
+            raise Exception(
+                    '[HTTP {0}] Downloading {1} failed'.format(
+                        response.status_code, url
+                    )
+                )
+
+        if binary:
+            with open(destination, 'wb') as file_:
+                response.raw.decode_content = True
+                shutil.copyfileobj(response.raw, file_)
+        else:
+            with open(destination, 'w') as file_:
+                for chunk in response.iter_content(1024, True):
+                    file_.write(chunk)
+                    file_.flush()
 
     # Private Properties
 
@@ -353,11 +380,13 @@ class Subject(object):
 
     @property
     def _sloc_url(self):
-        return self.assets_url + '/sloc/{0}'.format(self._get_asset_name())
+        return (
+            self.assets_url + '/sloc/{0}.sqlite'.format(self.release.version)
+        )
 
     @property
     def _sloc_path(self):
-        return os.path.join(self.scratch_dir, 'sloc.csv')
+        return os.path.join(self.scratch_dir, 'sloc.sqlite')
 
     @property
     def _defenses_url(self):
