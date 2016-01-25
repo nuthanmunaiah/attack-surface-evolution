@@ -199,6 +199,70 @@ def analyze_sensitivity(subject, parameters):
     sensitivity.save()
 
 
+def update_pagerank(subject):
+    begin = datetime.datetime.now()
+
+    debug('Updating {0}'.format(subject.release))
+    subject.load_call_graph()
+
+    # TODO: Initialize the parameters dictionary before executing this method
+    parameters = {
+            'damping': 1.0,
+            'personalization': {
+                'entry': 1,
+                'exit': 1,
+                'other': 1
+            },
+            'weights': {
+                'base': {'call': 1, 'return': 1},
+                'dangerous': 1,
+                'vulnerable': 1
+            }
+        }
+
+    subject.call_graph.assign_weights(parameters['weights'])
+    subject.call_graph.assign_page_rank(
+            name='page_rank',
+            damping=parameters['damping'],
+            entry=parameters['personalization']['entry'],
+            exit=parameters['personalization']['exit'],
+            other=parameters['personalization']['other'],
+        )
+
+    count = 0
+    functions = Function.objects.filter(release=subject.release)
+    for (node, attrs) in subject.call_graph.nodes:
+        function = None
+
+        _function = functions.filter(name=node.function_name)
+        if _function.count() == 1:
+            function = functions.get(name=node.function_name)
+        else:
+            _function = functions.filter(
+                    name=node.function_name, file=node.function_signature
+                )
+            if _function.exists():
+                function = functions.get(
+                        name=node.function_name, file=node.function_signature
+                    )
+
+        if function is not None:
+            count += 1
+
+            function.page_rank = attrs['page_rank']
+            function.save()
+        else:
+            debug('{0}@{1} not found'.format(
+                    node.function_name, node.function_signature
+                ))
+
+    end = datetime.datetime.now()
+    debug('Updated {0} records'.format(count))
+    debug('Updating {0} completed in {1:.2f} minutes'.format(
+        subject.release, ((end - begin).total_seconds() / 60)
+    ))
+
+
 def _save(model, count, queue):
     index = 1
 
