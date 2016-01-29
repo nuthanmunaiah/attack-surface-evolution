@@ -174,7 +174,7 @@ def analyze_sensitivity(subject, parameters):
     treatment = list()
     control = list()
     for (key, value) in page_rank.items():
-        if key in subject.become_vuln:
+        if key in subject.were_vuln:
             treatment.append(value)
         else:
             control.append(value)
