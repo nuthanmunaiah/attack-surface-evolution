@@ -18,10 +18,10 @@ from app import constants, errors, helpers
 from app.gitapi import Repo
 
 SLOC_QUERY_PRIMARY = '''
-    SELECT name, file, sloc FROM function WHERE name = ?
+    SELECT name, file, sloc FROM function WHERE name = ? AND file = ?
 '''
 SLOC_QUERY_SECONDARY = '''
-    SELECT name, file, sloc FROM function WHERE name = ? AND file = ?
+    SELECT name, file, sloc FROM function WHERE name = ?
 '''
 
 
@@ -227,15 +227,15 @@ class Subject(object):
         result = None
 
         _cursor = self.sloc_dbconn.cursor()
-        _cursor.execute(SLOC_QUERY_PRIMARY, (name,))
+        _cursor.execute(SLOC_QUERY_PRIMARY, (name, file_))
         _rows = _cursor.fetchall()
         if len(_rows) == 1:
-            result = (_rows[0][0], _rows[0][1], _rows[0][2])
+            result = _rows[0][2]
         else:
-            _cursor.execute(SLOC_QUERY_SECONDARY, (name, file_))
+            _cursor.execute(SLOC_QUERY_SECONDARY, (name,))
             _rows = _cursor.fetchall()
             if len(_rows) == 1:
-                result = (_rows[0][0], _rows[0][1], _rows[0][2])
+                result = _rows[0][2]
 
         return result
 

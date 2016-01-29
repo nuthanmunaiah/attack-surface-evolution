@@ -96,17 +96,10 @@ def _analyze(node, attrs, subject, queue):
     function.is_tested = 'tested' in attrs
     function.calls_dangerous = 'dangerous' in attrs
     function.is_defense = 'defense' in attrs
-
-    sloc = subject.get_function_sloc(
+    function.sloc = subject.get_function_sloc(
             node.function_name,
             node.function_signature
         )
-    if sloc is not None:
-        function.sloc = sloc[2]
-        if not function.file:
-            debug('Guessing file information for {0}'.format(function.name))
-            function.file = sloc[1]
-
     (function.fan_in, function.fan_out) = subject.call_graph.get_fan(node)
 
     function.page_rank = attrs['page_rank']
@@ -279,16 +272,9 @@ def update_sloc(subject):
     count = 0
     functions = Function.objects.filter(release=subject.release)
     for function in functions:
-        sloc = subject.get_function_sloc(function.name, function.file)
-        if sloc is not None:
-            function.sloc = sloc[2]
-            if not function.file:
-                debug(
-                    'Guessing file information for {0}'.format(function.name)
-                )
-                function.file = sloc[1]
-            function.save()
-            count += 1
+        function.sloc = subject.get_function_sloc(function.name, function.file)
+        function.save()
+        count += 1
 
     end = datetime.datetime.now()
     debug('Updated {0} records'.format(count))
