@@ -221,21 +221,18 @@ class Subject(object):
         self.sloc_dbconn = sqlite3.connect(self._sloc_path)
 
     def get_function_sloc(self, name, file_):
-        if self.sloc_dbconn is None:
-            raise Exception('No connection to function SLOC database')
-
         result = None
-
-        _cursor = self.sloc_dbconn.cursor()
-        _cursor.execute(SLOC_QUERY_PRIMARY, (name, file_))
-        _rows = _cursor.fetchall()
-        if len(_rows) == 1:
-            result = _rows[0][2]
-        else:
-            _cursor.execute(SLOC_QUERY_SECONDARY, (name,))
+        with sqlite3.connect(self._sloc_path) as connection:
+            _cursor = connection.cursor()
+            _cursor.execute(SLOC_QUERY_PRIMARY, (name, file_))
             _rows = _cursor.fetchall()
             if len(_rows) == 1:
                 result = _rows[0][2]
+            else:
+                _cursor.execute(SLOC_QUERY_SECONDARY, (name,))
+                _rows = _cursor.fetchall()
+                if len(_rows) == 1:
+                    result = _rows[0][2]
 
         return result
 
