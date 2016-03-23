@@ -20,25 +20,25 @@ MIDDLEWARE_CLASSES = (
 )
 ROOT_URLCONF = 'FFMpegEvolution.urls'
 WSGI_APPLICATION = 'FFMpegEvolution.wsgi.application'
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#         'BULK': 50,
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '5432',
-        'BULK': 999,
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'BULK': 50,
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': '',
+#         'USER': '',
+#         'PASSWORD': '',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#         'BULK': 999,
+#     }
+# }
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'America/New_York'
