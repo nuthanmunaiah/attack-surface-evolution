@@ -72,12 +72,12 @@ class Command(BaseCommand):
             branches = Branch.objects.filter(subject=subject)
 
             releases_file = helpers.get_absolute_path(
-                'app/assets/data/{0}/revisions.csv'.format(subject.name)
+                'app/assets/data/{0}/releases.csv'.format(subject.name)
             )
             with open(releases_file, 'r') as _releases_file:
                 reader = csv.reader(_releases_file)
                 for row in reader:
-                    print('Loading revision {0} of {1}'.format(
+                    print('Loading release {0} of {1}'.format(
                         row[0], subject.name
                     ))
 

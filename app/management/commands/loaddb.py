@@ -7,7 +7,7 @@ from app.errors import InvalidVersionError
 from app.models import *
 
 
-def check_revision(option, opt_str, value, parser, *args, **kwargs):
+def check_release(option, opt_str, value, parser, *args, **kwargs):
     setattr(parser.values, option.dest, value)
     if value:
         try:
@@ -16,11 +16,11 @@ def check_revision(option, opt_str, value, parser, *args, **kwargs):
 
             if not releases.exists():
                 raise OptionValueError(
-                    'Revision %s does not exist in the database.' % value
+                    'Release %s does not exist in the database.' % value
                 )
         except InvalidVersionError:
             raise OptionValueError(
-                'Invalid revision number specified. %s must be formatted as '
+                'Invalid release number specified. %s must be formatted as '
                 '0.0.0' % opt_str
             )
 
@@ -32,18 +32,18 @@ class Command(BaseCommand):
             help='Name of the subject to load the database with.'
         ),
         make_option(
-            '-r', type='str', action='callback', callback=check_revision,
-            dest='revision',
+            '-r', type='str', action='callback', callback=check_release,
+            dest='release',
             help=(
-                'Revision number of the subject to load the database with, '
-                'e.g. 2.6.0. Default is None, in which case all revisions of'
+                'Release number of the subject to load the database with, '
+                'e.g. 2.6.0. Default is None, in which case all releasess of'
                 ' the subject are loaded.'
             )
         ),
         make_option(
             '-p', type='int', dest='processes',
             default=settings.PARALLEL['SUBPROCESSES'],
-            help='Number of processes to spawn when loading a revision.',
+            help='Number of processes to spawn when loading a release.',
         )
     )
 
@@ -54,7 +54,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         subject = options['subject']
-        release = options['revision']
+        release = options['release']
         processes = options['processes']
 
         if subject not in settings.ENABLED_SUBJECTS:

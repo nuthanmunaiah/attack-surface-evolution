@@ -7,7 +7,7 @@ from app.errors import InvalidVersionError
 from app.models import *
 
 
-def check_revision(option, opt_str, value, parser, *args, **kwargs):
+def check_release(option, opt_str, value, parser, *args, **kwargs):
     setattr(parser.values, option.dest, value)
     if value:
         try:
@@ -16,11 +16,11 @@ def check_revision(option, opt_str, value, parser, *args, **kwargs):
 
             if not releases.exists():
                 raise OptionValueError(
-                    'Revision %s does not exist in the database.' % value
+                    'Release %s does not exist in the database.' % value
                 )
         except InvalidVersionError:
             raise OptionValueError(
-                'Invalid revision number specified. %s must be formatted as '
+                'Invalid release number specified. %s must be formatted as '
                 '0.0.0' % opt_str
             )
 
@@ -29,15 +29,14 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option(
             '-s', choices=list(constants.SUBJECTS.keys()), dest='subject',
-            help='Name of the subject to load the database with.'
+            help='Name of the subject to update in the database.'
         ),
         make_option(
-            '-r', type='str', action='callback', callback=check_revision,
-            dest='revision',
+            '-r', type='str', action='callback', callback=check_release,
+            dest='release',
             help=(
-                'Revision number of the subject to load the database with, '
-                'e.g. 2.6.0. Default is None, in which case all revisions of'
-                ' the subject are loaded.'
+                'Release number of the subject to update in the database, '
+                'e.g. 2.6.0.'
             )
         ),
         make_option(
@@ -47,17 +46,17 @@ class Command(BaseCommand):
     )
 
     help = (
-        'Clone, checkout, build, test, and profile revisions of a '
-        'subject. The profile information is used to measure the attack '
-        'surface of the software. All metrics captured during the measurement'
-        ' are then stored to the database by this command.'
+        'Update particular metric in the database for a specified release of '
+        'a software system.'
     )
 
     def handle(self, *args, **options):
         subject = options['subject']
-        release = options['revision']
+        release = options['release']
         field = options['field']
 
+        if not release:
+            raise CommandError('Release number cannot be left empty')
         if not field:
             raise CommandError('Parameter field cannot be left empty')
         if subject not in settings.ENABLED_SUBJECTS:

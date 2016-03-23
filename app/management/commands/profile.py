@@ -9,7 +9,7 @@ from app.models import *
 from app.subjects import curl, ffmpeg
 
 
-def check_revision(option, opt_str, value, parser, *args, **kwargs):
+def check_release(option, opt_str, value, parser, *args, **kwargs):
     setattr(parser.values, option.dest, value)
     if value:
         try:
@@ -18,11 +18,11 @@ def check_revision(option, opt_str, value, parser, *args, **kwargs):
 
             if not releases.exists():
                 raise OptionValueError(
-                    'Revision %s does not exist in the database.' % value
+                    'Release %s does not exist in the database.' % value
                 )
         except InvalidVersionError:
             raise OptionValueError(
-                'Invalid revision number specified. %s must be formatted as '
+                'Invalid release number specified. %s must be formatted as '
                 '0.0.0' % opt_str
             )
 
@@ -30,14 +30,23 @@ def check_revision(option, opt_str, value, parser, *args, **kwargs):
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option(
-            '-s', choices=list(constants.SUBJECTS.keys()), dest='subject'
+            '-s', choices=list(constants.SUBJECTS.keys()), dest='subject',
+            help='Name of the subject to that the gmon.out file belongs to.'
         ),
         make_option(
-            '-r', type='str', action='callback', callback=check_revision,
-            dest='revision'
+            '-r', type='str', action='callback', callback=check_release,
+            dest='release',
+            help=(
+                'Release number of the subject that the gmon.out file belongs '
+                'to.'
+            )
         ),
         make_option(
-            '-i', type='int', action='store', dest='index'
+            '-i', type='int', action='store', dest='index',
+            help=(
+                'The zero-based index of the gmon.out file in a sorted list '
+                'of all gmon.out files available for a particular release.'
+            )
         ),
     )
     help = (
@@ -46,7 +55,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         subject = options['subject']
-        release = options['revision']
+        release = options['release']
         index = options['index']
 
         if subject not in settings.ENABLED_SUBJECTS:
