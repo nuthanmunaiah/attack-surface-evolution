@@ -48,17 +48,15 @@ class Command(BaseCommand):
     )
 
     help = (
-        'Clone, checkout, build, test, and profile revisions of a '
-        'subject. The profile information is used to measure the attack '
-        'surface of the software. All metrics captured during the measurement'
-        ' are then stored to the database by this command.'
+        'Collects attack surface metrics from a specified release of a '
+        'software system.'
     )
 
     def handle(self, *args, **options):
         subject = options['subject']
         release = options['revision']
         processes = options['processes']
-        
+
         if subject not in settings.ENABLED_SUBJECTS:
             raise CommandError('Subject {0} is not enabled'.format(subject))
 
