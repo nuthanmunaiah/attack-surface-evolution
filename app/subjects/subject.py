@@ -1,4 +1,5 @@
 import csv
+import json
 import os
 import pickle
 import re
@@ -182,7 +183,7 @@ class Subject(object):
             raise Exception('Subject not initialized. Invoke initialize().')
 
         if not self.is_prepared:
-            raise Exception('Subject not prepared. Invoked prepare().')
+            raise Exception('Subject not prepared. Invoke prepare().')
 
         self._unpickle_call_graph()
         if not self.call_graph:
@@ -225,6 +226,21 @@ class Subject(object):
                 )
 
             self._pickle_call_graph()
+
+    def assign_page_rank(self, name='page_rank'):
+        if not (self.is_initialized and self.is_prepared):
+            raise Exception('Subject is not prepared. Invoke prepare().')
+
+        parameters = self._get_parameters()
+        self.debug('Parameters: {0}'.format(parameters))
+
+        self.call_graph.assign_weights(parameters['weights'])
+        self.call_graph.assign_page_rank(
+            name=name, damping=parameters['damping'],
+            entry=parameters['personalization']['entry'],
+            exit=parameters['personalization']['exit'],
+            other=parameters['personalization']['other'],
+        )
 
     def _pickle_call_graph(self):
         self.debug(
@@ -367,6 +383,10 @@ class Subject(object):
     def _clean_up(self):
         raise NotImplementedError
 
+    def _get_parameters(self):
+        with open(self._parameters_path, 'r') as file_:
+            return json.load(file_)
+
     def _download_sloc_file(self):
         self.debug('Downloading function SLOC file {0}'.format(
             self._sloc_url
@@ -445,3 +465,9 @@ class Subject(object):
     @property
     def _pickle_exists(self):
         return os.path.exists(self._pickle_path)
+
+    @property
+    def _parameters_path(self):
+        return helpers.get_absolute_path(
+            'app/assets/data/{0}/parameters.json'.format(self.name)
+        )

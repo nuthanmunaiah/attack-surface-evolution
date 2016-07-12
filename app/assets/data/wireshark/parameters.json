@@ -1,0 +1,10 @@
+{
+    "damping": 0.9,
+    "personalization": {
+        "entry": 10000, "exit": 10000, "other": 1
+    },
+    "weights": {
+        "base": {"call": 100, "return": 10},
+        "dangerous": 10, "vulnerable": 1000
+    }
+}

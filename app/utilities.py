@@ -30,8 +30,7 @@ def load(subject, processes):
     debug('Loading {0}'.format(subject.release))
     subject.prepare(processes)
     subject.load_call_graph(processes)
-    subject.call_graph.assign_weights()
-    subject.call_graph.assign_page_rank(name='page_rank')
+    subject.assign_page_rank()
 
     _load(subject, processes)
 
@@ -220,29 +219,7 @@ def update_pagerank(subject):
     debug('Updating {0}'.format(subject.release))
     subject.load_call_graph()
 
-    # TODO: Initialize the parameters dictionary before executing this method
-    parameters = {
-            'damping': 1.0,
-            'personalization': {
-                'entry': 1,
-                'exit': 1,
-                'other': 1
-            },
-            'weights': {
-                'base': {'call': 1, 'return': 1},
-                'dangerous': 1,
-                'vulnerable': 1
-            }
-        }
-
-    subject.call_graph.assign_weights(parameters['weights'])
-    subject.call_graph.assign_page_rank(
-            name='page_rank',
-            damping=parameters['damping'],
-            entry=parameters['personalization']['entry'],
-            exit=parameters['personalization']['exit'],
-            other=parameters['personalization']['other'],
-        )
+    subject.assign_page_rank()
 
     count = 0
     functions = Function.objects.filter(release=subject.release)
