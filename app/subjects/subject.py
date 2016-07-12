@@ -11,17 +11,21 @@ import requests
 from attacksurfacemeter.call import Call
 from attacksurfacemeter.call_graph import CallGraph
 from attacksurfacemeter.environments import Environments
+from attacksurfacemeter.granularity import Granularity
 from attacksurfacemeter.loaders.cflow_loader import CflowLoader
 from attacksurfacemeter.loaders.gprof_loader import GprofLoader
 from attacksurfacemeter.loaders.multigprof_loader import MultigprofLoader
 from app import constants, errors, helpers
 from app.gitapi import Repo
 
-SLOC_QUERY_PRIMARY = '''
+FUNC_SLOC_QUERY_PRIMARY = '''
     SELECT name, file, sloc FROM function WHERE name = ? AND file = ?
 '''
-SLOC_QUERY_SECONDARY = '''
+FUNC_SLOC_QUERY_SECONDARY = '''
     SELECT name, file, sloc FROM function WHERE name = ?
+'''
+FILE_SLOC_QUERY = '''
+    SELECT name, sloc FROM file WHERE name = ?
 '''
 
 
@@ -44,6 +48,7 @@ class Subject(object):
         self.were_vuln = None
         self.become_vuln = None
         self.call_graph = None
+        self.granularity = None
 
         self.is_initialized = False
         self.is_prepared = False
@@ -99,26 +104,44 @@ class Subject(object):
     def __gprof__(self, gmon_file_path, gprof_file_path):
         raise NotImplementedError
 
-    def initialize(self, release):
+    def initialize(self, release, granularity):
         self.scratch_dir = os.path.join(
                 self.scratch_dir,
                 'b{0}'.format(release.branch.version),
                 'v{0}'.format(release.version)
             )
         self.release = release
+        if granularity == 'function':
+            self.granularity = Granularity.FUNC
 
-        # List of functions that were vulnerable (i.e. known to be fixed for
-        # a vulnerability in or before the release being analyzed)
-        self.were_vuln = [
-                Call(fix.name, fix.file, Environments.C)
-                for fix in self.release.past_vulnerability_fixes
-            ]
-        # List of functions that become vulnerable (i.e. known to be fixed for
-        # a vulnerability at a time after the release being analyzed)
-        self.become_vuln = [
-                Call(fix.name, fix.file, Environments.C)
-                for fix in self.release.future_vulnerability_fixes
-            ]
+            # List of functions that were vulnerable (i.e. known to be fixed
+            # for a vulnerability in or before the release being analyzed)
+            self.were_vuln = [
+                    Call(fix.name, fix.file, Environments.C, Granularity.FUNC)
+                    for fix in self.release.past_vulnerability_fixes
+                ]
+            # List of functions that become vulnerable (i.e. known to be fixed
+            # for a vulnerability at a time after the release being analyzed)
+            self.become_vuln = [
+                    Call(fix.name, fix.file, Environments.C, Granularity.FUNC)
+                    for fix in self.release.future_vulnerability_fixes
+                ]
+        elif granularity == 'file':
+            self.granularity = Granularity.FILE
+
+            # List of functions that were vulnerable (i.e. known to be fixed
+            # for a vulnerability in or before the release being analyzed)
+            self.were_vuln = [
+                    Call('', fix.file, Environments.C, Granularity.FILE)
+                    for fix in self.release.past_vulnerability_fixes
+                ]
+            # List of functions that become vulnerable (i.e. known to be fixed
+            # for a vulnerability at a time after the release being analyzed)
+            self.become_vuln = [
+                    Call('', fix.file, Environments.C, Granularity.FILE)
+                    for fix in self.release.future_vulnerability_fixes
+                ]
+
         self.is_initialized = True
 
         if self._cflow_exists or self._gprofs_exist:
@@ -181,18 +204,24 @@ class Subject(object):
 
             if cflow_loader and gprof_loader:
                 self.call_graph = CallGraph.from_merge(
-                    CallGraph.from_loader(cflow_loader),
-                    CallGraph.from_loader(gprof_loader),
+                    CallGraph.from_loader(
+                        cflow_loader, granularity=self.granularity
+                    ),
+                    CallGraph.from_loader(
+                        gprof_loader, granularity=self.granularity
+                    ),
                     fragmentize=True
                 )
                 print('')
             elif cflow_loader:
                 self.call_graph = CallGraph.from_loader(
-                    cflow_loader, fragmentize=True
+                    cflow_loader, fragmentize=True,
+                    granularity=self.granularity
                 )
             elif gprof_loader:
                 self.call_graph = CallGraph.from_loader(
-                    gprof_loader, fragmentize=True
+                    gprof_loader, fragmentize=True,
+                    granularity=self.granularity
                 )
 
             self._pickle_call_graph()
@@ -220,19 +249,25 @@ class Subject(object):
         self._download_sloc_file()
         self.sloc_dbconn = sqlite3.connect(self._sloc_path)
 
-    def get_function_sloc(self, name, file_):
+    def get_sloc(self, name, file_):
         result = None
         with sqlite3.connect(self._sloc_path) as connection:
             _cursor = connection.cursor()
-            _cursor.execute(SLOC_QUERY_PRIMARY, (name, file_))
-            _rows = _cursor.fetchall()
-            if len(_rows) == 1:
-                result = _rows[0][2]
-            else:
-                _cursor.execute(SLOC_QUERY_SECONDARY, (name,))
+            if self.granularity == Granularity.FUNC:
+                _cursor.execute(FUNC_SLOC_QUERY_PRIMARY, (name, file_))
                 _rows = _cursor.fetchall()
                 if len(_rows) == 1:
                     result = _rows[0][2]
+                else:
+                    _cursor.execute(FUNC_SLOC_QUERY_SECONDARY, (name,))
+                    _rows = _cursor.fetchall()
+                    if len(_rows) == 1:
+                        result = _rows[0][2]
+            elif self.granularity == Granularity.FILE:
+                _cursor.execute(FILE_SLOC_QUERY, (file_,))
+                _rows = _cursor.fetchall()
+                if len(_rows) == 1:
+                    result = _rows[0][1]
 
         return result
 
@@ -403,7 +438,9 @@ class Subject(object):
 
     @property
     def _pickle_path(self):
-        return os.path.join(self.scratch_dir, 'call_graph.pickle')
+        return os.path.join(
+            self.scratch_dir, 'call_graph.{}.pickle'.format(self.granularity)
+        )
 
     @property
     def _pickle_exists(self):

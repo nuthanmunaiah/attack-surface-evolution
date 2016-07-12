@@ -85,8 +85,8 @@ The `loaddb` command analyzes a specific release of a software system, uses the 
    * Execute the `configure` script with appropriate flags to enable dyanamic profiling.
    * Execute the automated test suite to collect dynamic profile information. The files (`gmon.out`) containing the dynamic profiling information are saved to `~/{subject}/bN.N.N/vN.N.N/src/gmon`.
      **Note**: `gprof` generates the call graph by analyzing the profile information contained in the `gmon.out` files. `gmon.out` files are generated when a software system built with certain flags set is executed. When a test suite is executed, a `gmon.out` file is generated for every system test case executed. Therefore, in order to parallelize the generation of the dynamic call graph from the `gmon.out` files, the `profile` django-admin custom command is used. In the current version, `loaddb` raises an exception requiring manual interception to run the `profile` command.
- * When `loaddb` is rerun after the completion of `profile` command, the Attack Surface Meter is used merge the cflow call graph and gprof call graphs and collect the attack surface metrics from the resultant call graph representation of the system. The multiple gprof call graphs are merged with one another in parallel using multiple processes. The metrics are collected for each function and is also done in parallel using multiple processes. The metrics are saved to the `function` table in the database.
-   **Note**: In addition to the metrics collected by the Attack Surface Meter, the number of source-lines-of-code (SLOC) in each function is also saved to the database. [SciTools Understand](https://scitools.com/ "SciTools Understand") is used to count the SLOC in each function. The SLOC for each function is exported into a CSV file and loaded onto a SQLite database which is then uploaded to Google Drive and made publicly-accessible. The SQLite database of the appropriate release version is downloaded by `loaddb` and the function looked-up to get the SLOC. The URL of the directory containing the SLOC SQLite databases is in `app/constants.py`.
+ * When `loaddb` is rerun after the completion of `profile` command, the Attack Surface Meter is used merge the cflow call graph and gprof call graphs and collect the attack surface metrics from the resultant call graph representation of the system. The multiple gprof call graphs are merged with one another in parallel using multiple processes. The metrics are collected for each function (or file) and is also done in parallel using multiple processes. The metrics are saved to the `function` (or `file`) table in the database.
+   **Note**: In addition to the metrics collected by the Attack Surface Meter, the number of source-lines-of-code (SLOC) in each function (or file) is also saved to the database. [SciTools Understand](https://scitools.com/ "SciTools Understand") is used to count the SLOC in each function (or file). The SLOC for each function (or file) is exported into a CSV file and loaded onto a SQLite database which is then uploaded to Google Drive and made publicly-accessible. The SQLite database of the appropriate release version is downloaded by `loaddb` and the function (or file) looked-up to get the SLOC. The URL of the directory containing the SLOC SQLite databases is in `app/constants.py`.
 
 ### Command Line Usage
 
@@ -115,6 +115,8 @@ Options:
                         with, e.g. 2.6.0. Default is None, in which case all
                         releasess of the subject are loaded.
   -p PROCESSES          Number of processes to spawn when loading a release.
+  -g GRANULARITY        The granularity of the call graph to load into the
+                        database.
   --version             show program's version number and exit
   -h, --help            show this help message and exit
 ```

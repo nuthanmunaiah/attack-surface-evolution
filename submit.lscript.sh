@@ -1,11 +1,11 @@
 #!/bin/bash
 
-if [ $# -lt 2 ]; then
+if [ $# -lt 3 ]; then
     cat <<EOF
 USAGE: $0 subject indices [partition]
   subject : The target subject of mining. One of curl, ffmpeg, and wireshark.
   indices : Index of the release to mine. Check lscript.sh for indices.
-  partition : SLURM partition. One of debug and work. work is the default.
+  granularity : The granularity at which the load must be performed.
 EOF
 
     exit 1
@@ -13,20 +13,8 @@ fi
 
 subject=${1,,}
 releases=$2
+granularity=$3
 partition="work"
-if [ $# -eq 3 ]; then
-    case ${3,,} in
-        "debug")
-            partition="debug"
-            ;;
-        "work")
-            partition="work"
-            ;;
-        *)
-            echo "WARNING: Invalid partition - ${3,,}. Using default (work)."
-            ;;
-    esac
-fi
 
 case $subject in
     "curl")
@@ -84,7 +72,7 @@ sbatch --job-name="ASEL-$subject" \
     --partition=$partition \
     --array=$releases \
     --cpus-per-task=$cpus \
-    lscript.sh $subject $cpus > /dev/null
+    lscript.sh $subject $cpus $granularity > /dev/null
 
 if [ $? -eq 0 ]; then
     echo "INFO: Submitted SLURM job to load $subject."

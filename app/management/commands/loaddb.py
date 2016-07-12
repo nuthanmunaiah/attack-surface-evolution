@@ -44,6 +44,10 @@ class Command(BaseCommand):
             '-p', type='int', dest='processes',
             default=settings.PARALLEL['SUBPROCESSES'],
             help='Number of processes to spawn when loading a release.',
+        ),
+        make_option(
+            '-g', dest='granularity', choices=['function', 'file'],
+            help='The granularity of the call graph to load into the database.'
         )
     )
 
@@ -56,6 +60,7 @@ class Command(BaseCommand):
         subject = options['subject']
         release = options['release']
         processes = options['processes']
+        granularity = options['granularity']
 
         if subject not in settings.ENABLED_SUBJECTS:
             raise CommandError('Subject {0} is not enabled'.format(subject))
@@ -67,6 +72,11 @@ class Command(BaseCommand):
         if release:
             ma, mi, pa = helpers.get_version_components(release)
             release = releases.get(major=ma, minor=mi, patch=pa)
+            is_rerun = ReleaseStatistics.objects.filter(
+                    release=release, granularity=granularity
+                ).exists()
+            if is_rerun:
+                raise CommandError('{0} already loaded.'.format(release))
 
-        subject.initialize(release)
+        subject.initialize(release, granularity)
         utilities.load(subject, processes)

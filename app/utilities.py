@@ -21,6 +21,7 @@ from app.helpers import debug
 from app.models import *
 from attacksurfacemeter.call import Call
 from attacksurfacemeter.environments import Environments
+from attacksurfacemeter.granularity import Granularity
 
 
 def load(subject, processes):
@@ -49,8 +50,12 @@ def _load(subject, processes):
     queue = manager.Queue(500)
 
     # Consumer: Spawn a process to save function to the database
+    instance = Function
+    if subject.granularity == Granularity.FILE:
+        instance = File
+
     process = multiprocessing.Process(
-            target=_save, args=(Function, len(subject.call_graph.nodes), queue)
+            target=_save, args=(instance, len(subject.call_graph.nodes), queue)
         )
     process.start()
 
@@ -72,67 +77,77 @@ def _load(subject, processes):
 
     release = subject.release
 
-    release.monolithicity = subject.call_graph.monolithicity
+    release_statistics = ReleaseStatistics()
 
-    release.num_entry_points = len(subject.call_graph.entry_points)
-    release.num_exit_points = len(subject.call_graph.exit_points)
-    release.num_functions = len(subject.call_graph.nodes)
-    release.num_fragments = subject.call_graph.num_fragments
+    release_statistics.release = release
+    release_statistics.granularity = subject.granularity
+    release_statistics.monolithicity = subject.call_graph.monolithicity
+    release_statistics.num_entry_points = len(subject.call_graph.entry_points)
+    release_statistics.num_exit_points = len(subject.call_graph.exit_points)
+    release_statistics.num_nodes = len(subject.call_graph.nodes)
+    release_statistics.num_fragments = subject.call_graph.num_fragments
 
-    release.is_loaded = True
+    release_statistics.save()
+
+    if ReleaseStatistics.objects.filter(release=release).count() == 2:
+        release.is_loaded = True
     release.save()
 
 
 def _analyze(node, attrs, subject, queue):
-    function = Function()
+    instance = None
+    if subject.granularity == Granularity.FUNC:
+        instance = Function()
+        instance.name = node.function_name
+        instance.file = node.function_signature
+    elif subject.granularity == Granularity.FILE:
+        instance = File()
+        instance.name = node.function_signature
 
-    function.name = node.function_name
-    function.file = node.function_signature
-    function.release = subject.release
-    function.is_entry = node in subject.call_graph.entry_points
-    function.is_exit = node in subject.call_graph.exit_points
-    function.was_vulnerable = node in subject.were_vuln
-    function.becomes_vulnerable = node in subject.become_vuln
-    function.is_tested = 'tested' in attrs
-    function.calls_dangerous = 'dangerous' in attrs
-    function.is_defense = 'defense' in attrs
-    function.sloc = subject.get_function_sloc(
-            node.function_name,
-            node.function_signature
+    instance.release = subject.release
+    instance.is_entry = node in subject.call_graph.entry_points
+    instance.is_exit = node in subject.call_graph.exit_points
+    instance.was_vulnerable = node in subject.were_vuln
+    instance.becomes_vulnerable = node in subject.become_vuln
+    instance.is_tested = 'tested' in attrs
+    instance.calls_dangerous = 'dangerous' in attrs
+    instance.is_defense = 'defense' in attrs
+    instance.sloc = subject.get_sloc(
+            node.function_name, node.function_signature
         )
-    (function.fan_in, function.fan_out) = subject.call_graph.get_fan(node)
+    (instance.fan_in, instance.fan_out) = subject.call_graph.get_fan(node)
 
-    function.page_rank = attrs['page_rank']
+    instance.page_rank = attrs['page_rank']
 
     # Entry points
     metrics = subject.call_graph.get_shortest_path_length(node, 'entry')
     if metrics is not None:
-        function.proximity_to_entry = (
+        instance.proximity_to_entry = (
             stat.mean(metrics.values()) if metrics else 0.0
         )
 
     # Exit points
     metrics = subject.call_graph.get_shortest_path_length(node, 'exit')
     if metrics is not None:
-        function.proximity_to_exit = (
+        instance.proximity_to_exit = (
             stat.mean(metrics.values()) if metrics else 0.0
         )
 
     # Designed defenses
     metrics = subject.call_graph.get_shortest_path_length(node, 'defense')
     if metrics is not None:
-        function.proximity_to_defense = (
+        instance.proximity_to_defense = (
             stat.mean(metrics.values()) if metrics else 0.0
         )
 
     # Dangerous functions
     metrics = subject.call_graph.get_shortest_path_length(node, 'dangerous')
     if metrics is not None:
-        function.proximity_to_dangerous = (
+        instance.proximity_to_dangerous = (
             stat.mean(metrics.values()) if metrics else 0.0
         )
 
-    queue.put(function, block=True)
+    queue.put(instance, block=True)
 
 
 def analyze_sensitivity(subject, parameters):

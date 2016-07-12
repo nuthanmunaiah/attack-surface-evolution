@@ -7,6 +7,7 @@
 
 subject=$1
 cpus=$2
+granularity=$3
 
 if [ $subject == "ffmpeg"  ]; then
     declare -a releases=(
@@ -30,4 +31,5 @@ source venv/bin/activate
 DEBUG=1 python3 manage.py loaddb \
     -s $subject \
     -r ${releases[${SLURM_ARRAY_TASK_ID}]} \
-    -p $cpus
+    -p $cpus \
+    -g $granularity

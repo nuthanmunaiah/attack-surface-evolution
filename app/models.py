@@ -56,11 +56,6 @@ class Release(models.Model):
     reference = models.CharField(max_length=50)
 
     is_loaded = models.BooleanField(default=False)
-    monolithicity = models.FloatField(default=None, null=True)
-    num_entry_points = models.PositiveIntegerField(default=None, null=True)
-    num_exit_points = models.PositiveIntegerField(default=None, null=True)
-    num_functions = models.PositiveIntegerField(default=None, null=True)
-    num_fragments = models.PositiveIntegerField(default=None, null=True)
 
     @property
     def past_vulnerability_fixes(self):
@@ -122,6 +117,59 @@ class Release(models.Model):
         unique_together = ('subject', 'major', 'minor', 'patch')
         app_label = 'app'
         db_table = 'release'
+
+
+class ReleaseStatistics(models.Model):
+    release = models.ForeignKey(Release, db_index=True)
+
+    granularity = models.CharField(max_length=10, null=False)
+
+    monolithicity = models.FloatField(default=None, null=True)
+    num_entry_points = models.PositiveIntegerField(default=None, null=True)
+    num_exit_points = models.PositiveIntegerField(default=None, null=True)
+    num_nodes = models.PositiveIntegerField(default=None, null=True)
+    num_fragments = models.PositiveIntegerField(default=None, null=True)
+
+    class Meta:
+        unique_together = ('release', 'granularity')
+        app_label = 'app'
+        db_table = 'release_statistics'
+
+
+class File(models.Model):
+    release = models.ForeignKey(Release, db_index=True)
+    name = models.CharField(max_length=100, db_index=True)
+
+    is_entry = models.BooleanField(default=False)
+    is_exit = models.BooleanField(default=False)
+    is_tested = models.BooleanField(default=False)
+    calls_dangerous = models.BooleanField(default=False)
+    is_defense = models.BooleanField(default=False)
+
+    was_vulnerable = models.BooleanField(default=False)
+    becomes_vulnerable = models.BooleanField(default=False)
+
+    sloc = models.PositiveIntegerField(default=None, null=True)
+
+    fan_in = models.PositiveSmallIntegerField(null=False)
+    fan_out = models.PositiveSmallIntegerField(null=False)
+
+    proximity_to_entry = models.FloatField(default=None, null=True)
+    proximity_to_exit = models.FloatField(default=None, null=True)
+    proximity_to_defense = models.FloatField(default=None, null=True)
+    proximity_to_dangerous = models.FloatField(default=None, null=True)
+
+    page_rank = models.FloatField(default=None, null=True)
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return str(self)
+
+    class Meta:
+        app_label = 'app'
+        db_table = 'file'
 
 
 class Function(models.Model):
