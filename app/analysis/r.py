@@ -3,11 +3,11 @@ import sys
 import traceback
 
 from django.conf import settings
-from django.db.models import Max
+from django.db.models import Min
 from django.template.loader import render_to_string
 
-from app.analysis import constants, helpers
-from app.models import Function, Revision, Subject
+from app.analysis import configuration, helpers
+from app.models import *
 
 
 def run(database='default', fname=None):
@@ -22,24 +22,28 @@ def run(database='default', fname=None):
 
         templatedata = dict()
         templatedata['subjects'] = list()
-        for item in settings.SUBJECTS:
+        for item in settings.ENABLED_SUBJECTS:
             subject = Subject.objects.get(name=item)
-            revisions = Revision.objects.filter(
+            releases = Release.objects.filter(
                 subject=subject, is_loaded=True
             )
-            if revisions.count() == 0:
+            if releases.count() == 0:
                 continue
 
             _subject = {'name': item, 'revisions': list(), 'tracking': list()}
 
-            aggregate = revisions.aggregate(Max('id'))
-            maxid = aggregate['id__max']
-            for revision in revisions.order_by('id'):
-                functions = Function.objects.filter(revision=revision)
-                result = {'number': revision.number}
+            aggregate = releases.aggregate(Min('id'))
+            minid = aggregate['id__min']
+            releases = list(releases.order_by('-id'))
+            index = 0
+            while index < len(releases):
+                release = releases[index]
+
+                functions = Function.objects.filter(release=release)
+                result = {'number': release.version}
 
                 # Association tests
-                trdata = db.query(constants.BASE_SQL.format(revision.pk))
+                trdata = db.query(configuration.BASE_SQL.format(release.pk))
 
                 result['pen'] = tests.association(
                     trdata, 'proximity_to_entry'
@@ -57,27 +61,21 @@ def run(database='default', fname=None):
                 result['pr'] = tests.association(trdata, 'page_rank')
 
                 # Logistic regression
-                teid = revision.pk + 1 if revision.pk < maxid else revision.pk
-                tedata = db.query(constants.MODELING_SQL.format(teid))
+                # teid = (
+                #         releases[index + 1].pk
+                #         if release.pk != minid else release.pk
+                #     )
+                # tedata = db.query(configuration.MODELING_SQL.format(teid))
 
-                model = regression.model(
-                    trdata, tedata, constants.FEATURE_SETS, constants.CONTROL
-                )
-                result['model'] = model
+                # model = regression.model(
+                #     trdata, tedata,
+                #     configuration.FEATURE_SETS, configuration.CONTROL
+                # )
+                # result['model'] = model
 
                 _subject['revisions'].append(result)
 
-            # Tracking validation
-            data = db.query(constants.TRACKING_SQL.format(subject.pk))
-            for (metric, akeys, bkeys) in constants.TRACKING_SETS:
-                result = {
-                    'metric': metric,
-                    'comparing': '({0}) vs. ({1})'.format(
-                        ','.join(akeys), ','.join(bkeys)
-                    )
-                }
-                result['result'] = tests.tracking(data, metric, akeys, bkeys)
-                _subject['tracking'].append(result)
+                index += 1
 
             templatedata['subjects'].append(_subject)
 

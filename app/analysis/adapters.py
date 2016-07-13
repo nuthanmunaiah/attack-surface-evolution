@@ -15,6 +15,7 @@ class AssociationResult(object):
         self._rel_median = '='
 
         self.effect = 'NA'
+        self.cohensd = 0.0
 
     @property
     def is_significant(self):
@@ -51,6 +52,7 @@ class AssociationResult(object):
                 _instance._rel_median = '<'
 
             _instance.effect = robject.do_slot('effect')[0].upper()
+            _instance.cohensd = abs(robject.do_slot('cohensd')[0])
         return _instance
 
 

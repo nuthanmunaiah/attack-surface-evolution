@@ -3,6 +3,7 @@ setClass("AssociationResult",
     slots = list(
         p = "numeric",
         effect = "character",
+        cohensd = "numeric",
         true.mean = "numeric", false.mean = "numeric",
         true.median = "numeric", false.median = "numeric"
     )
@@ -104,15 +105,17 @@ association.test <- function(data, column.name, switch, normalize.by = NULL){
     # Mann-Whitney-Wilcoxon Test
     htest <- wilcox.test(true.population, false.population)
 
+    # Cohens D
+    effect <- cohen.d(true.population, false.population, na.rm = T)
+
     association.result <- new("AssociationResult",
         p = htest$p.value,
         true.mean = mean(true.population),
         false.mean = mean(false.population),
         true.median = median(true.population),
         false.median = median(false.population),
-        effect = cohen.d(
-            true.population, false.population, na.rm = T
-        )$magnitude
+        effect = as.character(effect$magnitude),
+        cohensd = effect$estimate
     )
 
     return(association.result)

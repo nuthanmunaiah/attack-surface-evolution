@@ -2,7 +2,7 @@ import os
 
 from rpy2 import robjects
 
-from app.analysis import constants
+from app.analysis import configuration
 from app.analysis.adapters import (
     AssociationResult, ModelingResult, Model, PredictionResult, TrackingResult
 )
@@ -47,7 +47,7 @@ class Tests(object):
         self._association = robjects.r('association.test')
         self._tracking = robjects.r('tracking.test')
 
-    def association(self, data, column, switch=constants.SWITCH,
+    def association(self, data, column, switch=configuration.SWITCH,
                     normalize_by=None):
         result = None
 
@@ -74,7 +74,7 @@ class Regression(object):
         self._predict = robjects.r('regression.predict')
 
     def model(self, train_data, test_data, fsets, control,
-              switch=constants.SWITCH):
+              switch=configuration.SWITCH):
         _fsets = robjects.vectors.ListVector.from_length(len(fsets))
         for (index, value) in enumerate(fsets):
             _fsets[index] = robjects.vectors.StrVector(value)
@@ -82,6 +82,6 @@ class Regression(object):
         result = self._model(train_data, test_data, _fsets, control, switch)
         return ModelingResult.from_robject(result)
 
-    def predict(self, model, test_data, switch=constants.SWITCH):
+    def predict(self, model, test_data, switch=configuration.SWITCH):
         result = self._predict(model, test_data, switch)
         return PredictionResult.from_robject(result)
