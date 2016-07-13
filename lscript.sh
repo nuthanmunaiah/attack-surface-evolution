@@ -24,11 +24,11 @@ elif [ $subject == "wireshark" ]; then
 fi
 
 module load gcc/4.6.4
-module load python/3.4.3
+module load python/3.5.2
 module load cflow/1.4
 source venv/bin/activate
 
-DEBUG=1 python3 manage.py loaddb \
+DEBUG=1 python manage.py loaddb \
     -s $subject \
     -r ${releases[${SLURM_ARRAY_TASK_ID}]} \
     -p $cpus \

@@ -39,7 +39,7 @@ if [ "$#" -eq 1 ]; then
     echo "Profiling release ${release} using gmon.out indexed by $1"
 fi
 
-module load python/3.4.3
-. venv/bin/activate
+module load python/3.5.2
+source venv/bin/activate
 
 python3 manage.py profile -s ffmpeg -r ${release} -i ${SLURM_ARRAY_TASK_ID}
