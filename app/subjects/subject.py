@@ -295,14 +295,17 @@ class Subject(object):
             with open(self._defenses_path, 'r') as _defenses_file:
                 reader = csv.reader(_defenses_file)
                 for row in reader:
-                    self.designed_defenses.append(
-                        Call(row[0], row[1], Environments.C)
-                    )
-            self.debug(
-                    'Loaded {0} designed defenses'.format(
-                        len(self.designed_defenses)
-                    )
-                )
+                    if self.granularity == Granularity.FUNC:
+                        self.designed_defenses.append(Call(
+                            row[0], row[1], Environments.C, Granularity.FUNC
+                        ))
+                    elif self.granularity == Granularity.FILE:
+                        self.designed_defenses.append(Call(
+                            '', row[1], Environments.C, Granularity.FILE
+                        ))
+            self.debug('Loaded {0} designed defenses'.format(
+                len(self.designed_defenses)
+            ))
 
     def get_functions(self, shas):
         functions = list()
