@@ -43,6 +43,10 @@ class Command(BaseCommand):
             '-f', type='str', action='store', dest='field',
             help='Name of the database field to update.'
         ),
+        make_option(
+            '-g', dest='granularity', choices=['function', 'file'],
+            help='The granularity of the subject to update.'
+        )
     )
 
     help = (
@@ -54,6 +58,7 @@ class Command(BaseCommand):
         subject = options['subject']
         release = options['release']
         field = options['field']
+        granularity = options['granularity']
 
         if not release:
             raise CommandError('Release number cannot be left empty')
@@ -65,11 +70,16 @@ class Command(BaseCommand):
         subject = Subject.objects.get(name=subject)
         ma, mi, pa = helpers.get_version_components(release)
         release = Release.objects.get(
-                subject=subject, major=ma, minor=mi, patch=pa, is_loaded=True
+                subject=subject, major=ma, minor=mi, patch=pa
             )
         subject = subjects.SubjectCreator.from_subject(subject)
+        subject_exists = ReleaseStatistics.objects.filter(
+                release=release, granularity=granularity
+            ).exists()
+        if not subject_exists:
+            raise CommandError('{0} not loaded.'.format(release))
 
-        subject.initialize(release)
+        subject.initialize(release, granularity)
         if 'page_rank' in field:
             utilities.update_pagerank(subject)
         elif 'sloc' in field:

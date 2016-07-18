@@ -262,11 +262,18 @@ def update_sloc(subject):
     subject.prepare()
 
     count = 0
-    functions = Function.objects.filter(release=subject.release)
-    for function in functions:
-        function.sloc = subject.get_function_sloc(function.name, function.file)
-        function.save()
-        count += 1
+    if subject.granularity == Granularity.FUNC:
+        functions = Function.objects.filter(release=subject.release)
+        for function in functions:
+            function.sloc = subject.get_sloc(function.name, function.file)
+            function.save()
+            count += 1
+    elif subject.granularity == Granularity.FILE:
+        files = File.objects.filter(release=subject.release)
+        for file_ in files:
+            file_.sloc = subject.get_sloc('', file_.name)
+            file_.save()
+            count += 1
 
     end = datetime.datetime.now()
     debug('Updated {0} records'.format(count))
