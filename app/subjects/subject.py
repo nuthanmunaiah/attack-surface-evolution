@@ -64,11 +64,11 @@ class Subject(object):
                 )
             self.repo = Repo(self.source_dir)
 
-    def checkout(self, reference):
+    def checkout(self, reference, force=False):
         if self.repo is None:
             self.clone()
         self.debug('Checking out {0}'.format(reference))
-        self.repo.git_checkout(reference)
+        self.repo.git_checkout(reference, force)
 
     def configure(self, options):
         raise NotImplementedError

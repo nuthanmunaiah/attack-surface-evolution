@@ -138,7 +138,7 @@ class Command(BaseCommand):
             _subject = SubjectCreator.from_subject(subject)
             _subject.clone()
             for branch in branches:
-                _subject.checkout(branch.reference)
+                _subject.checkout(branch.reference, force=True)
 
                 cve_releases = CveRelease.objects.filter(
                         release__branch=branch,

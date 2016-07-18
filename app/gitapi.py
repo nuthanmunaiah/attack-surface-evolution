@@ -39,3 +39,12 @@ class Repo(gitapi.Repo):
                         funcs.add(match.group(1))
 
         return list(funcs)
+
+    def git_checkout(self, reference, force=False, branch=False):
+        cmd = ['checkout']
+        if force:
+            cmd.append('-f')
+        if branch:
+            cmd.append('-b')
+        cmd.append(str(reference))
+        self.git_command(*cmd)
