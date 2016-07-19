@@ -1,4 +1,5 @@
 import csv
+import os
 import sys
 import traceback
 
@@ -23,6 +24,7 @@ class Command(BaseCommand):
                 self._load_releases(subjects)
                 self._load_cves(subjects)
                 self._map_cve_to_release(subjects)
+                self._load_vulnerability_fix_overrides(subjects)
         except Exception as e:
             sys.stderr.write(
                 'ERROR: initdb failed. All database changes aborted.\n'
@@ -35,11 +37,11 @@ class Command(BaseCommand):
 
         for (name, remote) in constants.SUBJECTS.items():
             if Subject.objects.filter(name=name, remote=remote).exists():
-                print('Subject {0} already loaded'.format(name))
+                print('Subject {} already loaded'.format(name))
             elif name not in settings.ENABLED_SUBJECTS:
-                print('Subject {0} not enabled'.format(name))
+                print('Subject {} not enabled'.format(name))
             else:
-                print('Loading subject {0}'.format(name))
+                print('Loading subject {}'.format(name))
 
                 subject = Subject(name=name, remote=remote)
                 subject.save()
@@ -50,12 +52,12 @@ class Command(BaseCommand):
     def _load_branches(self, subjects):
         for subject in subjects:
             branches_file = helpers.get_absolute_path(
-                'app/assets/data/{0}/branches.csv'.format(subject.name)
+                'app/assets/data/{}/branches.csv'.format(subject.name)
             )
             with open(branches_file, 'r') as _branches_file:
                 reader = csv.reader(_branches_file)
                 for row in reader:
-                    print('Loading branch {0} of {1}'.format(
+                    print('Loading branch {} of {}'.format(
                         row[0], subject.name
                     ))
 
@@ -72,12 +74,12 @@ class Command(BaseCommand):
             branches = Branch.objects.filter(subject=subject)
 
             releases_file = helpers.get_absolute_path(
-                'app/assets/data/{0}/releases.csv'.format(subject.name)
+                'app/assets/data/{}/releases.csv'.format(subject.name)
             )
             with open(releases_file, 'r') as _releases_file:
                 reader = csv.reader(_releases_file)
                 for row in reader:
-                    print('Loading release {0} of {1}'.format(
+                    print('Loading release {} of {}'.format(
                         row[0], subject.name
                     ))
 
@@ -96,14 +98,12 @@ class Command(BaseCommand):
     def _load_cves(self, subjects):
         for subject in subjects:
             cves_file = helpers.get_absolute_path(
-                'app/assets/data/{0}/cves.csv'.format(subject.name)
+                'app/assets/data/{}/cves.csv'.format(subject.name)
             )
             with open(cves_file, 'r') as _cve_file:
                 reader = csv.reader(_cve_file)
                 for row in reader:
-                    print('Loading CVE {0} of {1}'.format(
-                        row[0], subject.name
-                    ))
+                    print('Loading CVE {} of {}'.format(row[0], subject.name))
                     cve = Cve(
                         subject=subject,
                         identifier=row[0],
@@ -118,7 +118,7 @@ class Command(BaseCommand):
             cves = Cve.objects.filter(subject=subject)
 
             cves_fixed_file = helpers.get_absolute_path(
-                'app/assets/data/{0}/cves_fixed.csv'.format(subject.name)
+                'app/assets/data/{}/cves_fixed.csv'.format(subject.name)
             )
 
             with open(cves_fixed_file, 'r') as _cves_fixed_file:
@@ -151,3 +151,34 @@ class Command(BaseCommand):
                             cve_release=cve_release, name=name, file=file_
                         )
                         vulnerability_fix.save()
+
+    def _load_vulnerability_fix_overrides(self, subjects):
+        for subject in subjects:
+            overrides_file = helpers.get_absolute_path(
+                'app/assets/data/{}/vulnerability_fix_overrides.csv'.format(
+                    subject.name
+                )
+            )
+
+            if not os.path.exists(overrides_file):
+                continue
+
+            with open(overrides_file, 'r') as _overrides_file:
+                reader = csv.reader(_overrides_file)
+                for row in reader:
+                    print('Loading vulnerability fix override for {}'.format(
+                        row[1],
+                    ))
+
+                    ma, mi, pa = helpers.get_version_components(row[0])
+                    release = Release.objects.get(
+                        subject=subject, major=ma, minor=mi, patch=pa
+                    )
+                    cve_release = CveRelease.objects.get(
+                        release=release, fix_sha=row[2],
+                        cve__subject=subject, cve__identifier=row[1]
+                    )
+                    vulnerability_fix = VulnerabilityFix(
+                        cve_release=cve_release, name=row[3], file=row[4]
+                    )
+                    vulnerability_fix.save()
