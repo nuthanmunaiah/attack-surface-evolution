@@ -367,6 +367,7 @@ class Subject(object):
             gprof_files = [
                     os.path.join(self.gprofs_dir, gprof_file_name)
                     for gprof_file_name in os.listdir(self.gprofs_dir)
+                    if gprof_file_name.endswith('.txt')
                 ]
             gprof_files.sort()
         return gprof_files
