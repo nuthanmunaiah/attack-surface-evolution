@@ -154,6 +154,8 @@ class File(models.Model):
     fan_in = models.PositiveSmallIntegerField(null=False)
     fan_out = models.PositiveSmallIntegerField(null=False)
 
+    frequency = models.PositiveSmallIntegerField(default=0)
+
     proximity_to_entry = models.FloatField(default=None, null=True)
     proximity_to_exit = models.FloatField(default=None, null=True)
     proximity_to_defense = models.FloatField(default=None, null=True)
@@ -190,6 +192,8 @@ class Function(models.Model):
 
     fan_in = models.PositiveSmallIntegerField(null=False)
     fan_out = models.PositiveSmallIntegerField(null=False)
+
+    frequency = models.PositiveSmallIntegerField(default=0)
 
     proximity_to_entry = models.FloatField(default=None, null=True)
     proximity_to_exit = models.FloatField(default=None, null=True)

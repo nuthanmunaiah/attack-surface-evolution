@@ -115,6 +115,7 @@ def _analyze(node, attrs, subject, queue):
             node.function_name, node.function_signature
         )
     (instance.fan_in, instance.fan_out) = subject.call_graph.get_fan(node)
+    instance.frequency = attrs['frequency'] if 'frequency' in attrs else 0
 
     instance.page_rank = attrs['page_rank']
 
