@@ -15,7 +15,6 @@ def run(database='default', fname=None):
 
     db = helpers.Db(settings.DATABASES[database])
     tests = helpers.Tests()
-    regression = helpers.Regression()
 
     try:
         db.connect()
@@ -59,19 +58,6 @@ def run(database='default', fname=None):
                     trdata, 'proximity_to_dangerous'
                 )
                 result['pr'] = tests.association(trdata, 'page_rank')
-
-                # Logistic regression
-                # teid = (
-                #         releases[index + 1].pk
-                #         if release.pk != minid else release.pk
-                #     )
-                # tedata = db.query(configuration.MODELING_SQL.format(teid))
-
-                # model = regression.model(
-                #     trdata, tedata,
-                #     configuration.FEATURE_SETS, configuration.CONTROL
-                # )
-                # result['model'] = model
 
                 _subject['revisions'].append(result)
 

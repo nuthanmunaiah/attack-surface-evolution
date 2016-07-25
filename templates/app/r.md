@@ -28,7 +28,7 @@ Page Rank
 | -------- | ------------- | ----------- | ---------- | -------- | ------------ | - | ------------ |
 {% for r in revisions %}| {{ r.number|stringformat:"8s" }} |       {{r.pr.is_significant }}       | {{ r.pr.p|stringformat:"6.5e" }} | {{ r.pr.effect|center:"10" }} | {{r.pr.cohensd|stringformat:"8.4f"}} | {{ r.pr.vmedian|stringformat:"12.6e" }} | {{ r.pr.rel_median  }} | {{ r.pr.nmedian|stringformat:"12.6e" }} |
 {% endfor %}
-
+{% endwith %}{% endfor %}
 Legend
 ======
 
@@ -38,20 +38,3 @@ Significant
  Y - Metric is significantly correlated with vulnerable functions.
  N - No evidence of the metric being correlated with vulnerable functions.
  X - Population of vulnerable functions with finite value for the metric not present.
-
-Regression
-==========
-
-Modeling
-========
-
-{% for r in revisions %}
- Revision   {{ r.number|stringformat:"8s" }} 
- Models
- ------
-
-   |    AIC    |  % Change  | Formula                                                                                              | Precision | Recall | F-score |
-   | --------- | ---------- | ---------------------------------------------------------------------------------------------------- | --------- | ------ | ------- |
-   | {{ r.model.control.aic|stringformat:"9.4f" }} |     --     | {{ r.model.control.formula|stringformat:"-100s" }} |    ---    |   --   |   ---   |
-   {% for m in r.model.models %}| {{ m.aic|stringformat:"9.4f" }} | {{ m.aic_change_pct|stringformat:"10.6f" }} | {{ m.formula|stringformat:"-100s" }} | {{ m.prediction_result.precision|stringformat:"9.4f"  }} | {{ m.prediction_result.recall|stringformat:"6.4f" }} | {{ m.prediction_result.fscore|stringformat:"7.4f" }} |
-   {% endfor %}{% endfor %}{% endwith %}{% endfor %}
