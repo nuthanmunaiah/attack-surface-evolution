@@ -11,6 +11,6 @@ BASE_SQL = '''
         proximity_to_entry, proximity_to_exit,
         proximity_to_defense, proximity_to_dangerous,
         page_rank
-    FROM function
-    WHERE release_id = {0}
+    FROM {table}
+    WHERE release_id = {release}
 '''

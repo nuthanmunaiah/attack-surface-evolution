@@ -6,12 +6,19 @@ from django.conf import settings
 from django.db.models import Min
 from django.template.loader import render_to_string
 
+from attacksurfacemeter.granularity import Granularity
+
 from app.analysis import configuration, helpers
 from app.models import *
 
 
-def run(database='default', fname=None):
+def run(granularity, database='default', fname=None):
     status = 0
+
+    if granularity == Granularity.FUNC:
+        Entity = Function
+    elif granularity == Granularity.FILE:
+        Entity = File
 
     db = helpers.Db(settings.DATABASES[database])
     tests = helpers.Tests()
@@ -23,11 +30,14 @@ def run(database='default', fname=None):
         templatedata['subjects'] = list()
         for item in settings.ENABLED_SUBJECTS:
             subject = Subject.objects.get(name=item)
-            releases = Release.objects.filter(
-                subject=subject, is_loaded=True
-            )
-            if releases.count() == 0:
+            releases = ReleaseStatistics.objects.filter(
+                    release__subject=subject, granularity=granularity
+                ).values_list('release_id', flat=True)
+            if len(releases) == 0:
                 continue
+
+            releases = Release.objects.filter(id__in=releases). \
+                order_by('branch_id')
 
             _subject = {'name': item, 'revisions': list(), 'tracking': list()}
 
@@ -38,11 +48,15 @@ def run(database='default', fname=None):
             while index < len(releases):
                 release = releases[index]
 
-                functions = Function.objects.filter(release=release)
+                functions = Entity.objects.filter(release=release)
                 result = {'number': release.version}
 
                 # Association tests
-                trdata = db.query(configuration.BASE_SQL.format(release.pk))
+                trdata = db.query(
+                        configuration.BASE_SQL.format(
+                            table=granularity, release=release.pk
+                        )
+                    )
 
                 result['pen'] = tests.association(
                     trdata, 'proximity_to_entry'
