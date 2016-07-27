@@ -96,22 +96,68 @@ class Release(models.Model):
         return str(self)
 
     def __lt__(self, other):
-        return self.date < other.date
+        if self.subject != other.subject:
+            raise Exception('Cannot compare instances of different subjects')
+
+        outcome = (
+                self.date < other.date and
+                (
+                    self.major < other.major or
+                    (
+                        self.major == other.major and
+                        self.minor < other.minor
+                    ) or
+                    (
+                        self.major == other.major and
+                        self.minor == other.minor and
+                        self.patch < other.patch
+                    )
+                )
+            )
+        return outcome
 
     def __le__(self, other):
-        return self.date <= other.date
+        return (self < other or self == other)
 
     def __eq__(self, other):
-        return self.date == other.date
+        outcome = (
+                self.subject == other.subject and self.date == other.date and
+                self.major == other.major and self.minor == other.minor and
+                self.patch == other.patch
+            )
+        return outcome
 
     def __ne__(self, other):
-        return self.date != other.date
+        outcome = (
+                self.subject != other.subject or self.date != other.date or
+                self.major != other.major or self.minor != other.minor or
+                self.patch != other.patch
+            )
+        return outcome
 
     def __gt__(self, other):
-        return self.date > other.date
+        if self.subject != other.subject:
+            raise Exception('Cannot compare instances of different subjects')
+
+        outcome = (
+                self.date > other.date and
+                (
+                    self.major > other.major or
+                    (
+                        self.major == other.major and
+                        self.minor > other.minor
+                    ) or
+                    (
+                        self.major == other.major and
+                        self.minor == other.minor and
+                        self.patch > other.patch
+                    )
+                )
+            )
+        return outcome
 
     def __ge__(self, other):
-        return self.date >= other.date
+        return (self > other or self == other)
 
     class Meta:
         unique_together = ('subject', 'major', 'minor', 'patch')
