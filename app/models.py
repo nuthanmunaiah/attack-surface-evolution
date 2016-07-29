@@ -97,7 +97,7 @@ class Release(models.Model):
 
     def __lt__(self, other):
         if self.subject != other.subject:
-            raise Exception('Cannot compare instances of different subjects')
+            raise Exception('Cannot compare releases of different subjects')
 
         outcome = (
                 self.date < other.date and
@@ -137,22 +137,13 @@ class Release(models.Model):
 
     def __gt__(self, other):
         if self.subject != other.subject:
-            raise Exception('Cannot compare instances of different subjects')
+            raise Exception('Cannot compare releases of different subjects')
 
         outcome = (
                 self.date > other.date and
-                (
-                    self.major > other.major or
-                    (
-                        self.major == other.major and
-                        self.minor > other.minor
-                    ) or
-                    (
-                        self.major == other.major and
-                        self.minor == other.minor and
-                        self.patch > other.patch
-                    )
-                )
+                self.major == other.major and
+                self.minor == other.minor and
+                self.patch > other.patch
             )
         return outcome
 
