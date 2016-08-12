@@ -67,3 +67,6 @@ venv/
 
 # SLURM standard output and standard error files
 slurm/
+
+# Files that could potentially contain sensitive information
+app/analysis/db.settings.R
